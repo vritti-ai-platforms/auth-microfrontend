@@ -1,20 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Lock, Mail } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
 import type { LoginFormData } from '../../schemas/auth';
 import { loginSchema } from '../../schemas/auth';
+import { login } from '../../services/auth.service';
 
 export const LoginPage: React.FC = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -23,11 +26,56 @@ export const LoginPage: React.FC = () => {
     },
   });
 
+  // Pre-fill email if coming from signup page
+  useEffect(() => {
+    const emailFromState = location.state?.email;
+    if (emailFromState) {
+      form.setValue('email', emailFromState);
+    }
+  }, [location.state?.email, form]);
+
   const onSubmit = async (data: LoginFormData) => {
-    // TODO: Implement API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Login successful', data);
-    // navigate('/dashboard');
+    const response = await login({
+      email: data.email,
+      password: data.password,
+    });
+
+    // Check if user requires onboarding
+    if (response.requiresOnboarding) {
+      // Store onboarding token
+      if (response.onboardingToken) {
+        setToken('onboarding', response.onboardingToken);
+      }
+
+      // Navigate to appropriate onboarding step
+      if (response.onboardingStep) {
+        // Map onboarding step to route
+        const stepRoutes: Record<string, string> = {
+          EMAIL_VERIFICATION: '/onboarding/verify-email',
+          PHONE_VERIFICATION: '/onboarding/verify-mobile',
+          SET_PASSWORD: '/onboarding/set-password',
+          MFA_SETUP: '/onboarding/mfa-setup',
+        };
+
+        const route = stepRoutes[response.onboardingStep] || '/onboarding/verify-email';
+        navigate(route);
+      } else {
+        // Default to email verification if step not specified
+        navigate('/onboarding/verify-email');
+      }
+    } else {
+      // User is fully authenticated
+      if (response.accessToken) {
+        setToken('access', response.accessToken);
+      }
+      if (response.refreshToken) {
+        setToken('refresh', response.refreshToken);
+      }
+
+      // Navigate to dashboard or main app route
+      // TODO: Update this route based on your main app entry point
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -43,7 +91,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={onSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} onSubmit={onSubmit} >
         <FieldGroup>
           <TextField
             name='email'

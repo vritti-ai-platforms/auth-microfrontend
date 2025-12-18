@@ -1015,7 +1015,7 @@
     postcss "^8.4.41"
     tailwindcss "4.1.17"
 
-"@tailwindcss/vite@^4.1.13":
+"@tailwindcss/vite@^4.1.17":
   version "4.1.17"
   resolved "https://registry.yarnpkg.com/@tailwindcss/vite/-/vite-4.1.17.tgz#c316b3817b21e175c37261249550790b1b909f93"
   integrity sha512-4+9w8ZHOiGnpcGI6z1TVVfWaX/koK7fKeSYF3qlYg2xpBtbteP2ddBxiarL+HVgfSJGeK5RIxRQmKm4rTJJAwA==
@@ -1082,10 +1082,10 @@
   resolved "https://registry.npmjs.org/@types/semver/-/semver-7.5.8.tgz"
   integrity sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==
 
-"@vritti/quantum-ui@0.1.21":
-  version "0.1.21"
-  resolved "https://registry.yarnpkg.com/@vritti/quantum-ui/-/quantum-ui-0.1.21.tgz#dd1a9ce11f6beb55a058a4897876cc51f1a16f45"
-  integrity sha512-Yu4drStkEwCCEp0Pe4ZvkPvsfKcIFEhld4HnP8sNki2XX4Xr5S7TNzLEK1SCP5ja4jnO9Fia9Kn5mYH73pRO+g==
+"@vritti/quantum-ui@0.1.22":
+  version "0.1.22"
+  resolved "https://registry.yarnpkg.com/@vritti/quantum-ui/-/quantum-ui-0.1.22.tgz#809b619710e85b859b619a4095661ae6f3ccbc63"
+  integrity sha512-q24HxCruCQ+Gw2MFDy46hZoKTCP8o44JKs+Ds2czZzjyjvj/gZ73/K0A1veZEl6zjBJzOoxIq8lLvkcqsOgwcg==
   dependencies:
     "@hookform/resolvers" "^5.2.2"
     "@radix-ui/react-checkbox" "^1.3.3"
@@ -1094,7 +1094,7 @@
     "@radix-ui/react-select" "^2.2.6"
     "@radix-ui/react-separator" "^1.1.8"
     "@radix-ui/react-slot" "^1.2.3"
-    "@tailwindcss/vite" "^4.1.13"
+    "@tailwindcss/vite" "^4.1.17"
     axios "^1.12.2"
     class-variance-authority "^0.7.1"
     clsx "^2.1.1"

@@ -6,6 +6,7 @@ import './index.css';
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
+import { SignupSuccessPage } from "./pages/auth/SignupSuccessPage";
 import { MFASetupFlowPage } from "./pages/onboarding/MFASetupFlowPage";
 import { OAuthErrorPage } from "./pages/onboarding/OAuthErrorPage";
 import { OAuthSuccessPage } from "./pages/onboarding/OAuthSuccessPage";
@@ -34,6 +35,10 @@ export const authRoutes: RouteObject[] = [
 			{
 				path: "signup",
 				element: <SignupPage />,
+			},
+			{
+				path: "signup-success",
+				element: <SignupSuccessPage />,
 			},
 			{
 				path: "forgot-password",

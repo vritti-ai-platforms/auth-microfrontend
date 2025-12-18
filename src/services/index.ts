@@ -1,9 +1,26 @@
 /**
- * Onboarding Service
+ * Authentication & Onboarding Services
  *
- * Centralized exports for all onboarding-related API services
+ * Centralized exports for all auth and onboarding-related API services
  */
 
+// Auth Service
+export {
+  signup,
+  login,
+} from './auth.service';
+
+export type {
+  SignupDto,
+  LoginDto,
+  SignupResponse,
+  LoginResponse,
+  UserResponseDto,
+  OnboardingStep,
+  AccountStatus,
+} from './auth.service';
+
+// Onboarding Service
 export {
   register,
   verifyEmail,

@@ -70,27 +70,22 @@ const SocialButton: React.FC<SocialButtonProps> = ({ provider, onClick }) => {
 };
 
 export const SocialAuthButtons: React.FC = () => {
-  const handleGoogleLogin = () => {
+  const handleOAuthLogin = (provider: string) => {
     // Get API URL from environment variable
     const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
     // Redirect to backend OAuth endpoint
-    // Backend will redirect to Google, then back to our success/error pages
-    window.location.href = `${apiUrl}/onboarding/oauth/google`;
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
-    // TODO: Implement OAuth flow for other providers
+    // Backend will redirect to the OAuth provider, then back to our success/error pages
+    window.location.href = `${apiUrl}/auth/oauth/${provider}`;
   };
 
   return (
     <div className="flex gap-3 w-full justify-center">
-      <SocialButton provider="google" onClick={handleGoogleLogin} />
-      <SocialButton provider="x" onClick={() => handleSocialLogin('x')} />
-      <SocialButton provider="facebook" onClick={() => handleSocialLogin('facebook')} />
-      <SocialButton provider="apple" onClick={() => handleSocialLogin('apple')} />
-      <SocialButton provider="microsoft" onClick={() => handleSocialLogin('microsoft')} />
+      <SocialButton provider="google" onClick={() => handleOAuthLogin('google')} />
+      <SocialButton provider="x" onClick={() => handleOAuthLogin('x')} />
+      <SocialButton provider="facebook" onClick={() => handleOAuthLogin('facebook')} />
+      <SocialButton provider="apple" onClick={() => handleOAuthLogin('apple')} />
+      <SocialButton provider="microsoft" onClick={() => handleOAuthLogin('microsoft')} />
     </div>
   );
 };

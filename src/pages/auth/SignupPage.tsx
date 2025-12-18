@@ -5,18 +5,19 @@ import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { Lock, Mail, User } from 'lucide-react';
-import React from 'react';
+import { Loader2, Lock, Mail, User } from 'lucide-react';
+import React, { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
 import type { SignupFormData } from '../../schemas/auth';
 import { signupSchema } from '../../schemas/auth';
-import { register } from '../../services/onboarding.service';
+import { signup } from '../../services/auth.service';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
+  const [showLoginButton, setShowLoginButton] = useState(false);
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -31,20 +32,47 @@ export const SignupPage: React.FC = () => {
   const password = useWatch({ control: form.control, name: 'password' }) || '';
 
   const onSubmit = async (data: SignupFormData) => {
-    const response = await register({
-      email: data.email,
-      password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-    });
+    try {
+      const response = await signup({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      });
 
-    // Store onboarding token for subsequent requests
-    setToken('onboarding', response.onboardingToken);
+      // Store onboarding token for subsequent requests
+      if (response.onboardingToken) {
+        setToken('onboarding', response.onboardingToken);
+      }
 
-    // Navigate to email verification
-    navigate('/onboarding/verify-email');
+      // Navigate to success page with email and token in state
+      navigate('/signup-success', {
+        state: {
+          email: data.email,
+          onboardingToken: response.onboardingToken,
+        },
+      });
+    } catch (error: any) {
+      // Check if error is "User Already Exists"
+      const errorMessage = error?.response?.data?.message || error?.message || '';
+      if (
+        errorMessage.toLowerCase().includes('user already exists') ||
+        errorMessage.toLowerCase().includes('email already registered') ||
+        errorMessage.toLowerCase().includes('account already exists')
+      ) {
+        setShowLoginButton(true);
+      } else {
+        setShowLoginButton(false);
+      }
 
+      // Let Form component handle error display
+      throw error;
+    }
+  };
 
+  const handleLoginInstead = () => {
+    const email = form.getValues('email');
+    navigate('/login', { state: { email } });
   };
 
   return (
@@ -114,9 +142,26 @@ export const SignupPage: React.FC = () => {
               className="w-full bg-primary text-primary-foreground"
               disabled={form.formState.isSubmitting}
             >
+              {form.formState.isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
             </Button>
           </Field>
+
+          {/* Login Instead Button - Show only if account exists */}
+          {showLoginButton && (
+            <Field>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleLoginInstead}
+              >
+                Login Instead
+              </Button>
+            </Field>
+          )}
 
           {/* Terms and Conditions */}
           <Typography variant="body2" align="center" intent="muted" className="text-center">
