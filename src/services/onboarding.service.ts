@@ -194,3 +194,58 @@ export async function getStatus(): Promise<OnboardingStatusResponse> {
 
   return response.data;
 }
+
+/**
+ * Start onboarding response from the API
+ * Contains the current step and OTP delivery information if applicable
+ */
+export interface StartOnboardingResponse {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** Human-readable message describing the action taken */
+  message: string;
+  /** Current onboarding step to navigate to */
+  currentStep: string;
+  /** Where OTP was sent, if applicable */
+  otpSentTo?: 'email' | 'phone' | null;
+  /** Masked destination (email or phone) for display purposes */
+  otpDestination?: string;
+}
+
+/**
+ * Starts the onboarding process for the authenticated user
+ *
+ * This endpoint triggers OTP sending if required for the current step.
+ * For EMAIL_VERIFICATION step, it sends an email OTP.
+ * For MOBILE_VERIFICATION step, it sends an SMS OTP.
+ *
+ * Requires onboarding token to be set via setToken('onboarding', token)
+ * The token is automatically included in the request by axios interceptor
+ *
+ * @returns Promise resolving to start onboarding response with step info
+ * @throws Error if start fails (invalid token, session expired, etc.)
+ *
+ * @example
+ * ```typescript
+ * import { startOnboarding } from './services/onboarding.service';
+ *
+ * try {
+ *   const response = await startOnboarding();
+ *
+ *   console.log('Current step:', response.currentStep);
+ *   console.log('OTP sent to:', response.otpSentTo);
+ *
+ *   // Navigate to the appropriate step
+ *   navigate(`/onboarding/${response.currentStep.toLowerCase()}`);
+ * } catch (error) {
+ *   console.error('Failed to start onboarding:', error);
+ * }
+ * ```
+ */
+export async function startOnboarding(): Promise<StartOnboardingResponse> {
+  const response: AxiosResponse<StartOnboardingResponse> = await axios.post(
+    '/onboarding/start'
+  );
+
+  return response.data;
+}

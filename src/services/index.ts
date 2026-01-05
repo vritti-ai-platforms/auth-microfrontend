@@ -18,6 +18,7 @@ export type {
   UserResponseDto,
   OnboardingStep,
   AccountStatus,
+  SignupMethod,
 } from './auth.service';
 
 // Onboarding Service
@@ -26,10 +27,12 @@ export {
   verifyEmail,
   resendEmailOtp,
   getStatus,
+  startOnboarding,
 } from './onboarding.service';
 
 export type {
   RegisterDto,
   OnboardingStatusResponse,
   VerifyEmailDto,
+  StartOnboardingResponse,
 } from './onboarding.service';

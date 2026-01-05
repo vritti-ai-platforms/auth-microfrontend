@@ -23,6 +23,11 @@ export enum AccountStatus {
 }
 
 /**
+ * Signup method type - indicates how the user signed up
+ */
+export type SignupMethod = 'email' | 'oauth';
+
+/**
  * User signup data transfer object
  */
 export interface SignupDto {
@@ -67,6 +72,10 @@ export interface SignupResponse {
   emailVerified: boolean;
   phoneVerified: boolean;
   onboardingToken?: string;
+  /** Whether this is a newly created user or resuming onboarding */
+  isNewUser: boolean;
+  /** The method used to signup (email or oauth) */
+  signupMethod: SignupMethod;
 }
 
 /**

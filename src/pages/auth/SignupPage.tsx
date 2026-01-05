@@ -45,11 +45,14 @@ export const SignupPage: React.FC = () => {
         setToken('onboarding', response.onboardingToken);
       }
 
-      // Navigate to success page with email and token in state
+      // Navigate to success page with email, token, and onboarding state
       navigate('/signup-success', {
         state: {
           email: data.email,
           onboardingToken: response.onboardingToken,
+          isNewUser: response.isNewUser,
+          signupMethod: response.signupMethod,
+          currentStep: response.currentStep,
         },
       });
     } catch (error: any) {
