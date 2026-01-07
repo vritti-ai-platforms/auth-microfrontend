@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { setToken } from '@vritti/quantum-ui';
+import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
@@ -40,16 +40,19 @@ export const SignupPage: React.FC = () => {
         lastName: data.lastName,
       });
 
-      // Store onboarding token for subsequent requests
-      if (response.onboardingToken) {
-        setToken('onboarding', response.onboardingToken);
+      // Store access token (refresh token is in httpOnly cookie set by backend)
+      if (response.accessToken) {
+        setToken(response.accessToken);
+        // Schedule proactive token refresh
+        if (response.expiresIn) {
+          scheduleTokenRefresh(response.expiresIn);
+        }
       }
 
-      // Navigate to success page with email, token, and onboarding state
+      // Navigate to success page with email and onboarding state
       navigate('/signup-success', {
         state: {
           email: data.email,
-          onboardingToken: response.onboardingToken,
           isNewUser: response.isNewUser,
           signupMethod: response.signupMethod,
           currentStep: response.currentStep,

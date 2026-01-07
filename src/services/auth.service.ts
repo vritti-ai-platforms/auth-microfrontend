@@ -59,7 +59,8 @@ export interface UserResponseDto {
 }
 
 /**
- * Signup response from API (OnboardingStatusResponseDto)
+ * Signup response from API (OnboardingStatusResponseDto + tokens)
+ * Uses unified auth: accessToken in response, refreshToken in httpOnly cookie
  */
 export interface SignupResponse {
   userId: string;
@@ -71,7 +72,10 @@ export interface SignupResponse {
   accountStatus: AccountStatus;
   emailVerified: boolean;
   phoneVerified: boolean;
-  onboardingToken?: string;
+  /** Access token for API requests (store in memory) */
+  accessToken: string;
+  /** Token lifetime in seconds */
+  expiresIn: number;
   /** Whether this is a newly created user or resuming onboarding */
   isNewUser: boolean;
   /** The method used to signup (email or oauth) */
@@ -80,15 +84,20 @@ export interface SignupResponse {
 
 /**
  * Login response from API (AuthResponseDto)
+ * Uses unified auth: accessToken in response, refreshToken in httpOnly cookie
  */
 export interface LoginResponse {
+  /** Access token for API requests (store in memory) */
   accessToken?: string;
-  refreshToken?: string;
+  /** Token type (always 'Bearer') */
   tokenType?: string;
+  /** Token lifetime in seconds */
   expiresIn?: number;
+  /** Authenticated user info */
   user: UserResponseDto;
+  /** Whether user needs to complete onboarding */
   requiresOnboarding?: boolean;
-  onboardingToken?: string;
+  /** Current onboarding step if requiresOnboarding is true */
   onboardingStep?: OnboardingStep;
 }
 
@@ -96,13 +105,13 @@ export interface LoginResponse {
  * Registers a new user account
  *
  * @param data - User signup information
- * @returns Promise resolving to signup response with onboarding token
+ * @returns Promise resolving to signup response with access token
  * @throws Error if signup fails (email exists, validation errors, etc.)
  *
  * @example
  * ```typescript
  * import { signup } from './services/auth.service';
- * import { setToken } from '@vritti/quantum-ui/axios';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
  *
  * try {
  *   const response = await signup({
@@ -112,8 +121,9 @@ export interface LoginResponse {
  *     lastName: 'Doe'
  *   });
  *
- *   // Store onboarding token
- *   setToken('onboarding', response.onboardingToken);
+ *   // Store access token (refresh token is in httpOnly cookie)
+ *   setToken(response.accessToken);
+ *   scheduleTokenRefresh(response.expiresIn);
  *
  *   console.log('Signup successful:', response.currentStep);
  * } catch (error) {
@@ -124,7 +134,8 @@ export interface LoginResponse {
 export async function signup(data: SignupDto): Promise<SignupResponse> {
   const response: AxiosResponse<SignupResponse> = await axios.post(
     '/auth/signup',
-    data
+    data,
+    { public: true } // Bypass token recovery for public auth endpoint
   );
 
   return response.data;
@@ -134,13 +145,13 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
  * Authenticates a user with email and password
  *
  * @param data - User login credentials
- * @returns Promise resolving to login response with tokens or onboarding info
+ * @returns Promise resolving to login response with access token
  * @throws Error if login fails (invalid credentials, account locked, etc.)
  *
  * @example
  * ```typescript
  * import { login } from './services/auth.service';
- * import { setToken } from '@vritti/quantum-ui/axios';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
  *
  * try {
  *   const response = await login({
@@ -148,14 +159,17 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
  *     password: 'SecurePass123!'
  *   });
  *
+ *   // Store access token (refresh token is in httpOnly cookie)
+ *   if (response.accessToken) {
+ *     setToken(response.accessToken);
+ *     if (response.expiresIn) {
+ *       scheduleTokenRefresh(response.expiresIn);
+ *     }
+ *   }
+ *
  *   if (response.requiresOnboarding) {
- *     // User needs to complete onboarding
- *     setToken('onboarding', response.onboardingToken);
  *     // Navigate to onboarding step
  *   } else {
- *     // User is fully authenticated
- *     setToken('access', response.accessToken);
- *     setToken('refresh', response.refreshToken);
  *     // Navigate to dashboard
  *   }
  * } catch (error) {
@@ -166,7 +180,8 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
 export async function login(data: LoginDto): Promise<LoginResponse> {
   const response: AxiosResponse<LoginResponse> = await axios.post(
     '/auth/login',
-    data
+    data,
+    { public: true } // Bypass token recovery for public auth endpoint
   );
 
   return response.data;

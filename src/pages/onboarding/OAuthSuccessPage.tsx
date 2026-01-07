@@ -1,4 +1,4 @@
-import { setToken } from '@vritti/quantum-ui/axios';
+import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -9,6 +9,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
  * Handles the redirect after successful OAuth authentication.
  * Extracts token and user state from query parameters and navigates
  * to the appropriate onboarding step.
+ *
+ * Uses unified auth: accessToken in query params, refreshToken in httpOnly cookie
  */
 export const OAuthSuccessPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ export const OAuthSuccessPage: React.FC = () => {
       try {
         // Extract query parameters
         const token = searchParams.get('token');
-        const isNewUser = searchParams.get('isNewUser') === 'true';
+        const expiresIn = searchParams.get('expiresIn');
         const requiresPassword = searchParams.get('requiresPassword') === 'true';
         const step = searchParams.get('step');
 
@@ -37,8 +39,16 @@ export const OAuthSuccessPage: React.FC = () => {
           return;
         }
 
-        // Store the onboarding token
-        setToken('onboarding', token);
+        // Store access token (refresh token is in httpOnly cookie set by backend)
+        setToken(token);
+
+        // Schedule proactive token refresh if expiresIn is provided
+        if (expiresIn) {
+          const expiresInSeconds = parseInt(expiresIn, 10);
+          if (!isNaN(expiresInSeconds)) {
+            scheduleTokenRefresh(expiresInSeconds);
+          }
+        }
 
         // Navigate based on onboarding step
         if (requiresPassword) {

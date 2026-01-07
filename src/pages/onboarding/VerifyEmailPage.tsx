@@ -2,7 +2,7 @@ import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { Button } from '@vritti/quantum-ui/Button';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { useOnboarding } from '@vritti/quantum-ui';
+import { useOnboarding } from '../../context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,7 +14,7 @@ import { verifyEmail, resendEmailOtp } from '../../services/onboarding.service';
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { email, currentStep, isLoading: onboardingLoading } = useOnboarding();
+  const { email, currentStep, isLoading: onboardingLoading, refetch } = useOnboarding();
   const [resendSuccess, setResendSuccess] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
@@ -43,7 +43,9 @@ export const VerifyEmailPage: React.FC = () => {
 
   const onSubmit = async (data: OTPFormData) => {
     await verifyEmail(data.code);
-    // OnboardingProvider will auto-refresh status and navigate via useEffect
+    // Refetch onboarding status to get updated currentStep
+    // useEffect will then navigate to the next step
+    await refetch();
   };
 
   const handleResend = async () => {

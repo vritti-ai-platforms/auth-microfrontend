@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { setToken } from '@vritti/quantum-ui/axios';
+import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
@@ -40,13 +40,17 @@ export const LoginPage: React.FC = () => {
       password: data.password,
     });
 
+    // Store access token (refresh token is in httpOnly cookie set by backend)
+    if (response.accessToken) {
+      setToken(response.accessToken);
+      // Schedule proactive token refresh
+      if (response.expiresIn) {
+        scheduleTokenRefresh(response.expiresIn);
+      }
+    }
+
     // Check if user requires onboarding
     if (response.requiresOnboarding) {
-      // Store onboarding token
-      if (response.onboardingToken) {
-        setToken('onboarding', response.onboardingToken);
-      }
-
       // Navigate to appropriate onboarding step
       if (response.onboardingStep) {
         // Map onboarding step to route
@@ -64,16 +68,7 @@ export const LoginPage: React.FC = () => {
         navigate('/onboarding/verify-email');
       }
     } else {
-      // User is fully authenticated
-      if (response.accessToken) {
-        setToken('access', response.accessToken);
-      }
-      if (response.refreshToken) {
-        setToken('refresh', response.refreshToken);
-      }
-
-      // Navigate to dashboard or main app route
-      // TODO: Update this route based on your main app entry point
+      // User is fully authenticated - navigate to dashboard
       navigate('/dashboard');
     }
   };

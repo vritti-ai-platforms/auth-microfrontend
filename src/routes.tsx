@@ -1,4 +1,4 @@
-import { OnboardingProvider } from "@vritti/quantum-ui";
+import { OnboardingProvider } from "./context";
 import type { RouteObject } from "react-router-dom";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { AuthLayout } from "./components/layouts/AuthLayout";

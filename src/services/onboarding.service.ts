@@ -18,6 +18,7 @@ export interface RegisterDto {
 /**
  * Onboarding status response from the API
  * Contains current user onboarding state and progress
+ * Note: accessToken is only returned on initial registration, not on status fetches
  */
 export interface OnboardingStatusResponse {
   /** Unique user identifier */
@@ -38,8 +39,6 @@ export interface OnboardingStatusResponse {
   emailVerified: boolean;
   /** Whether phone has been verified */
   phoneVerified: boolean;
-  /** JWT token for onboarding session authentication */
-  onboardingToken: string;
 }
 
 /**
@@ -53,14 +52,16 @@ export interface VerifyEmailDto {
 /**
  * Registers a new user and initiates the onboarding process
  *
+ * Note: This function is for direct API calls. For full auth flow with token
+ * handling, use the signup function from auth.service.ts instead.
+ *
  * @param data - User registration information
- * @returns Promise resolving to onboarding status with token
+ * @returns Promise resolving to onboarding status
  * @throws Error if registration fails (email exists, validation errors, etc.)
  *
  * @example
  * ```typescript
  * import { register } from './services/onboarding.service';
- * import { setToken } from '@vritti/quantum-ui/axios';
  *
  * try {
  *   const response = await register({
@@ -69,9 +70,6 @@ export interface VerifyEmailDto {
  *     firstName: 'John',
  *     lastName: 'Doe'
  *   });
- *
- *   // Store onboarding token for subsequent requests
- *   setToken('onboarding', response.onboardingToken);
  *
  *   console.log('Registration successful:', response.currentStep);
  * } catch (error) {
@@ -84,7 +82,8 @@ export async function register(
 ): Promise<OnboardingStatusResponse> {
   const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
     '/onboarding/register',
-    data
+    data,
+    { public: true } // Bypass token recovery for public auth endpoint
   );
 
   return response.data;
@@ -93,8 +92,8 @@ export async function register(
 /**
  * Verifies user's email address using OTP code
  *
- * Requires onboarding token to be set via setToken('onboarding', token)
- * The token is automatically included in the request by axios interceptor
+ * Requires authenticated session. The access token is automatically included
+ * in the request by the axios interceptor.
  *
  * @param otp - 6-digit OTP code sent to user's email
  * @returns Promise resolving to updated onboarding status
@@ -103,10 +102,6 @@ export async function register(
  * @example
  * ```typescript
  * import { verifyEmail } from './services/onboarding.service';
- * import { setToken } from '@vritti/quantum-ui/axios';
- *
- * // Onboarding token should already be set from registration
- * // setToken('onboarding', response.onboardingToken);
  *
  * try {
  *   const response = await verifyEmail('123456');
@@ -134,8 +129,8 @@ export async function verifyEmail(
 /**
  * Resends the email verification OTP to user's email
  *
- * Requires onboarding token to be set via setToken('onboarding', token)
- * The token is automatically included in the request by axios interceptor
+ * Requires authenticated session. The access token is automatically included
+ * in the request by the axios interceptor.
  *
  * @returns Promise that resolves when OTP is sent successfully
  * @throws Error if resend fails (too many attempts, invalid session, etc.)
@@ -159,8 +154,8 @@ export async function resendEmailOtp(): Promise<void> {
 /**
  * Retrieves current onboarding status for the authenticated user
  *
- * Requires onboarding token to be set via setToken('onboarding', token)
- * The token is automatically included in the request by axios interceptor
+ * Requires authenticated session. The access token is automatically included
+ * in the request by the axios interceptor.
  *
  * @returns Promise resolving to current onboarding status
  * @throws Error if status fetch fails (invalid token, session expired, etc.)
@@ -219,8 +214,8 @@ export interface StartOnboardingResponse {
  * For EMAIL_VERIFICATION step, it sends an email OTP.
  * For MOBILE_VERIFICATION step, it sends an SMS OTP.
  *
- * Requires onboarding token to be set via setToken('onboarding', token)
- * The token is automatically included in the request by axios interceptor
+ * Requires authenticated session. The access token is automatically included
+ * in the request by the axios interceptor.
  *
  * @returns Promise resolving to start onboarding response with step info
  * @throws Error if start fails (invalid token, session expired, etc.)
