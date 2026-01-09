@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "rsbuild build",
+    "check": "biome check --write .",
     "dev": "rsbuild dev --open",
     "dev:cloud": "rsbuild dev --open --host cloud.localhost",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
     "preview": "rsbuild preview"
   },
   "dependencies": {
@@ -30,6 +33,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.2.3",
     "@rsbuild/core": "^1.5.14",
     "@rsbuild/plugin-node-polyfill": "^1.3.0",
     "@rsbuild/plugin-react": "^1.4.1",

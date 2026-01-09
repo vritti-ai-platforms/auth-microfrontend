@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Loader2, Lock, Mail, User } from 'lucide-react';
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
@@ -58,9 +59,10 @@ export const SignupPage: React.FC = () => {
           currentStep: response.currentStep,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if error is "User Already Exists"
-      const errorMessage = error?.response?.data?.message || error?.message || '';
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.message || err?.message || '';
       if (
         errorMessage.toLowerCase().includes('user already exists') ||
         errorMessage.toLowerCase().includes('email already registered') ||
@@ -148,9 +150,7 @@ export const SignupPage: React.FC = () => {
               className="w-full bg-primary text-primary-foreground"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
             </Button>
           </Field>
@@ -158,12 +158,7 @@ export const SignupPage: React.FC = () => {
           {/* Login Instead Button - Show only if account exists */}
           {showLoginButton && (
             <Field>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleLoginInstead}
-              >
+              <Button type="button" variant="outline" className="w-full" onClick={handleLoginInstead}>
                 Login Instead
               </Button>
             </Field>

@@ -1,6 +1,6 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axios } from '@vritti/quantum-ui/axios';
+import type React from 'react';
 import { OnboardingContext, type OnboardingContextType, type OnboardingData } from './OnboardingContext';
 
 interface OnboardingProviderProps {
@@ -52,12 +52,10 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     ...(data ?? emptyState),
     isLoading,
     error: error?.message ?? null,
-    refetch: async () => { await refetch(); },
+    refetch: async () => {
+      await refetch();
+    },
   };
 
-  return (
-    <OnboardingContext.Provider value={contextValue}>
-      {children}
-    </OnboardingContext.Provider>
-  );
+  return <OnboardingContext.Provider value={contextValue}>{children}</OnboardingContext.Provider>;
 };

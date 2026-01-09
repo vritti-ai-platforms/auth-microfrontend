@@ -135,7 +135,7 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
   const response: AxiosResponse<SignupResponse> = await axios.post(
     '/auth/signup',
     data,
-    { public: true } // Bypass token recovery for public auth endpoint
+    { public: true }, // Bypass token recovery for public auth endpoint
   );
 
   return response.data;
@@ -181,7 +181,7 @@ export async function login(data: LoginDto): Promise<LoginResponse> {
   const response: AxiosResponse<LoginResponse> = await axios.post(
     '/auth/login',
     data,
-    { public: true } // Bypass token recovery for public auth endpoint
+    { public: true }, // Bypass token recovery for public auth endpoint
   );
 
   return response.data;

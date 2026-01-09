@@ -1,16 +1,17 @@
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
+import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { useOnboarding } from '../../context';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
+import { useOnboarding } from '../../context';
 import type { OTPFormData } from '../../schemas/auth';
 import { otpSchema } from '../../schemas/auth';
-import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
-import { verifyEmail, resendEmailOtp } from '../../services/onboarding.service';
+import { resendEmailOtp, verifyEmail } from '../../services/onboarding.service';
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();

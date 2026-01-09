@@ -59,7 +59,9 @@ export async function refreshCsrfToken(): Promise<string> {
     csrfToken = newToken;
 
     // Resolve all queued requests
-    tokenFetchQueue.forEach((resolve) => resolve(newToken));
+    tokenFetchQueue.forEach((resolve) => {
+      resolve(newToken);
+    });
     tokenFetchQueue = [];
 
     return newToken;
@@ -166,7 +168,7 @@ export async function initializeCsrf(): Promise<void> {
       },
       (error) => {
         return Promise.reject(error);
-      }
+      },
     );
 
     // Response interceptor: Handle CSRF errors
@@ -201,7 +203,7 @@ export async function initializeCsrf(): Promise<void> {
 
         // For all other errors, reject as-is
         return Promise.reject(error);
-      }
+      },
     );
 
     console.log('[CSRF] Token management initialized successfully');

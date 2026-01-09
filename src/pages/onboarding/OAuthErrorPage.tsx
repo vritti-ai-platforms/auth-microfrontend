@@ -1,6 +1,6 @@
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import React from 'react';
+import type React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 /**
@@ -59,6 +59,7 @@ export const OAuthErrorPage: React.FC = () => {
           viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <title>Error</title>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -82,27 +83,17 @@ export const OAuthErrorPage: React.FC = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-        <Button
-          type="button"
-          onClick={handleBackToSignup}
-          className="w-full bg-primary text-primary-foreground"
-        >
+        <Button type="button" onClick={handleBackToSignup} className="w-full bg-primary text-primary-foreground">
           Try Again
         </Button>
-        <Button
-          type="button"
-          onClick={handleBackToLogin}
-          variant="outline"
-          className="w-full"
-        >
+        <Button type="button" onClick={handleBackToLogin} variant="outline" className="w-full">
           Back to Login
         </Button>
       </div>
 
       {/* Help Text */}
       <Typography variant="body2" intent="muted" className="text-center max-w-md">
-        If you continue to experience issues, please contact support or try signing up
-        with email and password instead.
+        If you continue to experience issues, please contact support or try signing up with email and password instead.
       </Typography>
     </div>
   );

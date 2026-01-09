@@ -1,11 +1,11 @@
-import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
+import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { Progress } from '@vritti/quantum-ui/Progress';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Lock } from 'lucide-react';
-import React from 'react';
+import type React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import type { SetPasswordFormData } from '../../schemas/auth';
@@ -32,7 +32,7 @@ export const SetPasswordPage: React.FC = () => {
     },
   ];
 
-  const onSubmit = async (data: SetPasswordFormData) => {
+  const onSubmit = async (_data: SetPasswordFormData) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('Password set successfully');
     navigate('/onboarding/mfa-selection');
@@ -51,7 +51,7 @@ export const SetPasswordPage: React.FC = () => {
         </Typography>
       </div>
 
-      <Form form={form} onSubmit={onSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} onSubmit={onSubmit}>
         <FieldGroup>
           <PasswordField
             name="password"
@@ -71,8 +71,8 @@ export const SetPasswordPage: React.FC = () => {
           />
 
           <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
-            {passwordRequirements.map((req, index) => (
-              <div key={index} className="flex items-center gap-2 text-sm">
+            {passwordRequirements.map((req) => (
+              <div key={req.label} className="flex items-center gap-2 text-sm">
                 <div
                   className={`flex items-center justify-center w-4 h-4 rounded-full ${
                     req.met ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border'

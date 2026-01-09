@@ -1,11 +1,12 @@
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { startOnboarding } from '../../services/onboarding.service';
 import type { SignupMethod } from '../../services/auth.service';
 import { OnboardingStep } from '../../services/auth.service';
+import { startOnboarding } from '../../services/onboarding.service';
 
 /**
  * Route state passed from SignupPage
@@ -63,12 +64,7 @@ export const SignupSuccessPage: React.FC = () => {
 
   // Extract state from navigation
   const state = (location.state as SignupSuccessState) || {};
-  const {
-    email = 'user@example.com',
-    isNewUser = true,
-    signupMethod = 'email',
-    currentStep,
-  } = state;
+  const { email = 'user@example.com', isNewUser = true, signupMethod = 'email', currentStep } = state;
 
   // Component state
   const [isLoading, setIsLoading] = useState(false);
@@ -106,11 +102,10 @@ export const SignupSuccessPage: React.FC = () => {
         console.warn(`Unknown onboarding step: ${response.currentStep}`);
         navigate('/onboarding/verify-email', { replace: true });
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string };
       const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Failed to start onboarding. Please try again.';
+        err?.response?.data?.message || err?.message || 'Failed to start onboarding. Please try again.';
       setError(errorMessage);
       setIsLoading(false);
     }
@@ -151,8 +146,8 @@ export const SignupSuccessPage: React.FC = () => {
           Next steps:
         </Typography>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          {nextSteps.map((step, index) => (
-            <li key={index} className="flex gap-2">
+          {nextSteps.map((step) => (
+            <li key={step} className="flex gap-2">
               <span className="text-primary">•</span>
               <span>{step}</span>
             </li>

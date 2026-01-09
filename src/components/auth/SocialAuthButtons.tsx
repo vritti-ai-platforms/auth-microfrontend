@@ -1,5 +1,5 @@
 import { Button } from '@vritti/quantum-ui/Button';
-import React from 'react';
+import type React from 'react';
 import { AppleIcon } from '../icons/AppleIcon';
 import { FacebookIcon } from '../icons/FacebookIcon';
 import { GoogleIcon } from '../icons/GoogleIcon';

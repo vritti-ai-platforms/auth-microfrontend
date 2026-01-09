@@ -1,5 +1,5 @@
-import { Typography } from '@vritti/quantum-ui/Typography';
 import { Progress } from '@vritti/quantum-ui/Progress';
+import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, KeyRound, Mail, Smartphone } from 'lucide-react';
 import React from 'react';
 
@@ -14,7 +14,10 @@ interface Step {
   icon: React.ReactNode;
 }
 
-export const MultiStepProgressIndicator: React.FC<MultiStepProgressIndicatorProps> = ({ currentStep, stepProgress = {} }) => {
+export const MultiStepProgressIndicator: React.FC<MultiStepProgressIndicatorProps> = ({
+  currentStep,
+  stepProgress = {},
+}) => {
   const steps: Step[] = [
     {
       id: 1,
@@ -88,17 +91,10 @@ export const MultiStepProgressIndicator: React.FC<MultiStepProgressIndicatorProp
                 <div
                   className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${styles.circle}`}
                 >
-                  {status === 'completed' ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    step.icon
-                  )}
+                  {status === 'completed' ? <Check className="h-4 w-4" /> : step.icon}
                 </div>
                 {/* Label */}
-                <Typography
-                  variant="body2"
-                  className={`text-[10px] whitespace-nowrap transition-all ${styles.label}`}
-                >
+                <Typography variant="body2" className={`text-[10px] whitespace-nowrap transition-all ${styles.label}`}>
                   {step.label}
                 </Typography>
                 {/* Sub-step Progress Bar */}

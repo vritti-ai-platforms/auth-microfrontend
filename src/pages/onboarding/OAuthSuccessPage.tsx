@@ -1,6 +1,7 @@
-import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 /**
@@ -45,7 +46,7 @@ export const OAuthSuccessPage: React.FC = () => {
         // Schedule proactive token refresh if expiresIn is provided
         if (expiresIn) {
           const expiresInSeconds = parseInt(expiresIn, 10);
-          if (!isNaN(expiresInSeconds)) {
+          if (!Number.isNaN(expiresInSeconds)) {
             scheduleTokenRefresh(expiresInSeconds);
           }
         }

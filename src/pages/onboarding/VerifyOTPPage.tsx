@@ -1,11 +1,11 @@
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
+import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Progress } from '@vritti/quantum-ui/Progress';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Smartphone } from 'lucide-react';
-import React from 'react';
+import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import type { OTPFormData } from '../../schemas/auth';

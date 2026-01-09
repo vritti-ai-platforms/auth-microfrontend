@@ -77,13 +77,11 @@ export interface VerifyEmailDto {
  * }
  * ```
  */
-export async function register(
-  data: RegisterDto
-): Promise<OnboardingStatusResponse> {
+export async function register(data: RegisterDto): Promise<OnboardingStatusResponse> {
   const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
     '/onboarding/register',
     data,
-    { public: true } // Bypass token recovery for public auth endpoint
+    { public: true }, // Bypass token recovery for public auth endpoint
   );
 
   return response.data;
@@ -115,13 +113,8 @@ export async function register(
  * }
  * ```
  */
-export async function verifyEmail(
-  otp: string
-): Promise<OnboardingStatusResponse> {
-  const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
-    '/onboarding/verify-email',
-    { otp }
-  );
+export async function verifyEmail(otp: string): Promise<OnboardingStatusResponse> {
+  const response: AxiosResponse<OnboardingStatusResponse> = await axios.post('/onboarding/verify-email', { otp });
 
   return response.data;
 }
@@ -183,9 +176,7 @@ export async function resendEmailOtp(): Promise<void> {
  * ```
  */
 export async function getStatus(): Promise<OnboardingStatusResponse> {
-  const response: AxiosResponse<OnboardingStatusResponse> = await axios.get(
-    '/onboarding/status'
-  );
+  const response: AxiosResponse<OnboardingStatusResponse> = await axios.get('/onboarding/status');
 
   return response.data;
 }
@@ -238,9 +229,7 @@ export interface StartOnboardingResponse {
  * ```
  */
 export async function startOnboarding(): Promise<StartOnboardingResponse> {
-  const response: AxiosResponse<StartOnboardingResponse> = await axios.post(
-    '/onboarding/start'
-  );
+  const response: AxiosResponse<StartOnboardingResponse> = await axios.post('/onboarding/start');
 
   return response.data;
 }

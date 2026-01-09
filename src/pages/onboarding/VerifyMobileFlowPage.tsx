@@ -1,16 +1,17 @@
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
-import { Button } from '@vritti/quantum-ui/Button';
-import { OTPField } from '@vritti/quantum-ui/OTPField';
-import { PhoneField, isValidPhoneNumber, type PhoneValue } from '@vritti/quantum-ui/PhoneField';
-import { Typography } from '@vritti/quantum-ui/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@vritti/quantum-ui/Button';
+import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
+import { OTPField } from '@vritti/quantum-ui/OTPField';
+import { PhoneField, type PhoneValue } from '@vritti/quantum-ui/PhoneField';
+import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, CheckCircle, ChevronRight, Loader2, MessageSquare, Phone, QrCode, Smartphone } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import type { PhoneFormData, OTPFormData } from '../../schemas/auth';
-import { phoneSchema, otpSchema } from '../../schemas/auth';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
+import type { OTPFormData, PhoneFormData } from '../../schemas/auth';
+import { otpSchema, phoneSchema } from '../../schemas/auth';
 
 type VerificationMethod = 'whatsapp' | 'sms' | 'manual' | null;
 type FlowStep = 1 | 2 | 3; // 1=Method Selection, 2=Verification, 3=Success
@@ -134,60 +135,61 @@ export const VerifyMobileFlowPage: React.FC = () => {
         id: 'whatsapp',
         title: 'WhatsApp QR Code',
         description: 'Scan QR code with WhatsApp',
-        icon: <MessageSquare className='h-5 w-5' />,
+        icon: <MessageSquare className="h-5 w-5" />,
         badge: 'Recommended',
       },
       {
         id: 'sms',
         title: 'SMS QR Code',
         description: 'Scan QR code with SMS app',
-        icon: <QrCode className='h-5 w-5' />,
+        icon: <QrCode className="h-5 w-5" />,
       },
       {
         id: 'manual',
         title: 'Enter mobile number',
         description: 'Manually enter your mobile number',
-        icon: <Phone className='h-5 w-5' />,
+        icon: <Phone className="h-5 w-5" />,
       },
     ];
 
     return (
-      <div className='space-y-6'>
-        <div className='text-center space-y-2'>
-          <Typography variant='h3' align='center' className='text-foreground'>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <Typography variant="h3" align="center" className="text-foreground">
             Verify your mobile
           </Typography>
-          <Typography variant='body2' align='center' intent='muted'>
+          <Typography variant="body2" align="center" intent="muted">
             Choose verification method
           </Typography>
         </div>
 
-        <div className='space-y-3'>
+        <div className="space-y-3">
           {methods.map((method) => (
             <button
+              type="button"
               key={method.id}
               onClick={() => handleMethodSelect(method.id as 'whatsapp' | 'sms' | 'manual')}
-              className='w-full p-4 rounded-lg border-2 border-border hover:border-primary transition-all flex items-center gap-4 text-left group'
+              className="w-full p-4 rounded-lg border-2 border-border hover:border-primary transition-all flex items-center gap-4 text-left group"
             >
-              <div className='flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-foreground'>
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-foreground">
                 {method.icon}
               </div>
-              <div className='flex-1 space-y-1'>
-                <div className='flex items-center gap-2'>
-                  <Typography variant='body1' className='font-medium text-foreground'>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Typography variant="body1" className="font-medium text-foreground">
                     {method.title}
                   </Typography>
                   {method.badge && (
-                    <span className='px-2 py-0.5 text-xs rounded-full bg-accent text-accent-foreground'>
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-accent text-accent-foreground">
                       {method.badge}
                     </span>
                   )}
                 </div>
-                <Typography variant='body2' intent='muted'>
+                <Typography variant="body2" intent="muted">
                   {method.description}
                 </Typography>
               </div>
-              <ChevronRight className='h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors' />
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             </button>
           ))}
         </div>
@@ -197,33 +199,33 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
   // Step 2a: WhatsApp Verification
   const renderWhatsAppVerification = () => (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       <Link
-        to='#'
+        to="#"
         onClick={(e) => {
           e.preventDefault();
           handleBackToMethods();
         }}
-        className='inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground'
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className='h-4 w-4' />
+        <ArrowLeft className="h-4 w-4" />
         Back to methods
       </Link>
 
-      <div className='text-center space-y-2'>
-        <Typography variant='h3' align='center' className='text-foreground'>
+      <div className="text-center space-y-2">
+        <Typography variant="h3" align="center" className="text-foreground">
           Scan with WhatsApp
         </Typography>
-        <Typography variant='body2' align='center' intent='muted'>
+        <Typography variant="body2" align="center" intent="muted">
           Open WhatsApp and scan this QR code
         </Typography>
       </div>
 
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {/* QR Code */}
-        <div className='flex justify-center'>
-          <div className='w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center'>
-            <Typography variant='body2' intent='muted' className='text-center px-4'>
+        <div className="flex justify-center">
+          <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
+            <Typography variant="body2" intent="muted" className="text-center px-4">
               QR Code
               <br />
               (180x180)
@@ -232,11 +234,11 @@ export const VerifyMobileFlowPage: React.FC = () => {
         </div>
 
         {/* Instructions */}
-        <div className='space-y-2'>
-          <Typography variant='body2' className='text-foreground font-medium text-center'>
+        <div className="space-y-2">
+          <Typography variant="body2" className="text-foreground font-medium text-center">
             How to scan:
           </Typography>
-          <ol className='space-y-1 text-sm text-muted-foreground'>
+          <ol className="space-y-1 text-sm text-muted-foreground">
             <li>1. Open WhatsApp on your phone</li>
             <li>2. Tap Menu or Settings</li>
             <li>3. Tap Linked Devices</li>
@@ -247,18 +249,18 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
         {/* Waiting Status */}
         {isVerifying && (
-          <div className='flex items-center justify-center gap-2 py-2'>
-            <Loader2 className='h-4 w-4 animate-spin text-primary' />
-            <Typography variant='body2' intent='muted'>
+          <div className="flex items-center justify-center gap-2 py-2">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <Typography variant="body2" intent="muted">
               Waiting for verification...
             </Typography>
           </div>
         )}
 
         {/* Alternative Method */}
-        <Typography variant='body2' align='center' intent='muted' className='text-center'>
+        <Typography variant="body2" align="center" intent="muted" className="text-center">
           Having trouble?{' '}
-          <button onClick={handleBackToMethods} className='text-primary hover:text-primary/80 font-medium'>
+          <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
             Try another method
           </button>
         </Typography>
@@ -268,33 +270,33 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
   // Step 2b: SMS Verification
   const renderSmsVerification = () => (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       <Link
-        to='#'
+        to="#"
         onClick={(e) => {
           e.preventDefault();
           handleBackToMethods();
         }}
-        className='inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground'
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className='h-4 w-4' />
+        <ArrowLeft className="h-4 w-4" />
         Back to methods
       </Link>
 
-      <div className='text-center space-y-2'>
-        <Typography variant='h3' align='center' className='text-foreground'>
+      <div className="text-center space-y-2">
+        <Typography variant="h3" align="center" className="text-foreground">
           Scan with SMS
         </Typography>
-        <Typography variant='body2' align='center' intent='muted'>
+        <Typography variant="body2" align="center" intent="muted">
           Open your SMS app and scan this QR code
         </Typography>
       </div>
 
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {/* QR Code */}
-        <div className='flex justify-center'>
-          <div className='w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center'>
-            <Typography variant='body2' intent='muted' className='text-center px-4'>
+        <div className="flex justify-center">
+          <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
+            <Typography variant="body2" intent="muted" className="text-center px-4">
               QR Code
               <br />
               (180x180)
@@ -303,11 +305,11 @@ export const VerifyMobileFlowPage: React.FC = () => {
         </div>
 
         {/* Instructions */}
-        <div className='space-y-2'>
-          <Typography variant='body2' className='text-foreground font-medium text-center'>
+        <div className="space-y-2">
+          <Typography variant="body2" className="text-foreground font-medium text-center">
             How to scan:
           </Typography>
-          <ol className='space-y-1 text-sm text-muted-foreground'>
+          <ol className="space-y-1 text-sm text-muted-foreground">
             <li>1. Open your phone's camera or QR code scanner</li>
             <li>2. Point your camera at this QR code</li>
             <li>3. Tap the notification to open SMS</li>
@@ -318,18 +320,18 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
         {/* Waiting Status */}
         {isVerifying && (
-          <div className='flex items-center justify-center gap-2 py-2'>
-            <Loader2 className='h-4 w-4 animate-spin text-primary' />
-            <Typography variant='body2' intent='muted'>
+          <div className="flex items-center justify-center gap-2 py-2">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <Typography variant="body2" intent="muted">
               Waiting for verification...
             </Typography>
           </div>
         )}
 
         {/* Alternative Method */}
-        <Typography variant='body2' align='center' intent='muted' className='text-center'>
+        <Typography variant="body2" align="center" intent="muted" className="text-center">
           Having trouble?{' '}
-          <button onClick={handleBackToMethods} className='text-primary hover:text-primary/80 font-medium'>
+          <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
             Try another method
           </button>
         </Typography>
@@ -342,36 +344,36 @@ export const VerifyMobileFlowPage: React.FC = () => {
     if (!showOtpStep) {
       // Phone number input
       return (
-        <div className='space-y-6'>
+        <div className="space-y-6">
           <Link
-            to='#'
+            to="#"
             onClick={(e) => {
               e.preventDefault();
               handleBackToMethods();
             }}
-            className='inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground'
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className='h-4 w-4' />
+            <ArrowLeft className="h-4 w-4" />
             Back to methods
           </Link>
 
-          <div className='text-center space-y-2'>
-            <Typography variant='h3' align='center' className='text-foreground'>
+          <div className="text-center space-y-2">
+            <Typography variant="h3" align="center" className="text-foreground">
               Enter your mobile number
             </Typography>
-            <Typography variant='body2' align='center' intent='muted'>
+            <Typography variant="body2" align="center" intent="muted">
               We'll send you a verification code
             </Typography>
           </div>
 
           <Form form={phoneForm} onSubmit={handleSendOtp} csrfEndpoint="/csrf/token">
             <FieldGroup>
-              <PhoneField name='phoneNumber' label='Phone Number' defaultCountry='IN' />
+              <PhoneField name="phoneNumber" label="Phone Number" defaultCountry="IN" />
 
               <Field>
                 <Button
-                  type='submit'
-                  className='w-full bg-primary text-primary-foreground'
+                  type="submit"
+                  className="w-full bg-primary text-primary-foreground"
                   disabled={phoneForm.formState.isSubmitting}
                 >
                   {phoneForm.formState.isSubmitting ? 'Sending Code...' : 'Send Code'}
@@ -385,73 +387,74 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
     // OTP verification
     return (
-      <div className='space-y-6'>
+      <div className="space-y-6">
         <button
+          type="button"
           onClick={() => {
             setShowOtpStep(false);
             otpForm.reset();
           }}
-          className='inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground'
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className='h-4 w-4' />
+          <ArrowLeft className="h-4 w-4" />
           Back
         </button>
 
-        <div className='text-center space-y-2'>
-          <Typography variant='h3' align='center' className='text-foreground'>
+        <div className="text-center space-y-2">
+          <Typography variant="h3" align="center" className="text-foreground">
             Verify your mobile
           </Typography>
-          <Typography variant='body2' align='center' intent='muted'>
+          <Typography variant="body2" align="center" intent="muted">
             Enter the code sent to
           </Typography>
-          <Typography variant='body2' align='center' className='text-foreground font-medium'>
+          <Typography variant="body2" align="center" className="text-foreground font-medium">
             {phoneNumber}
           </Typography>
         </div>
 
         <Form form={otpForm} onSubmit={handleVerifyOtp} csrfEndpoint="/csrf/token">
           <FieldGroup>
-            <div className='flex justify-center'>
-              <Smartphone className='h-8 w-8 text-primary' />
+            <div className="flex justify-center">
+              <Smartphone className="h-8 w-8 text-primary" />
             </div>
 
             <Field>
-              <FieldLabel className='sr-only'>Verification Code</FieldLabel>
+              <FieldLabel className="sr-only">Verification Code</FieldLabel>
               <OTPField
-                name='code'
+                name="code"
                 onChange={(value) => {
                   if (value.length === 6) {
                     otpForm.handleSubmit(handleVerifyOtp)();
                   }
                 }}
               />
-              <Typography variant='body2' intent='muted' className='text-center mt-2'>
+              <Typography variant="body2" intent="muted" className="text-center mt-2">
                 Enter the 6-digit code sent via SMS
               </Typography>
             </Field>
 
             <Field>
               <Button
-                type='submit'
-                className='w-full bg-primary text-primary-foreground'
+                type="submit"
+                className="w-full bg-primary text-primary-foreground"
                 disabled={otpForm.formState.isSubmitting}
               >
                 {otpForm.formState.isSubmitting ? 'Verifying...' : 'Verify & Continue'}
               </Button>
             </Field>
 
-            <div className='flex justify-center gap-4 text-sm'>
+            <div className="flex justify-center gap-4 text-sm">
               <button
-                type='button'
+                type="button"
                 onClick={() => {
                   setShowOtpStep(false);
                   otpForm.reset();
                 }}
-                className='text-primary hover:text-primary/80'
+                className="text-primary hover:text-primary/80"
               >
                 Change number
               </button>
-              <button type='button' onClick={handleResendOtp} className='text-primary hover:text-primary/80'>
+              <button type="button" onClick={handleResendOtp} className="text-primary hover:text-primary/80">
                 Resend code
               </button>
             </div>
@@ -463,30 +466,30 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
   // Step 3: Success
   const renderSuccess = () => (
-    <div className='space-y-6'>
-      <div className='text-center space-y-6'>
+    <div className="space-y-6">
+      <div className="text-center space-y-6">
         {/* Success Icon */}
-        <div className='flex justify-center'>
-          <div className='w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center'>
-            <CheckCircle className='h-10 w-10 text-green-600 dark:text-green-400' />
+        <div className="flex justify-center">
+          <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+            <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
           </div>
         </div>
 
         {/* Title and Message */}
-        <div className='space-y-2'>
-          <Typography variant='h3' align='center' className='text-foreground'>
+        <div className="space-y-2">
+          <Typography variant="h3" align="center" className="text-foreground">
             Mobile verified
           </Typography>
-          <Typography variant='body2' align='center' intent='muted'>
+          <Typography variant="body2" align="center" intent="muted">
             Your mobile number has been successfully verified
           </Typography>
-          <Typography variant='body2' align='center' className='text-foreground font-medium'>
+          <Typography variant="body2" align="center" className="text-foreground font-medium">
             {phoneNumber}
           </Typography>
         </div>
 
         {/* Continue Button */}
-        <Button onClick={handleContinue} className='w-full bg-primary text-primary-foreground'>
+        <Button onClick={handleContinue} className="w-full bg-primary text-primary-foreground">
           Continue to 2FA Setup
         </Button>
       </div>
@@ -501,7 +504,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       <MultiStepProgressIndicator currentStep={2} stepProgress={{ 2: calculateStepProgress() }} />
 
       {currentStep === 1 && renderMethodSelection()}

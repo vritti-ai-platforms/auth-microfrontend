@@ -1,5 +1,5 @@
 import { Typography } from '@vritti/quantum-ui/Typography';
-import React from 'react';
+import type React from 'react';
 
 export const AuthDivider: React.FC<{ text?: string }> = ({ text = 'or continue with' }) => {
   return (

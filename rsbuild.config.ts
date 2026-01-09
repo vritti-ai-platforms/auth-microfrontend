@@ -1,6 +1,6 @@
-import { pluginModuleFederation } from "@module-federation/rsbuild-plugin";
-import { defineConfig } from "@rsbuild/core";
-import { pluginReact } from "@rsbuild/plugin-react";
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+import { defineConfig } from '@rsbuild/core';
+import { pluginReact } from '@rsbuild/plugin-react';
 
 export default defineConfig({
   dev: {
@@ -9,17 +9,17 @@ export default defineConfig({
   server: {
     port: 3001,
     proxy: {
-      "/api": {
-        target: "http://localhost:3000",
+      '/api': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
-        pathRewrite: { "^/api": "" },
+        pathRewrite: { '^/api': '' },
       },
     },
   },
   plugins: [
     pluginReact(),
     {
-      name: "plugin-manifest-message",
+      name: 'plugin-manifest-message',
       setup: (api) => {
         api.onAfterStartDevServer(({ port }: { port: number }) => {
           api.logger.info(`➜  Manifest: http://localhost:${port}/mf-manifest.json`);
@@ -27,26 +27,26 @@ export default defineConfig({
       },
     },
     pluginModuleFederation({
-      name: "vritti_auth",
+      name: 'vritti_auth',
       exposes: {
-        "./routes": "./src/routes.tsx",
+        './routes': './src/routes.tsx',
       },
       shared: {
         react: {
           singleton: true,
-          requiredVersion: "^19.2.0",
+          requiredVersion: '^19.2.0',
           eager: true,
         },
-        "react-dom": {
+        'react-dom': {
           singleton: true,
-          requiredVersion: "^19.2.0",
+          requiredVersion: '^19.2.0',
           eager: true,
         },
-        "react-router-dom": {
+        'react-router-dom': {
           singleton: true,
           eager: true,
         },
-        "@vritti/quantum-ui": {
+        '@vritti/quantum-ui': {
           singleton: true,
           eager: true,
         },

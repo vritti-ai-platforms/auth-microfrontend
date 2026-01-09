@@ -1,15 +1,16 @@
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
+import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, CheckCircle, KeyRound, Loader2, Smartphone } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import type { OTPFormData } from '../../schemas/auth';
 import { otpSchema } from '../../schemas/auth';
-import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 
 type MFAMethod = 'authenticator' | 'passkey' | null;
 type FlowStep = 1 | 2 | 3; // 1=Selection, 2=Setup, 3=Complete
@@ -129,9 +130,7 @@ export const MFASetupFlowPage: React.FC = () => {
         {/* Authenticator App Option */}
         <label
           className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-            selectedMethod === 'authenticator'
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:border-primary/50'
+            selectedMethod === 'authenticator' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
           }`}
         >
           <input
@@ -201,11 +200,7 @@ export const MFASetupFlowPage: React.FC = () => {
         Continue
       </Button>
 
-      <Button
-        variant="outline"
-        onClick={handleSkipMFA}
-        className="w-full border-border text-foreground"
-      >
+      <Button variant="outline" onClick={handleSkipMFA} className="w-full border-border text-foreground">
         Skip for now
       </Button>
     </div>
@@ -216,6 +211,7 @@ export const MFASetupFlowPage: React.FC = () => {
     return (
       <div className="space-y-6">
         <button
+          type="button"
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
@@ -289,6 +285,7 @@ export const MFASetupFlowPage: React.FC = () => {
   const renderPasskeyStep = () => (
     <div className="space-y-6">
       <button
+        type="button"
         onClick={handleBack}
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >

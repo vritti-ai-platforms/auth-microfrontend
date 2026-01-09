@@ -2,14 +2,14 @@
  * @import - Import Tailwind CSS v4
  * Core Tailwind utilities and directives
  */
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 /**
  * @import - Import quantum-ui shared styles (color variables and PhoneInput overrides)
  * This provides consistent theming across the application
  */
-@import '@vritti/quantum-ui/index.css';
+@import "@vritti/quantum-ui/index.css";
 
 @layer base {
   * {
@@ -28,7 +28,3 @@
  */
 @source '../src/**/*.{js,ts,jsx,tsx}';
 @source '../node_modules/@vritti/quantum-ui/dist/**/*.js';
-
-
-
-

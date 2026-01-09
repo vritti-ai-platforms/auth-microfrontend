@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Lock, Mail } from 'lucide-react';
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
@@ -74,45 +75,45 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       {/* Header */}
-      <div className='text-center space-y-2'>
-        <Typography variant='h3' align='center' className='text-foreground'>
+      <div className="text-center space-y-2">
+        <Typography variant="h3" align="center" className="text-foreground">
           Welcome back
         </Typography>
-        <Typography variant='body2' align='center' intent='muted'>
+        <Typography variant="body2" align="center" intent="muted">
           Sign in to your Vritti Cloud account
         </Typography>
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={onSubmit} >
+      <Form form={form} onSubmit={onSubmit}>
         <FieldGroup>
           <TextField
-            name='email'
-            label='Email'
-            placeholder='Enter your email'
-            startAdornment={<Mail className='h-4 w-4 text-muted-foreground' />}
+            name="email"
+            label="Email"
+            placeholder="Enter your email"
+            startAdornment={<Mail className="h-4 w-4 text-muted-foreground" />}
           />
 
           <Field>
-            <div className='flex items-center justify-between'>
+            <div className="flex items-center justify-between">
               <FieldLabel>Password</FieldLabel>
-              <Link to='/forgot-password' className='text-sm text-primary hover:text-primary/80'>
+              <Link to="/forgot-password" className="text-sm text-primary hover:text-primary/80">
                 Forgot?
               </Link>
             </div>
             <PasswordField
-              name='password'
-              placeholder='Enter your password'
-              startAdornment={<Lock className='h-3.5 w-3.5 text-muted-foreground' />}
+              name="password"
+              placeholder="Enter your password"
+              startAdornment={<Lock className="h-3.5 w-3.5 text-muted-foreground" />}
             />
           </Field>
 
           <Field>
             <Button
-              type='submit'
-              className='w-full bg-primary text-primary-foreground'
+              type="submit"
+              className="w-full bg-primary text-primary-foreground"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? 'Signing in...' : 'Sign In'}
@@ -128,10 +129,10 @@ export const LoginPage: React.FC = () => {
       <SocialAuthButtons />
 
       {/* Footer */}
-      <div className='text-center'>
-        <Typography variant='body2' align='center' intent='muted'>
+      <div className="text-center">
+        <Typography variant="body2" align="center" intent="muted">
           Don't have an account?{' '}
-          <Link to='/signup' className='text-primary hover:text-primary/80 font-medium'>
+          <Link to="/signup" className="text-primary hover:text-primary/80 font-medium">
             Create one
           </Link>
         </Typography>
