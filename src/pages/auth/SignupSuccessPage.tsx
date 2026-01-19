@@ -19,19 +19,6 @@ interface SignupSuccessState {
 }
 
 /**
- * Mapping of onboarding steps to their respective routes
- */
-const STEP_ROUTES: Record<string, string> = {
-  EMAIL_VERIFICATION: '/onboarding/verify-email',
-  SET_PASSWORD: '/onboarding/set-password',
-  MOBILE_VERIFICATION: '/onboarding/verify-mobile',
-  PHONE_VERIFICATION: '/onboarding/verify-mobile',
-  TWO_FACTOR_SETUP: '/onboarding/mfa-setup',
-  MFA_SETUP: '/onboarding/mfa-setup',
-  COMPLETED: '/dashboard',
-};
-
-/**
  * Gets the display text for the next steps based on signup method and user status
  */
 function getNextSteps(signupMethod: SignupMethod | undefined, currentStep: string | undefined): string[] {
@@ -68,12 +55,11 @@ export const SignupSuccessPage: React.FC = () => {
   // Use the start onboarding mutation
   const startOnboardingMutation = useStartOnboarding({
     onSuccess: (response) => {
-      const stepRoute = STEP_ROUTES[response.currentStep];
-      if (stepRoute) {
-        navigate(stepRoute, { replace: true });
+      // Navigate to onboarding - OnboardingRouter will render the correct step
+      if (response.currentStep === 'COMPLETED' || response.currentStep === 'COMPLETE') {
+        navigate('/dashboard', { replace: true });
       } else {
-        console.warn(`Unknown onboarding step: ${response.currentStep}`);
-        navigate('/onboarding/verify-email', { replace: true });
+        navigate('/onboarding', { replace: true });
       }
     },
   });

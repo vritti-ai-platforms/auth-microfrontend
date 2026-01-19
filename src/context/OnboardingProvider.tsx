@@ -1,20 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
-import { axios } from '@vritti/quantum-ui/axios';
-import type React from 'react';
-import { OnboardingContext, type OnboardingContextType, type OnboardingData } from './OnboardingContext';
+import { useQuery } from "@tanstack/react-query";
+import { axios } from "@vritti/quantum-ui/axios";
+import type React from "react";
+import {
+  OnboardingContext,
+  type OnboardingContextType,
+  type OnboardingData,
+} from "./OnboardingContext";
 
 interface OnboardingProviderProps {
   children: React.ReactNode;
 }
 
-const emptyState: Omit<OnboardingContextType, 'refetch'> = {
-  userId: '',
-  email: '',
-  firstName: '',
-  lastName: '',
-  currentStep: '',
+const emptyState: Omit<OnboardingContextType, "refetch"> = {
+  userId: "",
+  email: "",
+  firstName: "",
+  lastName: "",
+  currentStep: "",
   onboardingComplete: false,
-  accountStatus: '',
+  accountStatus: "",
   emailVerified: false,
   phoneVerified: false,
   isLoading: false,
@@ -26,11 +30,15 @@ const emptyState: Omit<OnboardingContextType, 'refetch'> = {
  * Auth is handled by axios (auto-recovery, 401 redirect).
  * Uses React Query for data fetching and caching.
  */
-export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children }) => {
+export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({
+  children,
+}) => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['onboarding', 'status'],
+    queryKey: ["onboarding", "status"],
     queryFn: async () => {
-      const response = await axios.get<OnboardingData>('/onboarding/status');
+      const response = await axios.get<OnboardingData>(
+        "cloud-api/onboarding/status",
+      );
       return response.data;
     },
     staleTime: 5 * 60 * 1000,
@@ -57,5 +65,9 @@ export const OnboardingProvider: React.FC<OnboardingProviderProps> = ({ children
     },
   };
 
-  return <OnboardingContext.Provider value={contextValue}>{children}</OnboardingContext.Provider>;
+  return (
+    <OnboardingContext.Provider value={contextValue}>
+      {children}
+    </OnboardingContext.Provider>
+  );
 };

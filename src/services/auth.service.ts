@@ -1,31 +1,31 @@
-import { axios } from '@vritti/quantum-ui/axios';
-import type { AxiosResponse } from 'axios';
+import { axios } from "@vritti/quantum-ui/axios";
+import type { AxiosResponse } from "axios";
 
 /**
  * Onboarding step enumeration
  */
 export enum OnboardingStep {
-  EMAIL_VERIFICATION = 'EMAIL_VERIFICATION',
-  PHONE_VERIFICATION = 'PHONE_VERIFICATION',
-  SET_PASSWORD = 'SET_PASSWORD',
-  MFA_SETUP = 'MFA_SETUP',
-  COMPLETED = 'COMPLETED',
+  EMAIL_VERIFICATION = "EMAIL_VERIFICATION",
+  PHONE_VERIFICATION = "PHONE_VERIFICATION",
+  SET_PASSWORD = "SET_PASSWORD",
+  MFA_SETUP = "MFA_SETUP",
+  COMPLETED = "COMPLETED",
 }
 
 /**
  * Account status enumeration
  */
 export enum AccountStatus {
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  DELETED = 'DELETED',
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED",
+  DELETED = "DELETED",
 }
 
 /**
  * Signup method type - indicates how the user signed up
  */
-export type SignupMethod = 'email' | 'oauth';
+export type SignupMethod = "email" | "oauth";
 
 /**
  * User signup data transfer object
@@ -133,7 +133,7 @@ export interface LoginResponse {
  */
 export async function signup(data: SignupDto): Promise<SignupResponse> {
   const response: AxiosResponse<SignupResponse> = await axios.post(
-    '/auth/signup',
+    "cloud-api/auth/signup",
     data,
     { public: true }, // Bypass token recovery for public auth endpoint
   );
@@ -179,7 +179,7 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
  */
 export async function login(data: LoginDto): Promise<LoginResponse> {
   const response: AxiosResponse<LoginResponse> = await axios.post(
-    '/auth/login',
+    "cloud-api/auth/login",
     data,
     { public: true }, // Bypass token recovery for public auth endpoint
   );

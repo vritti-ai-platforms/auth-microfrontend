@@ -1,32 +1,32 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
-import { OTPField } from '@vritti/quantum-ui/OTPField';
-import { Typography } from '@vritti/quantum-ui/Typography';
-import type React from 'react';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
-import { useOnboarding } from '../../context';
-import { useResendEmailOtp } from '../../hooks/useResendEmailOtp';
-import { useVerifyEmail } from '../../hooks/useVerifyEmail';
-import type { OTPFormData } from '../../schemas/auth';
-import { otpSchema } from '../../schemas/auth';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@vritti/quantum-ui/Button";
+import { Field, FieldGroup, FieldLabel, Form } from "@vritti/quantum-ui/Form";
+import { OTPField } from "@vritti/quantum-ui/OTPField";
+import { Typography } from "@vritti/quantum-ui/Typography";
+import type React from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { MultiStepProgressIndicator } from "../../components/onboarding/MultiStepProgressIndicator";
+import { useOnboarding } from "../../context";
+import { useResendEmailOtp } from "../../hooks/useResendEmailOtp";
+import { useVerifyEmail } from "../../hooks/useVerifyEmail";
+import type { OTPFormData } from "../../schemas/auth";
+import { otpSchema } from "../../schemas/auth";
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { email, currentStep, isLoading: onboardingLoading, refetch } = useOnboarding();
+  const { email, refetch } = useOnboarding();
   const [resendSuccess, setResendSuccess] = useState(false);
 
   const verifyEmailMutation = useVerifyEmail({
     onSuccess: async () => {
       // Refetch onboarding status to get updated currentStep
-      // useEffect will then navigate to the next step
+      // OnboardingRouter will render the next step component
       await refetch();
     },
     onError: (error) => {
-      console.error('Email verification failed:', error);
+      console.error("Email verification failed:", error);
     },
   });
   const resendOtpMutation = useResendEmailOtp();
@@ -34,25 +34,9 @@ export const VerifyEmailPage: React.FC = () => {
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: {
-      code: '',
+      code: "",
     },
   });
-
-  // Navigate based on current onboarding step
-  useEffect(() => {
-    if (!onboardingLoading && currentStep) {
-      // If email is already verified, navigate to next step
-      if (currentStep === 'VERIFY_PHONE') {
-        navigate('/onboarding/verify-mobile', { replace: true });
-      } else if (currentStep === 'SET_PASSWORD') {
-        navigate('/onboarding/set-password', { replace: true });
-      } else if (currentStep === 'MFA_SETUP') {
-        navigate('/onboarding/mfa-setup', { replace: true });
-      } else if (currentStep === 'COMPLETE') {
-        navigate('/dashboard', { replace: true });
-      }
-    }
-  }, [currentStep, onboardingLoading, navigate]);
 
   const handleResend = async () => {
     setResendSuccess(false);
@@ -83,25 +67,36 @@ export const VerifyEmailPage: React.FC = () => {
           We've sent a verification code to
         </Typography>
         <div className="flex items-center justify-center gap-2">
-          <Typography variant="body2" align="center" className="text-foreground font-medium">
+          <Typography
+            variant="body2"
+            align="center"
+            className="text-foreground font-medium"
+          >
             {email}
           </Typography>
           <button
             type="button"
             className="text-sm text-primary hover:text-primary/80"
-            onClick={() => navigate('/signup')}
+            onClick={() => navigate("/signup")}
           >
             Change
           </button>
         </div>
       </div>
 
-      <Form form={form} mutation={verifyEmailMutation} transformSubmit={(data: OTPFormData) => data.code}>
+      <Form
+        form={form}
+        mutation={verifyEmailMutation}
+        transformSubmit={(data: OTPFormData) => data.code}
+      >
         <FieldGroup>
           {/* Success message for resend OTP */}
           {resendSuccess && (
             <div className="rounded-md bg-green-50 p-4 border border-green-200">
-              <Typography variant="body2" className="text-green-800 text-center">
+              <Typography
+                variant="body2"
+                className="text-green-800 text-center"
+              >
                 Verification code resent successfully. Check your email.
               </Typography>
             </div>
@@ -113,30 +108,46 @@ export const VerifyEmailPage: React.FC = () => {
               name="code"
               onChange={(value) => {
                 if (value.length === 6) {
-                  form.handleSubmit((data) => verifyEmailMutation.mutateAsync(data.code))();
+                  form.handleSubmit((data) =>
+                    verifyEmailMutation.mutateAsync(data.code),
+                  )();
                 }
               }}
             />
-            <Typography variant="body2" intent="muted" className="text-center mt-2">
+            <Typography
+              variant="body2"
+              intent="muted"
+              className="text-center mt-2"
+            >
               Enter the 6-digit verification code
             </Typography>
           </Field>
 
           <Field>
-            <Button type="submit" className="w-full bg-primary text-primary-foreground">
+            <Button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground"
+            >
               Verify Email
             </Button>
           </Field>
 
-          <Typography variant="body2" align="center" intent="muted" className="text-center">
-            Didn't receive the code?{' '}
+          <Typography
+            variant="body2"
+            align="center"
+            intent="muted"
+            className="text-center"
+          >
+            Didn't receive the code?{" "}
             <button
               type="button"
               className="text-primary hover:text-primary/80 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleResend}
-              disabled={resendOtpMutation.isPending || verifyEmailMutation.isPending}
+              disabled={
+                resendOtpMutation.isPending || verifyEmailMutation.isPending
+              }
             >
-              {resendOtpMutation.isPending ? 'Sending...' : 'Resend'}
+              {resendOtpMutation.isPending ? "Sending..." : "Resend"}
             </button>
           </Typography>
         </FieldGroup>

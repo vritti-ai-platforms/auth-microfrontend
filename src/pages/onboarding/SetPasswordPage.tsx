@@ -7,12 +7,12 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, Lock } from 'lucide-react';
 import type React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useOnboarding } from '../../context';
 import type { SetPasswordFormData } from '../../schemas/auth';
 import { setPasswordSchema } from '../../schemas/auth';
 
 export const SetPasswordPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { refetch } = useOnboarding();
 
   const form = useForm<SetPasswordFormData>({
     resolver: zodResolver(setPasswordSchema),
@@ -35,7 +35,8 @@ export const SetPasswordPage: React.FC = () => {
   const onSubmit = async (_data: SetPasswordFormData) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('Password set successfully');
-    navigate('/onboarding/mfa-selection');
+    // Refetch onboarding status - OnboardingRouter will render the next step
+    await refetch();
   };
 
   return (

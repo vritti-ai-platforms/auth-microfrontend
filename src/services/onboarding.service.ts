@@ -1,5 +1,5 @@
-import { axios } from '@vritti/quantum-ui/axios';
-import type { AxiosResponse } from 'axios';
+import { axios } from "@vritti/quantum-ui/axios";
+import type { AxiosResponse } from "axios";
 
 /**
  * User registration data transfer object
@@ -77,9 +77,11 @@ export interface VerifyEmailDto {
  * }
  * ```
  */
-export async function register(data: RegisterDto): Promise<OnboardingStatusResponse> {
+export async function register(
+  data: RegisterDto,
+): Promise<OnboardingStatusResponse> {
   const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
-    '/onboarding/register',
+    "cloud-api/onboarding/register",
     data,
     { public: true }, // Bypass token recovery for public auth endpoint
   );
@@ -113,8 +115,13 @@ export async function register(data: RegisterDto): Promise<OnboardingStatusRespo
  * }
  * ```
  */
-export async function verifyEmail(otp: string): Promise<OnboardingStatusResponse> {
-  const response: AxiosResponse<OnboardingStatusResponse> = await axios.post('/onboarding/verify-email', { otp });
+export async function verifyEmail(
+  otp: string,
+): Promise<OnboardingStatusResponse> {
+  const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
+    "cloud-api/onboarding/verify-email",
+    { otp },
+  );
 
   return response.data;
 }
@@ -141,7 +148,7 @@ export async function verifyEmail(otp: string): Promise<OnboardingStatusResponse
  * ```
  */
 export async function resendEmailOtp(): Promise<void> {
-  await axios.post('/onboarding/resend-email-otp');
+  await axios.post("cloud-api/onboarding/resend-email-otp");
 }
 
 /**
@@ -176,7 +183,9 @@ export async function resendEmailOtp(): Promise<void> {
  * ```
  */
 export async function getStatus(): Promise<OnboardingStatusResponse> {
-  const response: AxiosResponse<OnboardingStatusResponse> = await axios.get('/onboarding/status');
+  const response: AxiosResponse<OnboardingStatusResponse> = await axios.get(
+    "cloud-api/onboarding/status",
+  );
 
   return response.data;
 }
@@ -193,7 +202,7 @@ export interface StartOnboardingResponse {
   /** Current onboarding step to navigate to */
   currentStep: string;
   /** Where OTP was sent, if applicable */
-  otpSentTo?: 'email' | 'phone' | null;
+  otpSentTo?: "email" | "phone" | null;
   /** Masked destination (email or phone) for display purposes */
   otpDestination?: string;
 }
@@ -229,7 +238,9 @@ export interface StartOnboardingResponse {
  * ```
  */
 export async function startOnboarding(): Promise<StartOnboardingResponse> {
-  const response: AxiosResponse<StartOnboardingResponse> = await axios.post('/onboarding/start');
+  const response: AxiosResponse<StartOnboardingResponse> = await axios.post(
+    "cloud-api/onboarding/start",
+  );
 
   return response.data;
 }

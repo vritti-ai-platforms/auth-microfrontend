@@ -8,8 +8,9 @@ import { ArrowLeft, CheckCircle, ChevronRight, Loader2, MessageSquare, Phone, Qr
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
+import { useOnboarding } from '../../context';
 import type { OTPFormData, PhoneFormData } from '../../schemas/auth';
 import { otpSchema, phoneSchema } from '../../schemas/auth';
 
@@ -17,7 +18,7 @@ type VerificationMethod = 'whatsapp' | 'sms' | 'manual' | null;
 type FlowStep = 1 | 2 | 3; // 1=Method Selection, 2=Verification, 3=Success
 
 export const VerifyMobileFlowPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { refetch } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<VerificationMethod>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneValue>();
@@ -124,8 +125,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
     otpForm.reset();
   };
 
-  const handleContinue = () => {
-    navigate('/onboarding/mfa-setup');
+  const handleContinue = async () => {
+    // Refetch onboarding status - OnboardingRouter will render the next step
+    await refetch();
   };
 
   // Step 1: Method Selection

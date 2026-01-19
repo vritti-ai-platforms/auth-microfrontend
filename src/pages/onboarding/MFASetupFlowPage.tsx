@@ -7,8 +7,8 @@ import { ArrowLeft, CheckCircle, KeyRound, Loader2, Smartphone } from 'lucide-re
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
+import { useOnboarding } from '../../context';
 import type { OTPFormData } from '../../schemas/auth';
 import { otpSchema } from '../../schemas/auth';
 
@@ -16,7 +16,7 @@ type MFAMethod = 'authenticator' | 'passkey' | null;
 type FlowStep = 1 | 2 | 3; // 1=Selection, 2=Setup, 3=Complete
 
 export const MFASetupFlowPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { refetch } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<MFAMethod>(null);
 
@@ -40,15 +40,16 @@ export const MFASetupFlowPage: React.FC = () => {
     fetchProgress();
   }, []);
 
-  // Auto-redirect on completion
+  // Auto-redirect on completion via refetch
   useEffect(() => {
     if (currentStep === 3) {
-      const timer = setTimeout(() => {
-        navigate('/dashboard'); // TODO: Update to actual dashboard route
+      const timer = setTimeout(async () => {
+        // Refetch onboarding status - OnboardingRouter will redirect to dashboard
+        await refetch();
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [currentStep, navigate]);
+  }, [currentStep, refetch]);
 
   const handleMethodSelect = (method: 'authenticator' | 'passkey') => {
     setSelectedMethod(method);

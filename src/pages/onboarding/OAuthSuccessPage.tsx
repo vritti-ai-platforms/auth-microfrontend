@@ -24,7 +24,6 @@ export const OAuthSuccessPage: React.FC = () => {
         // Extract query parameters
         const token = searchParams.get('token');
         const expiresIn = searchParams.get('expiresIn');
-        const requiresPassword = searchParams.get('requiresPassword') === 'true';
         const step = searchParams.get('step');
 
         // Validate required parameters
@@ -51,32 +50,11 @@ export const OAuthSuccessPage: React.FC = () => {
           }
         }
 
-        // Navigate based on onboarding step
-        if (requiresPassword) {
-          // OAuth user needs to set a password
-          navigate('/onboarding/set-password', { replace: true });
+        // Navigate to onboarding - OnboardingRouter will render the correct step
+        if (step === 'COMPLETE') {
+          navigate('/dashboard', { replace: true });
         } else {
-          // Navigate based on the current onboarding step
-          switch (step) {
-            case 'VERIFY_EMAIL':
-              navigate('/onboarding/verify-email', { replace: true });
-              break;
-            case 'VERIFY_PHONE':
-              navigate('/onboarding/verify-mobile', { replace: true });
-              break;
-            case 'SET_PASSWORD':
-              navigate('/onboarding/set-password', { replace: true });
-              break;
-            case 'MFA_SETUP':
-              navigate('/onboarding/mfa-setup', { replace: true });
-              break;
-            case 'COMPLETE':
-              navigate('/dashboard', { replace: true });
-              break;
-            default:
-              // Fallback to verify-email if step is unknown
-              navigate('/onboarding/verify-email', { replace: true });
-          }
+          navigate('/onboarding', { replace: true });
         }
       } catch (err) {
         console.error('OAuth callback processing error:', err);
