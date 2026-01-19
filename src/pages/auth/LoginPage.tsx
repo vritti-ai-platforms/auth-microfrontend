@@ -12,9 +12,21 @@ import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
+import { useLogin } from '../../hooks/useLogin';
 import type { LoginFormData } from '../../schemas/auth';
 import { loginSchema } from '../../schemas/auth';
-import { login } from '../../services/auth.service';
+import { OnboardingStep } from '../../services/auth.service';
+
+/**
+ * Mapping of onboarding steps to their respective routes
+ */
+const STEP_ROUTES: Record<string, string> = {
+  [OnboardingStep.EMAIL_VERIFICATION]: '/onboarding/verify-email',
+  [OnboardingStep.SET_PASSWORD]: '/onboarding/set-password',
+  [OnboardingStep.PHONE_VERIFICATION]: '/onboarding/verify-mobile',
+  [OnboardingStep.MFA_SETUP]: '/onboarding/mfa-setup',
+  [OnboardingStep.COMPLETED]: '/dashboard',
+};
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +39,26 @@ export const LoginPage: React.FC = () => {
     },
   });
 
+  const loginMutation = useLogin({
+    onSuccess: (response) => {
+      // Store access token
+      if (response.accessToken) {
+        setToken(response.accessToken);
+        if (response.expiresIn) {
+          scheduleTokenRefresh(response.expiresIn);
+        }
+      }
+
+      // Navigate based on onboarding status
+      if (response.requiresOnboarding && response.onboardingStep) {
+        const stepRoute = STEP_ROUTES[response.onboardingStep];
+        navigate(stepRoute || '/onboarding/verify-email', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    },
+  });
+
   // Pre-fill email if coming from signup page
   useEffect(() => {
     const emailFromState = location.state?.email;
@@ -34,45 +66,6 @@ export const LoginPage: React.FC = () => {
       form.setValue('email', emailFromState);
     }
   }, [location.state?.email, form]);
-
-  const onSubmit = async (data: LoginFormData) => {
-    const response = await login({
-      email: data.email,
-      password: data.password,
-    });
-
-    // Store access token (refresh token is in httpOnly cookie set by backend)
-    if (response.accessToken) {
-      setToken(response.accessToken);
-      // Schedule proactive token refresh
-      if (response.expiresIn) {
-        scheduleTokenRefresh(response.expiresIn);
-      }
-    }
-
-    // Check if user requires onboarding
-    if (response.requiresOnboarding) {
-      // Navigate to appropriate onboarding step
-      if (response.onboardingStep) {
-        // Map onboarding step to route
-        const stepRoutes: Record<string, string> = {
-          EMAIL_VERIFICATION: '/onboarding/verify-email',
-          PHONE_VERIFICATION: '/onboarding/verify-mobile',
-          SET_PASSWORD: '/onboarding/set-password',
-          MFA_SETUP: '/onboarding/mfa-setup',
-        };
-
-        const route = stepRoutes[response.onboardingStep] || '/onboarding/verify-email';
-        navigate(route);
-      } else {
-        // Default to email verification if step not specified
-        navigate('/onboarding/verify-email');
-      }
-    } else {
-      // User is fully authenticated - navigate to dashboard
-      navigate('/dashboard');
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -87,7 +80,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={onSubmit}>
+      <Form form={form} mutation={loginMutation}>
         <FieldGroup>
           <TextField
             name="email"
@@ -111,12 +104,8 @@ export const LoginPage: React.FC = () => {
           </Field>
 
           <Field>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? 'Signing in...' : 'Sign In'}
+            <Button type="submit" className="w-full bg-primary text-primary-foreground">
+              Sign In
             </Button>
           </Field>
         </FieldGroup>

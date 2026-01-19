@@ -9,15 +9,27 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
+import { useResendEmailOtp } from '../../hooks/useResendEmailOtp';
+import { useVerifyEmail } from '../../hooks/useVerifyEmail';
 import type { OTPFormData } from '../../schemas/auth';
 import { otpSchema } from '../../schemas/auth';
-import { resendEmailOtp, verifyEmail } from '../../services/onboarding.service';
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
   const { email, currentStep, isLoading: onboardingLoading, refetch } = useOnboarding();
   const [resendSuccess, setResendSuccess] = useState(false);
-  const [isResending, setIsResending] = useState(false);
+
+  const verifyEmailMutation = useVerifyEmail({
+    onSuccess: async () => {
+      // Refetch onboarding status to get updated currentStep
+      // useEffect will then navigate to the next step
+      await refetch();
+    },
+    onError: (error) => {
+      console.error('Email verification failed:', error);
+    },
+  });
+  const resendOtpMutation = useResendEmailOtp();
 
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
@@ -42,29 +54,21 @@ export const VerifyEmailPage: React.FC = () => {
     }
   }, [currentStep, onboardingLoading, navigate]);
 
-  const onSubmit = async (data: OTPFormData) => {
-    await verifyEmail(data.code);
-    // Refetch onboarding status to get updated currentStep
-    // useEffect will then navigate to the next step
-    await refetch();
-  };
-
   const handleResend = async () => {
-    setIsResending(true);
     setResendSuccess(false);
     form.clearErrors();
 
-    await resendEmailOtp();
-
-    // Show success message
-    setResendSuccess(true);
-
-    // Reset OTP field
-    form.reset();
-
-    // Clear success message after 3 seconds
-    setTimeout(() => setResendSuccess(false), 3000);
-    setIsResending(false);
+    try {
+      await resendOtpMutation.mutateAsync(undefined);
+      // Show success message
+      setResendSuccess(true);
+      // Reset OTP field
+      form.reset();
+      // Clear success message after 3 seconds
+      setTimeout(() => setResendSuccess(false), 3000);
+    } catch {
+      // Error is already handled by mutation
+    }
   };
 
   return (
@@ -92,7 +96,7 @@ export const VerifyEmailPage: React.FC = () => {
         </div>
       </div>
 
-      <Form form={form} onSubmit={onSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} mutation={verifyEmailMutation} transformSubmit={(data: OTPFormData) => data.code}>
         <FieldGroup>
           {/* Success message for resend OTP */}
           {resendSuccess && (
@@ -109,7 +113,7 @@ export const VerifyEmailPage: React.FC = () => {
               name="code"
               onChange={(value) => {
                 if (value.length === 6) {
-                  form.handleSubmit(onSubmit)();
+                  form.handleSubmit((data) => verifyEmailMutation.mutateAsync(data.code))();
                 }
               }}
             />
@@ -119,12 +123,8 @@ export const VerifyEmailPage: React.FC = () => {
           </Field>
 
           <Field>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground"
-              disabled={form.formState.isSubmitting || onboardingLoading}
-            >
-              {form.formState.isSubmitting ? 'Verifying...' : 'Verify Email'}
+            <Button type="submit" className="w-full bg-primary text-primary-foreground">
+              Verify Email
             </Button>
           </Field>
 
@@ -134,9 +134,9 @@ export const VerifyEmailPage: React.FC = () => {
               type="button"
               className="text-primary hover:text-primary/80 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleResend}
-              disabled={isResending || form.formState.isSubmitting}
+              disabled={resendOtpMutation.isPending || verifyEmailMutation.isPending}
             >
-              {isResending ? 'Sending...' : 'Resend'}
+              {resendOtpMutation.isPending ? 'Sending...' : 'Resend'}
             </button>
           </Typography>
         </FieldGroup>

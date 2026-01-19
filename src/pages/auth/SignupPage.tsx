@@ -5,16 +5,16 @@ import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { Loader2, Lock, Mail, User } from 'lucide-react';
+import { Lock, Mail, User } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
+import { useSignup } from '../../hooks/useSignup';
 import type { SignupFormData } from '../../schemas/auth';
 import { signupSchema } from '../../schemas/auth';
-import { signup } from '../../services/auth.service';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,17 +30,8 @@ export const SignupPage: React.FC = () => {
     },
   });
 
-  const password = useWatch({ control: form.control, name: 'password' }) || '';
-
-  const onSubmit = async (data: SignupFormData) => {
-    try {
-      const response = await signup({
-        email: data.email,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      });
-
+  const signupMutation = useSignup({
+    onSuccess: (response) => {
       // Store access token (refresh token is in httpOnly cookie set by backend)
       if (response.accessToken) {
         setToken(response.accessToken);
@@ -53,16 +44,16 @@ export const SignupPage: React.FC = () => {
       // Navigate to success page with email and onboarding state
       navigate('/signup-success', {
         state: {
-          email: data.email,
+          email: form.getValues('email'),
           isNewUser: response.isNewUser,
           signupMethod: response.signupMethod,
           currentStep: response.currentStep,
         },
       });
-    } catch (error: unknown) {
-      // Check if error is "User Already Exists"
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      const errorMessage = err?.response?.data?.message || err?.message || '';
+    },
+    onError: (error) => {
+      // Check for "user already exists" error to show login button
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || '';
       if (
         errorMessage.toLowerCase().includes('user already exists') ||
         errorMessage.toLowerCase().includes('email already registered') ||
@@ -72,11 +63,10 @@ export const SignupPage: React.FC = () => {
       } else {
         setShowLoginButton(false);
       }
+    },
+  });
 
-      // Let Form component handle error display
-      throw error;
-    }
-  };
+  const password = useWatch({ control: form.control, name: 'password' }) || '';
 
   const handleLoginInstead = () => {
     const email = form.getValues('email');
@@ -96,7 +86,16 @@ export const SignupPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={onSubmit}>
+      <Form
+        form={form}
+        mutation={signupMutation}
+        transformSubmit={(data: SignupFormData) => ({
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        })}
+      >
         <FieldGroup>
           {/* First Name and Last Name - Side by side */}
           <div className="grid grid-cols-2 gap-4">
@@ -145,13 +144,8 @@ export const SignupPage: React.FC = () => {
 
           {/* Submit Button */}
           <Field>
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
+            <Button type="submit" className="w-full bg-primary text-primary-foreground">
+              Create Account
             </Button>
           </Field>
 

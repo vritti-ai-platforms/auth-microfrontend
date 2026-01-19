@@ -1,12 +1,11 @@
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useStartOnboarding } from '../../hooks/useStartOnboarding';
 import type { SignupMethod } from '../../services/auth.service';
 import { OnboardingStep } from '../../services/auth.service';
-import { startOnboarding } from '../../services/onboarding.service';
 
 /**
  * Route state passed from SignupPage
@@ -66,9 +65,18 @@ export const SignupSuccessPage: React.FC = () => {
   const state = (location.state as SignupSuccessState) || {};
   const { email = 'user@example.com', isNewUser = true, signupMethod = 'email', currentStep } = state;
 
-  // Component state
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Use the start onboarding mutation
+  const startOnboardingMutation = useStartOnboarding({
+    onSuccess: (response) => {
+      const stepRoute = STEP_ROUTES[response.currentStep];
+      if (stepRoute) {
+        navigate(stepRoute, { replace: true });
+      } else {
+        console.warn(`Unknown onboarding step: ${response.currentStep}`);
+        navigate('/onboarding/verify-email', { replace: true });
+      }
+    },
+  });
 
   // Dynamic content based on user status
   const title = isNewUser ? 'Account created successfully!' : 'Welcome back!';
@@ -79,37 +87,6 @@ export const SignupSuccessPage: React.FC = () => {
     : 'Resume your onboarding to complete account setup';
   const buttonText = isNewUser ? 'Start Onboarding' : 'Resume Onboarding';
   const nextSteps = getNextSteps(signupMethod, currentStep);
-
-  /**
-   * Handles the start/resume onboarding button click
-   * Calls the API to start onboarding (which sends OTP if needed)
-   * Then navigates to the appropriate step route
-   */
-  const handleStartOnboarding = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await startOnboarding();
-
-      // Get the route for the current step
-      const stepRoute = STEP_ROUTES[response.currentStep];
-
-      if (stepRoute) {
-        navigate(stepRoute, { replace: true });
-      } else {
-        // Fallback: navigate to the first onboarding step
-        console.warn(`Unknown onboarding step: ${response.currentStep}`);
-        navigate('/onboarding/verify-email', { replace: true });
-      }
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      const errorMessage =
-        err?.response?.data?.message || err?.message || 'Failed to start onboarding. Please try again.';
-      setError(errorMessage);
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="text-center space-y-6">
@@ -155,24 +132,13 @@ export const SignupSuccessPage: React.FC = () => {
         </ul>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
-          <Typography variant="body2" className="text-destructive text-left">
-            {error}
-          </Typography>
-        </div>
-      )}
-
       {/* Start/Resume Onboarding Button */}
       <Button
-        onClick={handleStartOnboarding}
+        onClick={() => startOnboardingMutation.mutate()}
         className="w-full bg-primary text-primary-foreground"
-        disabled={isLoading}
+        isPending={startOnboardingMutation.isPending}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isLoading ? 'Starting...' : buttonText}
+        {buttonText}
       </Button>
 
       {/* Helper Text */}
