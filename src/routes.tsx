@@ -40,6 +40,17 @@ export const authRoutes: RouteObject[] = [
         path: 'forgot-password',
         element: <ForgotPasswordPage />,
       },
+      // OAuth callback routes - OUTSIDE OnboardingProvider to prevent premature token fetch
+      // These routes extract token from URL params before any provider fetches data
+      {
+        path: 'onboarding/oauth-success',
+        element: <OAuthSuccessPage />,
+      },
+      {
+        path: 'onboarding/oauth-error',
+        element: <OAuthErrorPage />,
+      },
+      // Onboarding routes - wrapped with OnboardingProvider
       {
         path: 'onboarding',
         element: (
@@ -51,14 +62,6 @@ export const authRoutes: RouteObject[] = [
           {
             index: true,
             element: <OnboardingRouter />,
-          },
-          {
-            path: 'oauth-success',
-            element: <OAuthSuccessPage />,
-          },
-          {
-            path: 'oauth-error',
-            element: <OAuthErrorPage />,
           },
         ],
       },

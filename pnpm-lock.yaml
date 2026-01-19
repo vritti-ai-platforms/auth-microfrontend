@@ -21,8 +21,8 @@ importers:
         specifier: ^5.64.1
         version: 5.90.17(react@19.2.3)
       '@vritti/quantum-ui':
-        specifier: 0.2.1
-        version: 0.2.1(@tanstack/react-query@5.90.17(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react-router-dom@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.1(@types/node@24.10.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))
+        specifier: 0.2.2
+        version: 0.2.2(@tanstack/react-query@5.90.17(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react-router-dom@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.1(@types/node@24.10.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))
       axios:
         specifier: ^1.12.2
         version: 1.13.2
@@ -1288,8 +1288,8 @@ packages:
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
 
-  '@vritti/quantum-ui@0.2.1':
-    resolution: {integrity: sha512-oXb5b8DnTvtYql7fXNZJHQ6l2MNNvN4ddd37ZinToFzdUYHxSNgnQLzKLB/8z8YDmyCdeFZ4fJnTDTrHrmkjJw==}
+  '@vritti/quantum-ui@0.2.2':
+    resolution: {integrity: sha512-dlc6M7b3XSqsKCKGIE1GGaPf6s8cxZUG9Gg/u20dTL3PxQSfAwsuW1cR3/1qFu0Zg1D3PMzzVpdtZtHIs59/gw==}
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
       react: ^18.0.0 || ^19.0.0
@@ -3983,7 +3983,7 @@ snapshots:
 
   '@types/semver@7.5.8': {}
 
-  '@vritti/quantum-ui@0.2.1(@tanstack/react-query@5.90.17(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react-router-dom@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.1(@types/node@24.10.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))':
+  '@vritti/quantum-ui@0.2.2(@tanstack/react-query@5.90.17(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react-router-dom@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(vite@7.3.1(@types/node@24.10.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1))':
     dependencies:
       '@hookform/resolvers': 5.2.2(react-hook-form@7.71.1(react@19.2.3))
       '@radix-ui/react-checkbox': 1.3.3(@types/react-dom@19.2.3(@types/react@19.2.8))(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
