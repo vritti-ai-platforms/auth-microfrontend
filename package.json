@@ -17,7 +17,7 @@
     "@module-federation/enhanced": "^0.21.0",
     "@module-federation/rsbuild-plugin": "^0.21.0",
     "@tanstack/react-query": "^5.64.1",
-    "@vritti/quantum-ui": "0.2.0",
+    "@vritti/quantum-ui": "0.2.1",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -76,7 +76,7 @@ export const SocialAuthButtons: React.FC = () => {
 
     // Redirect to backend OAuth endpoint
     // Backend will redirect to the OAuth provider, then back to our success/error pages
-    window.location.href = `${apiUrl}/auth/oauth/${provider}`;
+    window.location.href = `${apiUrl}/cloud-api/auth/oauth/${provider}`;
   };
 
   return (
