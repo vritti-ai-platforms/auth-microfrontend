@@ -2,17 +2,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
-import { Progress } from '@vritti/quantum-ui/Progress';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, Lock } from 'lucide-react';
 import type React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
 import type { SetPasswordFormData } from '../../schemas/auth';
 import { setPasswordSchema } from '../../schemas/auth';
 
 export const SetPasswordPage: React.FC = () => {
-  const { refetch } = useOnboarding();
+  const { refetch, signupMethod } = useOnboarding();
 
   const form = useForm<SetPasswordFormData>({
     resolver: zodResolver(setPasswordSchema),
@@ -41,7 +41,7 @@ export const SetPasswordPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Progress value={(3 / 6) * 100} />
+      <MultiStepProgressIndicator currentStep={1} signupMethod={signupMethod} />
 
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">

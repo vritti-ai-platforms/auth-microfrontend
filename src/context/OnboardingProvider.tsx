@@ -21,6 +21,7 @@ const emptyState: Omit<OnboardingContextType, "refetch"> = {
   accountStatus: "",
   emailVerified: false,
   phoneVerified: false,
+  signupMethod: "email",
   isLoading: false,
   error: null,
 };

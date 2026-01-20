@@ -10,6 +10,7 @@ export interface OnboardingData {
   accountStatus: string;
   emailVerified: boolean;
   phoneVerified: boolean;
+  signupMethod: 'email' | 'oauth';
 }
 
 export interface OnboardingContextType extends OnboardingData {

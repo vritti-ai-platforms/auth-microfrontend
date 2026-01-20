@@ -6,6 +6,7 @@ import React from 'react';
 interface MultiStepProgressIndicatorProps {
   currentStep: number; // 1-4
   stepProgress?: Record<number, number>; // Optional: sub-step progress (0-100) for each step
+  signupMethod?: 'email' | 'oauth'; // Controls step 1 label/icon
 }
 
 interface Step {
@@ -17,12 +18,18 @@ interface Step {
 export const MultiStepProgressIndicator: React.FC<MultiStepProgressIndicatorProps> = ({
   currentStep,
   stepProgress = {},
+  signupMethod = 'email',
 }) => {
+  // Step 1 label and icon depend on signup method
+  const step1Config = signupMethod === 'oauth'
+    ? { label: 'Set Password', icon: <KeyRound className="h-4 w-4" /> }
+    : { label: 'Verify Email', icon: <Mail className="h-4 w-4" /> };
+
   const steps: Step[] = [
     {
       id: 1,
-      label: 'Verify Email',
-      icon: <Mail className="h-4 w-4" />,
+      label: step1Config.label,
+      icon: step1Config.icon,
     },
     {
       id: 2,

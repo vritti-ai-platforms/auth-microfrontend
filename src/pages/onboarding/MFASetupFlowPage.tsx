@@ -16,7 +16,7 @@ type MFAMethod = 'authenticator' | 'passkey' | null;
 type FlowStep = 1 | 2 | 3; // 1=Selection, 2=Setup, 3=Complete
 
 export const MFASetupFlowPage: React.FC = () => {
-  const { refetch } = useOnboarding();
+  const { refetch, signupMethod } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<MFAMethod>(null);
 
@@ -378,6 +378,7 @@ export const MFASetupFlowPage: React.FC = () => {
       <MultiStepProgressIndicator
         currentStep={currentStep === 3 ? 4 : 3}
         stepProgress={currentStep < 3 ? { 3: calculateStepProgress() } : {}}
+        signupMethod={signupMethod}
       />
 
       {currentStep === 1 && renderSelectionStep()}

@@ -16,7 +16,7 @@ import { otpSchema } from "../../schemas/auth";
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
-  const { email, refetch } = useOnboarding();
+  const { email, refetch, signupMethod } = useOnboarding();
   const [resendSuccess, setResendSuccess] = useState(false);
 
   const verifyEmailMutation = useVerifyEmail({
@@ -57,7 +57,7 @@ export const VerifyEmailPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={1} />
+      <MultiStepProgressIndicator currentStep={1} signupMethod={signupMethod} />
 
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">

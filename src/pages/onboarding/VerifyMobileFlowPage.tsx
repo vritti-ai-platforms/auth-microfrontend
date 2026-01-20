@@ -18,7 +18,7 @@ type VerificationMethod = 'whatsapp' | 'sms' | 'manual' | null;
 type FlowStep = 1 | 2 | 3; // 1=Method Selection, 2=Verification, 3=Success
 
 export const VerifyMobileFlowPage: React.FC = () => {
-  const { refetch } = useOnboarding();
+  const { refetch, signupMethod } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<VerificationMethod>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneValue>();
@@ -507,7 +507,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={2} stepProgress={{ 2: calculateStepProgress() }} />
+      <MultiStepProgressIndicator currentStep={2} stepProgress={{ 2: calculateStepProgress() }} signupMethod={signupMethod} />
 
       {currentStep === 1 && renderMethodSelection()}
       {currentStep === 2 && selectedMethod === 'whatsapp' && renderWhatsAppVerification()}
