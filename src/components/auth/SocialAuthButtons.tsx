@@ -84,7 +84,7 @@ export const SocialAuthButtons: React.FC = () => {
       <SocialButton provider="google" onClick={() => handleOAuthLogin('google')} />
       <SocialButton provider="x" onClick={() => handleOAuthLogin('x')} />
       <SocialButton provider="facebook" onClick={() => handleOAuthLogin('facebook')} />
-      <SocialButton provider="apple" onClick={() => handleOAuthLogin('apple')} />
+      {/* <SocialButton provider="apple" onClick={() => handleOAuthLogin('apple')} /> */}
       <SocialButton provider="microsoft" onClick={() => handleOAuthLogin('microsoft')} />
     </div>
   );
