@@ -7,6 +7,7 @@
     "build": "rsbuild build",
     "check": "biome check --write .",
     "dev": "rsbuild dev --host local.vrittiai.com",
+    "dev:ssl": "USE_HTTPS=true rsbuild dev --host local.vrittiai.com",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "preview": "rsbuild preview"

@@ -19,3 +19,6 @@ yalc.lock
 .idea
 
 .env
+
+# SSL Certificates
+certs/
