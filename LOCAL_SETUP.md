@@ -20,15 +20,7 @@
    mkcert -key-file local.vrittiai.com+4-key.pem -cert-file local.vrittiai.com+4.pem \
      local.vrittiai.com cloud.local.vrittiai.com localhost 127.0.0.1 ::1
    ```
-
-## Hosts Configuration
-
-Add to `/etc/hosts`:
-```
-127.0.0.1 local.vrittiai.com
-127.0.0.1 cloud.local.vrittiai.com
-```
-
+   
 ## Available Scripts
 
 | Script | URL |
