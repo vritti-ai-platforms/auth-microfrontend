@@ -92,9 +92,9 @@ export const LoginPage: React.FC = () => {
           <Field>
             <div className="flex items-center justify-between">
               <FieldLabel>Password</FieldLabel>
-              <Link to="/forgot-password" className="text-sm text-primary hover:text-primary/80">
-                Forgot?
-              </Link>
+              <Button variant="link" className="p-0 h-auto text-sm font-medium">
+                <Link to="/forgot-password">Forgot?</Link>
+              </Button>
             </div>
             <PasswordField
               name="password"
@@ -121,7 +121,7 @@ export const LoginPage: React.FC = () => {
       <div className="text-center">
         <Typography variant="body2" align="center" intent="muted">
           Don't have an account?{' '}
-          <Button variant="link" className="p-0 h-auto font-medium underline">
+          <Button variant="link" className="p-0 h-auto font-medium">
             <Link to="/signup">Create one</Link>
           </Button>
         </Typography>

@@ -161,13 +161,13 @@ export const SignupPage: React.FC = () => {
           {/* Terms and Conditions */}
           <Typography variant="body2" align="center" intent="muted" className="text-center">
             By creating an account, you agree to our{' '}
-            <Button variant="link" className="p-0 h-auto font-normal underline">
+            <Button variant="link" className="p-0 h-auto font-normal">
               <a href="https://vrittiai.com/terms" target="_blank" rel="noopener noreferrer">
                 Terms
               </a>
             </Button>{' '}
             &{' '}
-            <Button variant="link" className="p-0 h-auto font-normal underline">
+            <Button variant="link" className="p-0 h-auto font-normal">
               <a href="https://vrittiai.com/privacy" target="_blank" rel="noopener noreferrer">
                 Privacy
               </a>
@@ -186,7 +186,7 @@ export const SignupPage: React.FC = () => {
       <div className="text-center">
         <Typography variant="body2" align="center" intent="muted">
           Already have an account?{' '}
-          <Button variant="link" className="p-0 h-auto font-medium underline">
+          <Button variant="link" className="p-0 h-auto font-medium">
             <Link to="/login">Sign in</Link>
           </Button>
         </Typography>
