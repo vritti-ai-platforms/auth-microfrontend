@@ -105,7 +105,7 @@ export const LoginPage: React.FC = () => {
 
           <Field>
             <Button type="submit" className="w-full bg-primary text-primary-foreground">
-              Sign In
+              Login
             </Button>
           </Field>
         </FieldGroup>

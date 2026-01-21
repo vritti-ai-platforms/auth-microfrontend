@@ -187,7 +187,7 @@ export const SignupPage: React.FC = () => {
         <Typography variant="body2" align="center" intent="muted">
           Already have an account?{' '}
           <Button variant="link" className="p-0 h-auto font-medium">
-            <Link to="/login">Sign in</Link>
+            <Link to="/login">Login</Link>
           </Button>
         </Typography>
       </div>
