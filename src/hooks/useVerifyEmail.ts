@@ -1,6 +1,6 @@
-import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
-import { verifyEmail } from '../services/onboarding.service';
+import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { OnboardingStatusResponse } from '../services/onboarding.service';
+import { verifyEmail } from '../services/onboarding.service';
 
 type UseVerifyEmailOptions = Omit<UseMutationOptions<OnboardingStatusResponse, Error, string>, 'mutationFn'>;
 

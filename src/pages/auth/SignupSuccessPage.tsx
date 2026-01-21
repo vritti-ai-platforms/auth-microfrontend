@@ -78,8 +78,8 @@ export const SignupSuccessPage: React.FC = () => {
     <div className="text-center space-y-6">
       {/* Success Icon */}
       <div className="flex justify-center">
-        <div className="bg-green-100 rounded-full p-4">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-success/15">
+          <CheckCircle2 className="h-8 w-8 text-success" />
         </div>
       </div>
 
