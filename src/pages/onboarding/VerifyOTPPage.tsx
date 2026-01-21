@@ -45,7 +45,7 @@ export const VerifyOTPPage: React.FC = () => {
         </Typography>
       </div>
 
-      <Form form={form} onSubmit={onSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} onSubmit={onSubmit}>
         <FieldGroup>
           <div className="flex justify-center">
             <Smartphone className="h-8 w-8 text-primary" />
@@ -77,16 +77,16 @@ export const VerifyOTPPage: React.FC = () => {
           </Field>
 
           <div className="flex justify-center gap-4 text-sm">
-            <button
-              type="button"
+            <Button
+              variant="link"
+              className="p-0 h-auto font-normal underline"
               onClick={() => navigate('/onboarding/mobile')}
-              className="text-primary hover:text-primary/80"
             >
               Change number
-            </button>
-            <button type="button" onClick={handleResend} className="text-primary hover:text-primary/80">
+            </Button>
+            <Button variant="link" className="p-0 h-auto font-normal underline" onClick={handleResend}>
               Resend code
-            </button>
+            </Button>
           </div>
         </FieldGroup>
       </Form>

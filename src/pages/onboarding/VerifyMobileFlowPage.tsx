@@ -28,7 +28,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
   const phoneForm = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
     defaultValues: {
-      phoneNumber: '',
+      phone: '',
     },
   });
 
@@ -102,8 +102,8 @@ export const VerifyMobileFlowPage: React.FC = () => {
     // });
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Sending OTP to:', data.phoneNumber);
-    setPhoneNumber(data.phoneNumber as PhoneValue);
+    console.log('Sending OTP to:', data.phone);
+    setPhoneNumber(data.phone as PhoneValue);
     setShowOtpStep(true);
   };
 
@@ -262,9 +262,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
         {/* Alternative Method */}
         <Typography variant="body2" align="center" intent="muted" className="text-center">
           Having trouble?{' '}
-          <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
+          <Button variant="link" className="p-0 h-auto font-medium underline" onClick={handleBackToMethods}>
             Try another method
-          </button>
+          </Button>
         </Typography>
       </div>
     </div>
@@ -333,9 +333,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
         {/* Alternative Method */}
         <Typography variant="body2" align="center" intent="muted" className="text-center">
           Having trouble?{' '}
-          <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
+          <Button variant="link" className="p-0 h-auto font-medium underline" onClick={handleBackToMethods}>
             Try another method
-          </button>
+          </Button>
         </Typography>
       </div>
     </div>
@@ -368,9 +368,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
             </Typography>
           </div>
 
-          <Form form={phoneForm} onSubmit={handleSendOtp} csrfEndpoint="/csrf/token">
+          <Form form={phoneForm} onSubmit={handleSendOtp}>
             <FieldGroup>
-              <PhoneField name="phoneNumber" label="Phone Number" defaultCountry="IN" />
+              <PhoneField name="phone" label="Phone Number" defaultCountry="IN" />
 
               <Field>
                 <Button
@@ -414,7 +414,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
           </Typography>
         </div>
 
-        <Form form={otpForm} onSubmit={handleVerifyOtp} csrfEndpoint="/csrf/token">
+        <Form form={otpForm} onSubmit={handleVerifyOtp}>
           <FieldGroup>
             <div className="flex justify-center">
               <Smartphone className="h-8 w-8 text-primary" />
@@ -446,19 +446,19 @@ export const VerifyMobileFlowPage: React.FC = () => {
             </Field>
 
             <div className="flex justify-center gap-4 text-sm">
-              <button
-                type="button"
+              <Button
+                variant="link"
+                className="p-0 h-auto font-normal underline"
                 onClick={() => {
                   setShowOtpStep(false);
                   otpForm.reset();
                 }}
-                className="text-primary hover:text-primary/80"
               >
                 Change number
-              </button>
-              <button type="button" onClick={handleResendOtp} className="text-primary hover:text-primary/80">
+              </Button>
+              <Button variant="link" className="p-0 h-auto font-normal underline" onClick={handleResendOtp}>
                 Resend code
-              </button>
+              </Button>
             </div>
           </FieldGroup>
         </Form>

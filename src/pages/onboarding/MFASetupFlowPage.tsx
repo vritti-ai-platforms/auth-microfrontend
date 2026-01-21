@@ -229,7 +229,7 @@ export const MFASetupFlowPage: React.FC = () => {
           </Typography>
         </div>
 
-        <Form form={otpForm} onSubmit={handleAuthenticatorSubmit} csrfEndpoint="/csrf/token">
+        <Form form={otpForm} onSubmit={handleAuthenticatorSubmit}>
           <FieldGroup>
             {/* QR Code */}
             <div className="flex justify-center">

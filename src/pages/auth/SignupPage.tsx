@@ -8,7 +8,7 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { Lock, Mail, User } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
@@ -66,7 +66,7 @@ export const SignupPage: React.FC = () => {
     },
   });
 
-  const password = useWatch({ control: form.control, name: 'password' }) || '';
+  const password = form.watch('password');
 
   const handleLoginInstead = () => {
     const email = form.getValues('email');
@@ -161,13 +161,17 @@ export const SignupPage: React.FC = () => {
           {/* Terms and Conditions */}
           <Typography variant="body2" align="center" intent="muted" className="text-center">
             By creating an account, you agree to our{' '}
-            <button type="button" className="text-primary hover:text-primary/80 underline">
-              Terms
-            </button>{' '}
+            <Button variant="link" className="p-0 h-auto font-normal underline">
+              <a href="https://vrittiai.com/terms" target="_blank" rel="noopener noreferrer">
+                Terms
+              </a>
+            </Button>{' '}
             &{' '}
-            <button type="button" className="text-primary hover:text-primary/80 underline">
-              Privacy
-            </button>
+            <Button variant="link" className="p-0 h-auto font-normal underline">
+              <a href="https://vrittiai.com/privacy" target="_blank" rel="noopener noreferrer">
+                Privacy
+              </a>
+            </Button>
           </Typography>
         </FieldGroup>
       </Form>
@@ -182,9 +186,9 @@ export const SignupPage: React.FC = () => {
       <div className="text-center">
         <Typography variant="body2" align="center" intent="muted">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary hover:text-primary/80 font-medium">
-            Sign in
-          </Link>
+          <Button variant="link" className="p-0 h-auto font-medium underline">
+            <Link to="/login">Sign in</Link>
+          </Button>
         </Typography>
       </div>
     </div>

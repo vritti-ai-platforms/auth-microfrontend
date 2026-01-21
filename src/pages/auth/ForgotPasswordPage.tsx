@@ -7,12 +7,11 @@ import { ArrowLeft, Mail } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import type { ForgotPasswordFormData } from '../../schemas/auth';
 import { forgotPasswordSchema } from '../../schemas/auth';
 
 export const ForgotPasswordPage: React.FC = () => {
-  const _navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
 
@@ -92,7 +91,7 @@ export const ForgotPasswordPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <Form form={form} onSubmit={onSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} onSubmit={onSubmit}>
         <FieldGroup>
           <TextField
             name="email"

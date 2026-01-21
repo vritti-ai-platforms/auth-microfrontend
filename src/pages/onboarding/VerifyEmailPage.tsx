@@ -139,16 +139,16 @@ export const VerifyEmailPage: React.FC = () => {
             className="text-center"
           >
             Didn't receive the code?{" "}
-            <button
-              type="button"
-              className="text-primary hover:text-primary/80 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            <Button
+              variant="link"
+              className="p-0 h-auto font-medium underline disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleResend}
               disabled={
                 resendOtpMutation.isPending || verifyEmailMutation.isPending
               }
             >
               {resendOtpMutation.isPending ? "Sending..." : "Resend"}
-            </button>
+            </Button>
           </Typography>
         </FieldGroup>
       </Form>

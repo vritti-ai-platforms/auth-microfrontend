@@ -121,9 +121,9 @@ export const LoginPage: React.FC = () => {
       <div className="text-center">
         <Typography variant="body2" align="center" intent="muted">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-primary hover:text-primary/80 font-medium">
-            Create one
-          </Link>
+          <Button variant="link" className="p-0 h-auto font-medium underline">
+            <Link to="/signup">Create one</Link>
+          </Button>
         </Typography>
       </div>
     </div>
