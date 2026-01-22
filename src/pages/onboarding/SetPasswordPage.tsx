@@ -5,14 +5,18 @@ import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, Lock } from 'lucide-react';
 import type React from 'react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
+import { useSetPassword } from '../../hooks';
 import type { SetPasswordFormData } from '../../schemas/auth';
 import { setPasswordSchema } from '../../schemas/auth';
 
 export const SetPasswordPage: React.FC = () => {
   const { refetch, signupMethod } = useOnboarding();
+  const [error, setError] = useState<string | null>(null);
+  const setPasswordMutation = useSetPassword();
 
   const form = useForm<SetPasswordFormData>({
     resolver: zodResolver(setPasswordSchema),
@@ -32,11 +36,16 @@ export const SetPasswordPage: React.FC = () => {
     },
   ];
 
-  const onSubmit = async (_data: SetPasswordFormData) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Password set successfully');
-    // Refetch onboarding status - OnboardingRouter will render the next step
-    await refetch();
+  const onSubmit = async (data: SetPasswordFormData) => {
+    setError(null);
+    try {
+      await setPasswordMutation.mutateAsync(data.password);
+      // Refetch onboarding status - OnboardingRouter will render the next step
+      await refetch();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to set password. Please try again.';
+      setError(errorMessage);
+    }
   };
 
   return (
@@ -51,6 +60,12 @@ export const SetPasswordPage: React.FC = () => {
           Secure your account with a password
         </Typography>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+          {error}
+        </div>
+      )}
 
       <Form form={form} onSubmit={onSubmit}>
         <FieldGroup>
@@ -90,9 +105,9 @@ export const SetPasswordPage: React.FC = () => {
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              disabled={form.formState.isSubmitting}
+              disabled={setPasswordMutation.isPending}
             >
-              {form.formState.isSubmitting ? 'Setting Password...' : 'Set Password'}
+              {setPasswordMutation.isPending ? 'Setting Password...' : 'Set Password'}
             </Button>
           </Field>
         </FieldGroup>

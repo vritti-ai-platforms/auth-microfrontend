@@ -250,3 +250,183 @@ export async function startOnboarding(): Promise<StartOnboardingResponse> {
 
   return response.data;
 }
+
+/**
+ * Sets password for OAuth users during onboarding
+ *
+ * OAuth users (Google, etc.) don't have a password set during initial signup.
+ * This endpoint allows them to set a password for their account.
+ *
+ * Requires authenticated session. The access token is automatically included
+ * in the request by the axios interceptor.
+ *
+ * @param password - Password meeting security requirements
+ * @returns Promise that resolves when password is set successfully
+ * @throws Error if password doesn't meet requirements or user already has password
+ *
+ * @example
+ * ```typescript
+ * import { setPassword } from './services/onboarding.service';
+ *
+ * try {
+ *   await setPassword('SecurePass123!');
+ *   console.log('Password set successfully');
+ * } catch (error) {
+ *   console.error('Failed to set password:', error);
+ * }
+ * ```
+ */
+export async function setPassword(password: string): Promise<void> {
+  await axios.post("cloud-api/onboarding/set-password", { password });
+}
+
+// ============================================================================
+// Mobile Verification
+// ============================================================================
+
+/**
+ * Verification method for mobile verification
+ */
+export type VerificationMethod =
+  | "WHATSAPP_QR"
+  | "SMS_QR"
+  | "MANUAL_OTP";
+
+/**
+ * Data transfer object for initiating mobile verification
+ *
+ * For QR-based methods (WHATSAPP_QR, SMS_QR): phone is optional - comes from webhook
+ * For OTP-based method (MANUAL_OTP): phone is required
+ */
+export interface InitiateMobileVerificationDto {
+  /** Phone number in E.164 format (e.g., +919876543210) - optional for QR methods */
+  phone?: string;
+  /** ISO country code (e.g., IN, US) - optional for QR methods */
+  phoneCountry?: string;
+  /** Verification method to use */
+  method?: VerificationMethod;
+}
+
+/**
+ * Mobile verification status response from the API
+ */
+export interface MobileVerificationStatusResponse {
+  /** Unique verification ID */
+  verificationId: string;
+  /** Verification method used */
+  method: VerificationMethod;
+  /** Verification token for QR code methods (e.g., "VER123ABC") */
+  verificationToken?: string;
+  /** Whether verification is complete */
+  isVerified: boolean;
+  /** Phone number being verified - may be null for QR methods until webhook receives it */
+  phone?: string | null;
+  /** Phone country code - may be null for QR methods */
+  phoneCountry?: string | null;
+  /** When the verification expires */
+  expiresAt: string;
+  /** Human-readable status message */
+  message: string;
+  /** Instructions for completing verification */
+  instructions?: string;
+  /** WhatsApp business number for QR code generation (from server) */
+  whatsappNumber?: string;
+}
+
+/**
+ * Initiates mobile verification for the authenticated user
+ *
+ * @param data - Phone number and verification method
+ * @returns Promise resolving to verification status with token
+ * @throws Error if initiation fails
+ *
+ * @example
+ * ```typescript
+ * const response = await initiateMobileVerification({
+ *   phone: '+919876543210',
+ *   phoneCountry: 'IN',
+ *   method: 'WHATSAPP_QR'
+ * });
+ * console.log('Verification token:', response.verificationToken);
+ * ```
+ */
+export async function initiateMobileVerification(
+  data: InitiateMobileVerificationDto,
+): Promise<MobileVerificationStatusResponse> {
+  const response: AxiosResponse<MobileVerificationStatusResponse> =
+    await axios.post("cloud-api/onboarding/mobile-verification/initiate", data);
+
+  return response.data;
+}
+
+/**
+ * Gets the current mobile verification status for the authenticated user
+ *
+ * Use this for polling to detect when webhook-based verification completes.
+ *
+ * @returns Promise resolving to current verification status
+ * @throws Error if no pending verification exists
+ *
+ * @example
+ * ```typescript
+ * const status = await getMobileVerificationStatus();
+ * if (status.isVerified) {
+ *   console.log('Phone verified!');
+ * }
+ * ```
+ */
+export async function getMobileVerificationStatus(): Promise<MobileVerificationStatusResponse> {
+  const response: AxiosResponse<MobileVerificationStatusResponse> =
+    await axios.get("cloud-api/onboarding/mobile-verification/status");
+
+  return response.data;
+}
+
+/**
+ * Resends mobile verification (generates new token)
+ *
+ * @param data - Phone number and verification method
+ * @returns Promise resolving to new verification status
+ * @throws Error if resend fails
+ */
+export async function resendMobileVerification(
+  data: InitiateMobileVerificationDto,
+): Promise<MobileVerificationStatusResponse> {
+  const response: AxiosResponse<MobileVerificationStatusResponse> =
+    await axios.post("cloud-api/onboarding/mobile-verification/resend", data);
+
+  return response.data;
+}
+
+/**
+ * Verifies mobile number using OTP entered by user
+ *
+ * Use this for MANUAL_OTP or MANUAL_OTP verification methods where
+ * the user receives an OTP and enters it manually.
+ *
+ * @param otp - 6-digit OTP code
+ * @returns Promise resolving to verification result
+ * @throws Error if OTP is invalid or expired
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   const result = await verifyMobileOtp('123456');
+ *   if (result.success) {
+ *     console.log('Phone verified successfully!');
+ *   }
+ * } catch (error) {
+ *   console.error('Invalid OTP');
+ * }
+ * ```
+ */
+export async function verifyMobileOtp(
+  otp: string,
+): Promise<{ success: boolean; message: string }> {
+  const response: AxiosResponse<{ success: boolean; message: string }> =
+    await axios.post("cloud-api/onboarding/mobile-verification/verify-otp", {
+      otp,
+    });
+
+  return response.data;
+}

@@ -6,25 +6,51 @@ import { PhoneField, type PhoneValue } from '@vritti/quantum-ui/PhoneField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, CheckCircle, ChevronRight, Loader2, MessageSquare, Phone, QrCode, Smartphone } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
+import {
+  useInitiateMobileVerification,
+  useMobileVerificationStatus,
+  useVerifyMobileOtp,
+  useResendMobileVerification,
+} from '../../hooks';
+import type { VerificationMethod, MobileVerificationStatusResponse } from '../../services/onboarding.service';
 import type { OTPFormData, PhoneFormData } from '../../schemas/auth';
 import { otpSchema, phoneSchema } from '../../schemas/auth';
 
-type VerificationMethod = 'whatsapp' | 'sms' | 'manual' | null;
+type UIVerificationMethod = 'whatsapp' | 'sms' | 'manual' | null;
 type FlowStep = 1 | 2 | 3; // 1=Method Selection, 2=Verification, 3=Success
+
+// Map UI method to API method
+const mapToApiMethod = (method: UIVerificationMethod): VerificationMethod => {
+  switch (method) {
+    case 'whatsapp':
+      return 'WHATSAPP_QR';
+    case 'sms':
+      return 'SMS_QR';
+    case 'manual':
+      return 'MANUAL_OTP';
+    default:
+      return 'WHATSAPP_QR';
+  }
+};
 
 export const VerifyMobileFlowPage: React.FC = () => {
   const { refetch, signupMethod } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
-  const [selectedMethod, setSelectedMethod] = useState<VerificationMethod>(null);
+  const [selectedMethod, setSelectedMethod] = useState<UIVerificationMethod>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneValue>();
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [phoneCountry, setPhoneCountry] = useState<string>('IN');
+  const [isPolling, setIsPolling] = useState(false);
   const [showOtpStep, setShowOtpStep] = useState(false);
+  const [verificationData, setVerificationData] = useState<MobileVerificationStatusResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  // Phone form for manual entry
   const phoneForm = useForm<PhoneFormData>({
     resolver: zodResolver(phoneSchema),
     defaultValues: {
@@ -32,6 +58,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
     },
   });
 
+  // OTP form for manual OTP entry
   const otpForm = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: {
@@ -39,95 +66,179 @@ export const VerifyMobileFlowPage: React.FC = () => {
     },
   });
 
-  // TODO: Fetch verification progress from API on mount
-  useEffect(() => {
-    const fetchProgress = async () => {
-      // const data = await fetch('/api/onboarding/verify-mobile/progress').then(r => r.json());
-      // setCurrentStep(data.step || 1);
-      // setSelectedMethod(data.method || null);
-      // setPhoneNumber(data.phoneNumber || '');
-    };
-    fetchProgress();
-  }, []);
+  // API hooks
+  const initiateMutation = useInitiateMobileVerification({
+    onSuccess: (data) => {
+      setVerificationData(data);
+      setError(null);
 
-  // Poll for QR verification status (WhatsApp/SMS)
-  useEffect(() => {
-    if (currentStep === 2 && (selectedMethod === 'whatsapp' || selectedMethod === 'sms') && isVerifying) {
-      const checkInterval = setInterval(async () => {
-        // TODO: Poll API for verification status
-        // const status = await fetch('/api/onboarding/verify-mobile/status').then(r => r.json());
-        // if (status.verified) {
-        //   clearInterval(checkInterval);
-        //   setCurrentStep(3);
-        // }
-
-        // Simulate random verification for demo
-        if (Math.random() > 0.9) {
-          clearInterval(checkInterval);
-          setPhoneNumber(undefined); // Mock verified number
-          setCurrentStep(3);
-        }
-      }, 3000);
-
-      return () => clearInterval(checkInterval);
-    }
-  }, [currentStep, selectedMethod, isVerifying]);
-
-  const handleMethodSelect = (method: 'whatsapp' | 'sms' | 'manual') => {
-    setSelectedMethod(method);
-
-    if (method === 'manual') {
-      setShowOtpStep(false);
+      if (selectedMethod === 'manual') {
+        // For manual OTP, show OTP input step
+        setShowOtpStep(true);
+      } else {
+        // For WhatsApp/SMS inbound, start polling
+        setIsPolling(true);
+      }
       setCurrentStep(2);
-    } else {
-      setIsVerifying(true);
-      setCurrentStep(2);
-    }
-  };
+    },
+    onError: (err) => {
+      setError(err.message || 'Failed to initiate verification. Please try again.');
+    },
+  });
 
-  const handleBackToMethods = () => {
+  const resendMutation = useResendMobileVerification({
+    onSuccess: (data) => {
+      setVerificationData(data);
+      setError(null);
+      otpForm.reset();
+    },
+    onError: (err) => {
+      setError(err.message || 'Failed to resend verification. Please try again.');
+    },
+  });
+
+  const verifyOtpMutation = useVerifyMobileOtp({
+    onSuccess: () => {
+      setCurrentStep(3);
+      setIsPolling(false);
+      // Wait briefly to show success state, then advance
+      setTimeout(() => {
+        refetch().catch((err) => {
+          console.error('Failed to refetch onboarding status:', err);
+        });
+      }, 1500);
+    },
+    onError: (err) => {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    },
+  });
+
+  // Poll for verification status (WhatsApp/SMS inbound methods)
+  const { data: statusData, error: pollingError } = useMobileVerificationStatus(
+    isPolling && (selectedMethod === 'whatsapp' || selectedMethod === 'sms'),
+    3000, // Poll every 3 seconds
+  );
+
+  // Handler to go back to method selection - defined before useEffects that use it
+  const handleBackToMethods = useCallback(() => {
     setSelectedMethod(null);
-    setIsVerifying(false);
+    setIsPolling(false);
     setShowOtpStep(false);
+    setVerificationData(null);
+    setError(null);
     phoneForm.reset();
     otpForm.reset();
     setCurrentStep(1);
+  }, [phoneForm, otpForm]);
+
+  // Auto-advance when webhook verification completes
+  useEffect(() => {
+    if (statusData?.isVerified && isPolling) {
+      setIsPolling(false);
+      setCurrentStep(3);
+
+      // Wait briefly to show success state, then advance
+      setTimeout(() => {
+        refetch().catch((err) => {
+          console.error('Failed to refetch onboarding status:', err);
+        });
+      }, 1500);
+    }
+  }, [statusData?.isVerified, isPolling, refetch]);
+
+  // Handle polling errors
+  useEffect(() => {
+    if (pollingError && isPolling) {
+      setIsPolling(false);
+      setError(pollingError.message || 'Failed to check verification status. Please try again.');
+    }
+  }, [pollingError, isPolling]);
+
+  // Handle verification expiry
+  useEffect(() => {
+    if (isPolling && verificationData?.expiresAt) {
+      const expiryTime = new Date(verificationData.expiresAt).getTime();
+      const now = Date.now();
+      const timeUntilExpiry = expiryTime - now;
+
+      if (timeUntilExpiry > 0) {
+        const timeout = setTimeout(() => {
+          setIsPolling(false);
+          setError('Verification expired. Please try again.');
+          handleBackToMethods();
+        }, timeUntilExpiry);
+
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [isPolling, verificationData?.expiresAt, handleBackToMethods]);
+
+  const handleMethodSelect = (method: UIVerificationMethod) => {
+    if (!method) return;
+
+    setSelectedMethod(method);
+    setError(null);
+
+    if (method === 'manual') {
+      // For manual entry, go to phone number input first
+      setShowOtpStep(false);
+      setCurrentStep(2);
+    } else {
+      // For WhatsApp/SMS QR methods, initiate verification immediately (no phone needed)
+      // Phone number will come from the webhook when user sends the verification message
+      setCurrentStep(2);
+      initiateMutation.mutate({
+        method: mapToApiMethod(method),
+        // No phone needed for QR methods - it comes from webhook
+      });
+    }
   };
 
   const handleSendOtp = async (data: PhoneFormData) => {
-    // TODO: Send OTP via API
-    // await fetch('/api/onboarding/verify-mobile/send-otp', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ phoneNumber: data.phoneNumber })
-    // });
+    const phone = data.phone;
+    setPhoneNumber(phone as PhoneValue);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Sending OTP to:', data.phone);
-    setPhoneNumber(data.phone as PhoneValue);
-    setShowOtpStep(true);
+    initiateMutation.mutate({
+      phone,
+      phoneCountry,
+      method: mapToApiMethod(selectedMethod),
+    });
   };
 
   const handleVerifyOtp = async (data: OTPFormData) => {
-    // TODO: Verify OTP via API
-    // await fetch('/api/onboarding/verify-mobile/verify-otp', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ phoneNumber, otp: data.code })
-    // });
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Verifying OTP:', data.code);
-    setCurrentStep(3);
+    verifyOtpMutation.mutate(data.code);
   };
 
   const handleResendOtp = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Resending OTP to:', phoneNumber);
-    otpForm.reset();
+    if (!phoneNumber) return;
+
+    resendMutation.mutate({
+      phone: phoneNumber as string,
+      phoneCountry,
+      method: mapToApiMethod(selectedMethod),
+    });
   };
 
   const handleContinue = async () => {
-    // Refetch onboarding status - OnboardingRouter will render the next step
-    await refetch();
+    // Refetch onboarding status - OnboardingRouter will render the next step (Dashboard)
+    try {
+      await refetch();
+    } catch (err) {
+      console.error('Failed to refetch onboarding status:', err);
+      setError('Failed to continue. Please try again.');
+    }
+  };
+
+  // Generate QR code URL for inbound methods (universal WhatsApp link)
+  const getQrCodeUrl = (): string => {
+    if (!verificationData?.verificationToken) return '';
+
+    const token = verificationData.verificationToken;
+
+    // Use WhatsApp business number from server response
+    // This is configured on the backend via WHATSAPP_BUSINESS_NUMBER env variable
+    const whatsappNumber = verificationData.whatsappNumber || '15551560440';
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(token)}`;
   };
 
   // Step 1: Method Selection
@@ -149,7 +260,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
       {
         id: 'manual',
         title: 'Enter mobile number',
-        description: 'Manually enter your mobile number',
+        description: 'Receive OTP via SMS',
         icon: <Phone className="h-5 w-5" />,
       },
     ];
@@ -165,12 +276,18 @@ export const VerifyMobileFlowPage: React.FC = () => {
           </Typography>
         </div>
 
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-3">
           {methods.map((method) => (
             <button
               type="button"
               key={method.id}
-              onClick={() => handleMethodSelect(method.id as 'whatsapp' | 'sms' | 'manual')}
+              onClick={() => handleMethodSelect(method.id as UIVerificationMethod)}
               className="w-full p-4 rounded-lg border-2 border-border hover:border-primary transition-all flex items-center gap-4 text-left group"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-foreground">
@@ -199,147 +316,243 @@ export const VerifyMobileFlowPage: React.FC = () => {
     );
   };
 
-  // Step 2a: WhatsApp Verification
-  const renderWhatsAppVerification = () => (
-    <div className="space-y-6">
-      <Link
-        to="#"
-        onClick={(e) => {
-          e.preventDefault();
-          handleBackToMethods();
-        }}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to methods
-      </Link>
+  // Step 2a: WhatsApp Verification with QR Code
+  const renderWhatsAppVerification = () => {
+    // If no verification data yet (still initiating), show loading
+    if (!verificationData || initiateMutation.isPending) {
+      return (
+        <div className="space-y-6">
+          <Link
+            to="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleBackToMethods();
+            }}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to methods
+          </Link>
 
-      <div className="text-center space-y-2">
-        <Typography variant="h3" align="center" className="text-foreground">
-          Scan with WhatsApp
-        </Typography>
-        <Typography variant="body2" align="center" intent="muted">
-          Open WhatsApp and scan this QR code
-        </Typography>
-      </div>
-
-      <div className="space-y-4">
-        {/* QR Code */}
-        <div className="flex justify-center">
-          <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
-            <Typography variant="body2" intent="muted" className="text-center px-4">
-              QR Code
-              <br />
-              (180x180)
+          <div className="text-center space-y-4">
+            <Typography variant="h3" align="center" className="text-foreground">
+              Preparing verification
+            </Typography>
+            <div className="flex justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+            <Typography variant="body2" align="center" intent="muted">
+              Setting up WhatsApp verification...
             </Typography>
           </div>
         </div>
+      );
+    }
 
-        {/* Instructions */}
-        <div className="space-y-2">
-          <Typography variant="body2" className="text-foreground font-medium text-center">
-            How to scan:
+    const qrCodeUrl = getQrCodeUrl();
+
+    return (
+      <div className="space-y-6">
+        <Link
+          to="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleBackToMethods();
+          }}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to methods
+        </Link>
+
+        <div className="text-center space-y-2">
+          <Typography variant="h3" align="center" className="text-foreground">
+            Scan with WhatsApp
           </Typography>
-          <ol className="space-y-1 text-sm text-muted-foreground">
-            <li>1. Open WhatsApp on your phone</li>
-            <li>2. Tap Menu or Settings</li>
-            <li>3. Tap Linked Devices</li>
-            <li>4. Tap Link a Device</li>
-            <li>5. Point your phone at this screen to scan the code</li>
-          </ol>
+          <Typography variant="body2" align="center" intent="muted">
+            Scan this QR code to send the verification message
+          </Typography>
         </div>
 
-        {/* Waiting Status */}
-        {isVerifying && (
-          <div className="flex items-center justify-center gap-2 py-2">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <Typography variant="body2" intent="muted">
-              Waiting for verification...
-            </Typography>
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            {error}
           </div>
         )}
 
-        {/* Alternative Method */}
-        <Typography variant="body2" align="center" intent="muted" className="text-center">
-          Having trouble?{' '}
-          <Button variant="link" className="p-0 h-auto font-medium underline" onClick={handleBackToMethods}>
-            Try another method
-          </Button>
-        </Typography>
+        <div className="space-y-4">
+          {/* QR Code */}
+          <div className="flex justify-center">
+            <div className="p-4 bg-white rounded-lg">
+              {qrCodeUrl ? (
+                <QRCodeSVG value={qrCodeUrl} size={180} />
+              ) : (
+                <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Verification Token Display */}
+          {verificationData?.verificationToken && (
+            <div className="text-center">
+              <Typography variant="body2" intent="muted">
+                Or send this code manually:
+              </Typography>
+              <Typography variant="h4" className="text-foreground font-mono mt-1">
+                {verificationData.verificationToken}
+              </Typography>
+            </div>
+          )}
+
+          {/* Instructions */}
+          <div className="space-y-2">
+            <Typography variant="body2" className="text-foreground font-medium text-center">
+              {verificationData?.instructions || 'Scan the QR code with your phone camera'}
+            </Typography>
+          </div>
+
+          {/* Waiting Status */}
+          {isPolling && (
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <Typography variant="body2" intent="muted">
+                Waiting for verification...
+              </Typography>
+            </div>
+          )}
+
+          {/* Alternative Method */}
+          <Typography variant="body2" align="center" intent="muted" className="text-center">
+            Having trouble?{' '}
+            <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
+              Try another method
+            </button>
+          </Typography>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // Step 2b: SMS Verification
-  const renderSmsVerification = () => (
-    <div className="space-y-6">
-      <Link
-        to="#"
-        onClick={(e) => {
-          e.preventDefault();
-          handleBackToMethods();
-        }}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to methods
-      </Link>
+  // Step 2b: SMS Verification with QR Code
+  const renderSmsVerification = () => {
+    // If no verification data yet (still initiating), show loading
+    if (!verificationData || initiateMutation.isPending) {
+      return (
+        <div className="space-y-6">
+          <Link
+            to="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleBackToMethods();
+            }}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to methods
+          </Link>
 
-      <div className="text-center space-y-2">
-        <Typography variant="h3" align="center" className="text-foreground">
-          Scan with SMS
-        </Typography>
-        <Typography variant="body2" align="center" intent="muted">
-          Open your SMS app and scan this QR code
-        </Typography>
-      </div>
-
-      <div className="space-y-4">
-        {/* QR Code */}
-        <div className="flex justify-center">
-          <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
-            <Typography variant="body2" intent="muted" className="text-center px-4">
-              QR Code
-              <br />
-              (180x180)
+          <div className="text-center space-y-4">
+            <Typography variant="h3" align="center" className="text-foreground">
+              Preparing verification
+            </Typography>
+            <div className="flex justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+            <Typography variant="body2" align="center" intent="muted">
+              Setting up SMS verification...
             </Typography>
           </div>
         </div>
+      );
+    }
 
-        {/* Instructions */}
-        <div className="space-y-2">
-          <Typography variant="body2" className="text-foreground font-medium text-center">
-            How to scan:
+    const qrCodeUrl = getQrCodeUrl();
+
+    return (
+      <div className="space-y-6">
+        <Link
+          to="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleBackToMethods();
+          }}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to methods
+        </Link>
+
+        <div className="text-center space-y-2">
+          <Typography variant="h3" align="center" className="text-foreground">
+            Scan with SMS
           </Typography>
-          <ol className="space-y-1 text-sm text-muted-foreground">
-            <li>1. Open your phone's camera or QR code scanner</li>
-            <li>2. Point your camera at this QR code</li>
-            <li>3. Tap the notification to open SMS</li>
-            <li>4. Send the pre-filled message</li>
-            <li>5. Wait for automatic verification</li>
-          </ol>
+          <Typography variant="body2" align="center" intent="muted">
+            Scan this QR code to send the verification SMS
+          </Typography>
         </div>
 
-        {/* Waiting Status */}
-        {isVerifying && (
-          <div className="flex items-center justify-center gap-2 py-2">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            <Typography variant="body2" intent="muted">
-              Waiting for verification...
-            </Typography>
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            {error}
           </div>
         )}
 
-        {/* Alternative Method */}
-        <Typography variant="body2" align="center" intent="muted" className="text-center">
-          Having trouble?{' '}
-          <Button variant="link" className="p-0 h-auto font-medium underline" onClick={handleBackToMethods}>
-            Try another method
-          </Button>
-        </Typography>
+        <div className="space-y-4">
+          {/* QR Code */}
+          <div className="flex justify-center">
+            <div className="p-4 bg-white rounded-lg">
+              {qrCodeUrl ? (
+                <QRCodeSVG value={qrCodeUrl} size={180} />
+              ) : (
+                <div className="w-[180px] h-[180px] bg-secondary border-2 border-border rounded-lg flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Verification Token Display */}
+          {verificationData?.verificationToken && (
+            <div className="text-center">
+              <Typography variant="body2" intent="muted">
+                Or send this code manually:
+              </Typography>
+              <Typography variant="h4" className="text-foreground font-mono mt-1">
+                {verificationData.verificationToken}
+              </Typography>
+            </div>
+          )}
+
+          {/* Instructions */}
+          <div className="space-y-2">
+            <Typography variant="body2" className="text-foreground font-medium text-center">
+              {verificationData?.instructions || 'Scan the QR code with your phone camera'}
+            </Typography>
+          </div>
+
+          {/* Waiting Status */}
+          {isPolling && (
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <Typography variant="body2" intent="muted">
+                Waiting for verification...
+              </Typography>
+            </div>
+          )}
+
+          {/* Alternative Method */}
+          <Typography variant="body2" align="center" intent="muted" className="text-center">
+            Having trouble?{' '}
+            <button type="button" onClick={handleBackToMethods} className="text-primary hover:text-primary/80 font-medium">
+              Try another method
+            </button>
+          </Typography>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Step 2c: Manual Entry (Phone Number + OTP)
   const renderManualVerification = () => {
@@ -368,17 +581,32 @@ export const VerifyMobileFlowPage: React.FC = () => {
             </Typography>
           </div>
 
+          {error && (
+            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+              {error}
+            </div>
+          )}
+
           <Form form={phoneForm} onSubmit={handleSendOtp}>
             <FieldGroup>
-              <PhoneField name="phone" label="Phone Number" defaultCountry="IN" />
+              <PhoneField
+                name="phone"
+                label="Phone Number"
+                defaultCountry="IN"
+                onChange={(value) => {
+                  if (typeof value === 'object' && value !== null && 'country' in value) {
+                    setPhoneCountry((value as { country?: string }).country || 'IN');
+                  }
+                }}
+              />
 
               <Field>
                 <Button
                   type="submit"
                   className="w-full bg-primary text-primary-foreground"
-                  disabled={phoneForm.formState.isSubmitting}
+                  disabled={initiateMutation.isPending}
                 >
-                  {phoneForm.formState.isSubmitting ? 'Sending Code...' : 'Send Code'}
+                  {initiateMutation.isPending ? 'Sending Code...' : 'Send Code'}
                 </Button>
               </Field>
             </FieldGroup>
@@ -394,6 +622,8 @@ export const VerifyMobileFlowPage: React.FC = () => {
           type="button"
           onClick={() => {
             setShowOtpStep(false);
+            setVerificationData(null);
+            setError(null);
             otpForm.reset();
           }}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -414,6 +644,12 @@ export const VerifyMobileFlowPage: React.FC = () => {
           </Typography>
         </div>
 
+        {error && (
+          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <Form form={otpForm} onSubmit={handleVerifyOtp}>
           <FieldGroup>
             <div className="flex justify-center">
@@ -425,6 +661,7 @@ export const VerifyMobileFlowPage: React.FC = () => {
               <OTPField
                 name="code"
                 onChange={(value) => {
+                  setError(null);
                   if (value.length === 6) {
                     otpForm.handleSubmit(handleVerifyOtp)();
                   }
@@ -439,9 +676,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
               <Button
                 type="submit"
                 className="w-full bg-primary text-primary-foreground"
-                disabled={otpForm.formState.isSubmitting}
+                disabled={verifyOtpMutation.isPending}
               >
-                {otpForm.formState.isSubmitting ? 'Verifying...' : 'Verify & Continue'}
+                {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify & Continue'}
               </Button>
             </Field>
 
@@ -451,13 +688,20 @@ export const VerifyMobileFlowPage: React.FC = () => {
                 className="p-0 h-auto font-normal underline"
                 onClick={() => {
                   setShowOtpStep(false);
+                  setVerificationData(null);
+                  setError(null);
                   otpForm.reset();
                 }}
               >
                 Change number
               </Button>
-              <Button variant="link" className="p-0 h-auto font-normal underline" onClick={handleResendOtp}>
-                Resend code
+              <Button
+                variant="link"
+                className="p-0 h-auto font-normal underline"
+                onClick={handleResendOtp}
+                disabled={resendMutation.isPending}
+              >
+                {resendMutation.isPending ? 'Sending...' : 'Resend code'}
               </Button>
             </div>
           </FieldGroup>
@@ -485,14 +729,16 @@ export const VerifyMobileFlowPage: React.FC = () => {
           <Typography variant="body2" align="center" intent="muted">
             Your mobile number has been successfully verified
           </Typography>
-          <Typography variant="body2" align="center" className="text-foreground font-medium">
-            {phoneNumber}
-          </Typography>
+          {phoneNumber && (
+            <Typography variant="body2" align="center" className="text-foreground font-medium">
+              {phoneNumber}
+            </Typography>
+          )}
         </div>
 
         {/* Continue Button */}
         <Button onClick={handleContinue} className="w-full bg-primary text-primary-foreground">
-          Continue to 2FA Setup
+          Continue to Dashboard
         </Button>
       </div>
     </div>
