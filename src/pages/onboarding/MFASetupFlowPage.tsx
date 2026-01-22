@@ -1,361 +1,138 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
-import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { ArrowLeft, CheckCircle, KeyRound, Loader2, Smartphone } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
+import { AuthenticatorSetup, BackupCodesDisplay, MFAMethodSelection, PasskeySetup } from '../../components/onboarding/mfa';
 import { useOnboarding } from '../../context';
-import type { OTPFormData } from '../../schemas/auth';
-import { otpSchema } from '../../schemas/auth';
+import { useInitiateTotpSetup, useSkip2FASetup, useVerifyTotpSetup } from '../../hooks/use2FA';
+import { usePasskeyRegistration } from '../../hooks/usePasskey';
+import type { TotpSetupResponse } from '../../services/onboarding.service';
 
-type MFAMethod = 'authenticator' | 'passkey' | null;
-type FlowStep = 1 | 2 | 3; // 1=Selection, 2=Setup, 3=Complete
+type MFAMethod = 'authenticator' | 'passkey';
+type FlowStep = 1 | 2 | 3 | 4;
 
 export const MFASetupFlowPage: React.FC = () => {
   const { refetch, signupMethod } = useOnboarding();
+
+  // Minimal state - only what's needed for UI flow
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
-  const [selectedMethod, setSelectedMethod] = useState<MFAMethod>(null);
+  const [selectedMethod, setSelectedMethod] = useState<MFAMethod | null>(null);
+  const [totpData, setTotpData] = useState<TotpSetupResponse | null>(null);
+  const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
+  const [backupWarning, setBackupWarning] = useState<string>('');
 
-  const manualKey = 'JBSWY3DPEHPK3PXP';
+  // Mutations - loading/error states come from these
+  const initMutation = useInitiateTotpSetup();
+  const verifyMutation = useVerifyTotpSetup();
+  const skipMutation = useSkip2FASetup();
+  const passkeyMutation = usePasskeyRegistration();
 
-  const otpForm = useForm<OTPFormData>({
-    resolver: zodResolver(otpSchema),
-    defaultValues: {
-      code: '',
-    },
-  });
-
-  // TODO: Fetch onboarding progress from API on mount
+  // Auto-redirect on completion
   useEffect(() => {
-    // Mock API call - replace with actual API
-    const fetchProgress = async () => {
-      // const data = await fetch('/api/onboarding/progress').then(r => r.json());
-      // setCurrentStep(data.mfaStep || 1);
-      // setSelectedMethod(data.mfaMethod || null);
-    };
-    fetchProgress();
-  }, []);
-
-  // Auto-redirect on completion via refetch
-  useEffect(() => {
-    if (currentStep === 3) {
+    if (currentStep === 4) {
       const timer = setTimeout(async () => {
-        // Refetch onboarding status - OnboardingRouter will redirect to dashboard
         await refetch();
       }, 3000);
       return () => clearTimeout(timer);
     }
   }, [currentStep, refetch]);
 
-  const handleMethodSelect = (method: 'authenticator' | 'passkey') => {
+  const handleMethodSelect = (method: MFAMethod) => {
     setSelectedMethod(method);
   };
 
-  const handleContinueSelection = async () => {
-    if (!selectedMethod) return;
-
-    // TODO: Update API with selected method
-    // await fetch('/api/onboarding/progress', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ mfaStep: 2, mfaMethod: selectedMethod })
-    // });
-
-    setCurrentStep(2);
+  const handleContinue = async () => {
+    if (selectedMethod === 'authenticator') {
+      try {
+        const data = await initMutation.mutateAsync();
+        setTotpData(data);
+        setCurrentStep(2);
+      } catch {
+        // Error is available via initMutation.error
+      }
+    } else if (selectedMethod === 'passkey') {
+      // Move to passkey setup step
+      setCurrentStep(2);
+    }
   };
 
-  const handleSkipMFA = async () => {
-    // TODO: Update API to skip MFA
-    // await fetch('/api/onboarding/progress', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ mfaStep: 3, mfaMethod: 'skipped' })
-    // });
-
-    setCurrentStep(3);
+  const handleSkip = async () => {
+    try {
+      await skipMutation.mutateAsync();
+      setCurrentStep(4);
+    } catch {
+      // Error is available via skipMutation.error
+    }
   };
 
   const handleBack = () => {
-    otpForm.reset();
+    setTotpData(null);
     setCurrentStep(1);
+    initMutation.reset();
+    verifyMutation.reset();
+    passkeyMutation.reset();
   };
 
-  const handleAuthenticatorSubmit = async (data: OTPFormData) => {
-    // TODO: Verify OTP with API
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Authenticator verified with OTP:', data.code);
-
-    // TODO: Update API
-    // await fetch('/api/onboarding/progress', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ mfaStep: 3, mfaMethod: 'authenticator' })
-    // });
-
-    setCurrentStep(3);
+  const handlePasskeyRegister = async () => {
+    try {
+      const response = await passkeyMutation.mutateAsync();
+      setBackupCodes(response.backupCodes);
+      setBackupWarning(response.warning);
+      setCurrentStep(3);
+    } catch {
+      // Error is available via passkeyMutation.error
+    }
   };
 
-  const [isCreatingPasskey, setIsCreatingPasskey] = useState(false);
-
-  const handlePasskeySubmit = async () => {
-    setIsCreatingPasskey(true);
-
-    // TODO: Implement WebAuthn passkey creation
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log('Passkey created successfully');
-
-    // TODO: Update API
-    // await fetch('/api/onboarding/progress', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ mfaStep: 3, mfaMethod: 'passkey' })
-    // });
-
-    setCurrentStep(3);
-    setIsCreatingPasskey(false);
+  const handleVerify = async (code: string) => {
+    try {
+      const response = await verifyMutation.mutateAsync(code);
+      setBackupCodes(response.backupCodes);
+      setBackupWarning(response.warning);
+      setCurrentStep(3);
+    } catch {
+      // Error is available via verifyMutation.error
+    }
   };
 
-  // Step 1: MFA Selection
-  const renderSelectionStep = () => (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <Typography variant="h3" align="center" className="text-foreground">
-          Secure your account
-        </Typography>
-        <Typography variant="body2" align="center" intent="muted">
-          Add multi-factor authentication
-        </Typography>
-      </div>
-
-      <div className="space-y-3">
-        {/* Authenticator App Option */}
-        <label
-          className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-            selectedMethod === 'authenticator' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-          }`}
-        >
-          <input
-            type="radio"
-            name="mfa"
-            value="authenticator"
-            checked={selectedMethod === 'authenticator'}
-            onChange={() => handleMethodSelect('authenticator')}
-            className="mt-1 h-4 w-4 text-primary focus:ring-primary"
-          />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4 text-foreground" />
-              <Typography variant="body1" className="font-medium text-foreground">
-                Authenticator App
-              </Typography>
-              <span className="ml-auto px-2 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
-                Recommended
-              </span>
-            </div>
-            <Typography variant="body2" intent="muted">
-              Use Google Authenticator, Authy, or similar apps
-            </Typography>
-          </div>
-        </label>
-
-        {/* Passkey Option */}
-        <label
-          className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-            selectedMethod === 'passkey' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-          }`}
-        >
-          <input
-            type="radio"
-            name="mfa"
-            value="passkey"
-            checked={selectedMethod === 'passkey'}
-            onChange={() => handleMethodSelect('passkey')}
-            className="mt-1 h-4 w-4 text-primary focus:ring-primary"
-          />
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-foreground" />
-              <Typography variant="body1" className="font-medium text-foreground">
-                Passkey
-              </Typography>
-              <span className="ml-auto px-2 py-0.5 text-xs rounded-full bg-secondary text-muted-foreground">
-                Most Secure
-              </span>
-            </div>
-            <Typography variant="body2" intent="muted">
-              Use biometrics or device authentication
-            </Typography>
-          </div>
-        </label>
-      </div>
-
-      <Typography variant="body2" align="center" intent="muted" className="text-center">
-        Email and SMS are already verified and available as backup options
-      </Typography>
-
-      <Button
-        onClick={handleContinueSelection}
-        className="w-full bg-primary text-primary-foreground"
-        disabled={!selectedMethod}
-      >
-        Continue
-      </Button>
-
-      <Button variant="outline" onClick={handleSkipMFA} className="w-full border-border text-foreground">
-        Skip for now
-      </Button>
-    </div>
-  );
-
-  // Step 2a: Setup Authenticator
-  const renderAuthenticatorStep = () => {
-    return (
-      <div className="space-y-6">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to MFA options
-        </button>
-
-        <div className="text-center space-y-2">
-          <Typography variant="h3" align="center" className="text-foreground">
-            Setup Authenticator App
-          </Typography>
-          <Typography variant="body2" align="center" intent="muted">
-            Scan the QR code below
-          </Typography>
-        </div>
-
-        <Form form={otpForm} onSubmit={handleAuthenticatorSubmit}>
-          <FieldGroup>
-            {/* QR Code */}
-            <div className="flex justify-center">
-              <div className="w-[193px] h-[193px] border border-border rounded-lg p-4 bg-white">
-                <div className="w-[160px] h-[160px] bg-secondary rounded-lg flex items-center justify-center">
-                  <Typography variant="body2" intent="muted" className="text-center">
-                    QR Code
-                    <br />
-                    (160x160)
-                  </Typography>
-                </div>
-              </div>
-            </div>
-
-            {/* Manual Key */}
-            <div className="p-4 bg-muted/50 border border-border rounded-lg space-y-2">
-              <Typography variant="body2" className="font-medium text-foreground">
-                Manual setup key:
-              </Typography>
-              <div className="px-3 py-2 bg-secondary border border-border rounded text-sm font-mono text-foreground">
-                {manualKey}
-              </div>
-            </div>
-
-            {/* OTP Input */}
-            <Field>
-              <FieldLabel>Enter the 6-digit code from your app</FieldLabel>
-              <OTPField
-                name="code"
-                onChange={(value) => {
-                  if (value.length === 6) {
-                    otpForm.handleSubmit(handleAuthenticatorSubmit)();
-                  }
-                }}
-              />
-            </Field>
-
-            <Field>
-              <Button
-                type="submit"
-                className="w-full bg-primary text-primary-foreground"
-                disabled={otpForm.formState.isSubmitting}
-              >
-                {otpForm.formState.isSubmitting ? 'Verifying...' : 'Complete Setup'}
-              </Button>
-            </Field>
-          </FieldGroup>
-        </Form>
-      </div>
-    );
+  const handleBackupCodesContinue = () => {
+    setCurrentStep(4);
   };
 
-  // Step 2b: Setup Passkey
-  const renderPasskeyStep = () => (
-    <div className="space-y-6">
-      <button
-        type="button"
-        onClick={handleBack}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to MFA options
-      </button>
+  // Derive error messages from mutations
+  const selectionError = initMutation.error?.message || skipMutation.error?.message || null;
+  const setupError = verifyMutation.error?.message || null;
+  const passkeyError = passkeyMutation.error || null;
 
-      <div className="text-center space-y-2">
-        <Typography variant="h3" align="center" className="text-foreground">
-          Setup Passkey
-        </Typography>
-        <Typography variant="body2" align="center" intent="muted">
-          Use biometric or device authentication
-        </Typography>
-      </div>
+  // Calculate progress for indicator
+  const calculateStepProgress = (): number => {
+    if (currentStep === 1) return 25;
+    if (currentStep === 2) return 50;
+    if (currentStep === 3) return 75;
+    return 100;
+  };
 
-      <div className="space-y-6">
-        {/* Icon */}
-        <div className="flex justify-center">
-          <div className="w-[88px] h-[88px] rounded-lg bg-primary/10 flex items-center justify-center">
-            <KeyRound className="h-12 w-12 text-primary" />
-          </div>
-        </div>
-
-        {/* Benefits */}
-        <div className="p-4 bg-muted/50 border border-border rounded-lg space-y-3">
-          <Typography variant="body2" className="font-medium text-foreground">
-            What is a passkey?
-          </Typography>
-          <ul className="space-y-1.5 text-sm text-muted-foreground">
-            <li className="pl-4">• More secure than passwords</li>
-            <li className="pl-4">• Uses biometrics or device PIN</li>
-            <li className="pl-4">• Can't be phished or stolen</li>
-            <li className="pl-4">• Works across your devices</li>
-          </ul>
-        </div>
-
-        <Button
-          onClick={handlePasskeySubmit}
-          className="w-full bg-primary text-primary-foreground"
-          disabled={isCreatingPasskey}
-        >
-          {isCreatingPasskey ? 'Creating Passkey...' : 'Create Passkey'}
-        </Button>
-      </div>
-    </div>
-  );
-
-  // Step 3: Complete
+  // Step 4: Complete
   const renderCompleteStep = () => (
     <div className="space-y-6 text-center">
-      {/* Success Icon */}
       <div className="flex justify-center">
         <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
           <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
         </div>
       </div>
 
-      {/* Title and Message */}
       <div className="space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">
           All set!
         </Typography>
         <Typography variant="body2" align="center" intent="muted" className="max-w-[332px] mx-auto">
-          Your account has been created and secured with multi-factor authentication.
+          {backupCodes
+            ? 'Your account has been created and secured with multi-factor authentication.'
+            : 'Your account has been created successfully. You can enable 2FA later in your settings.'}
         </Typography>
       </div>
 
-      {/* Loading Spinner */}
       <div className="flex justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
@@ -366,25 +143,50 @@ export const MFASetupFlowPage: React.FC = () => {
     </div>
   );
 
-  // Calculate sub-step progress for step 3 (Enable 2FA)
-  const calculateStepProgress = (): number => {
-    if (currentStep === 1) return 33; // MFA Selection
-    if (currentStep === 2) return 66; // Setup in progress
-    return 100; // Complete
-  };
-
   return (
     <div className="space-y-6">
       <MultiStepProgressIndicator
-        currentStep={currentStep === 3 ? 4 : 3}
-        stepProgress={currentStep < 3 ? { 3: calculateStepProgress() } : {}}
+        currentStep={currentStep === 4 ? 4 : 3}
+        stepProgress={currentStep < 4 ? { 3: calculateStepProgress() } : {}}
         signupMethod={signupMethod}
       />
 
-      {currentStep === 1 && renderSelectionStep()}
-      {currentStep === 2 && selectedMethod === 'authenticator' && renderAuthenticatorStep()}
-      {currentStep === 2 && selectedMethod === 'passkey' && renderPasskeyStep()}
-      {currentStep === 3 && renderCompleteStep()}
+      {currentStep === 1 && (
+        <MFAMethodSelection
+          selectedMethod={selectedMethod}
+          onSelect={handleMethodSelect}
+          onContinue={handleContinue}
+          onSkip={handleSkip}
+          isLoading={initMutation.isPending}
+          isSkipping={skipMutation.isPending}
+          error={selectionError}
+        />
+      )}
+
+      {currentStep === 2 && selectedMethod === 'authenticator' && totpData && (
+        <AuthenticatorSetup
+          totpData={totpData}
+          onBack={handleBack}
+          onVerify={handleVerify}
+          isVerifying={verifyMutation.isPending}
+          error={setupError}
+        />
+      )}
+
+      {currentStep === 2 && selectedMethod === 'passkey' && (
+        <PasskeySetup
+          onBack={handleBack}
+          onRegister={handlePasskeyRegister}
+          isPending={passkeyMutation.isPending}
+          error={passkeyError}
+        />
+      )}
+
+      {currentStep === 3 && backupCodes && (
+        <BackupCodesDisplay backupCodes={backupCodes} warning={backupWarning} onContinue={handleBackupCodesContinue} />
+      )}
+
+      {currentStep === 4 && renderCompleteStep()}
     </div>
   );
 };

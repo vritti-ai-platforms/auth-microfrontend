@@ -250,3 +250,332 @@ export async function startOnboarding(): Promise<StartOnboardingResponse> {
 
   return response.data;
 }
+
+// ============================================================================
+// Two-Factor Authentication (2FA) API Functions
+// ============================================================================
+
+/**
+ * TOTP setup response from the API
+ * Contains QR code and manual setup key for authenticator apps
+ */
+export interface TotpSetupResponse {
+  /** Base64 data URL of QR code image */
+  qrCodeDataUrl: string;
+  /** Manual setup key formatted with spaces for readability */
+  manualSetupKey: string;
+  /** Issuer name displayed in authenticator app */
+  issuer: string;
+  /** Account name (user's email) displayed in authenticator app */
+  accountName: string;
+}
+
+/**
+ * Backup codes response from the API
+ * Returned after successful 2FA verification
+ */
+export interface BackupCodesResponse {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** Human-readable success message */
+  message: string;
+  /** Array of backup codes (plain text, shown only once) */
+  backupCodes: string[];
+  /** Warning message about saving backup codes */
+  warning: string;
+}
+
+/**
+ * Two-factor authentication status response
+ */
+export interface TwoFactorStatusResponse {
+  /** Whether 2FA is enabled for the user */
+  isEnabled: boolean;
+  /** The 2FA method used (TOTP, PASSKEY, etc.) */
+  method: string | null;
+  /** Number of remaining backup codes */
+  backupCodesRemaining: number;
+  /** Last time 2FA was used for authentication */
+  lastUsedAt: string | null;
+  /** When 2FA was set up */
+  createdAt: string | null;
+}
+
+/**
+ * Initiates TOTP setup for the authenticated user
+ *
+ * Generates a new TOTP secret and returns QR code for scanning
+ * with authenticator apps (Google Authenticator, Authy, etc.)
+ *
+ * Requires authenticated onboarding session.
+ *
+ * @returns Promise resolving to TOTP setup data with QR code
+ * @throws Error if user already has 2FA enabled or session is invalid
+ *
+ * @example
+ * ```typescript
+ * import { initiateTotpSetup } from './services/onboarding.service';
+ *
+ * try {
+ *   const setup = await initiateTotpSetup();
+ *
+ *   // Display QR code image
+ *   qrCodeImg.src = setup.qrCodeDataUrl;
+ *
+ *   // Display manual key for users who can't scan
+ *   manualKeyDisplay.textContent = setup.manualSetupKey;
+ * } catch (error) {
+ *   console.error('Failed to initiate TOTP setup:', error);
+ * }
+ * ```
+ */
+export async function initiateTotpSetup(): Promise<TotpSetupResponse> {
+  const response: AxiosResponse<TotpSetupResponse> = await axios.post(
+    "cloud-api/onboarding/2fa/totp/setup",
+  );
+
+  return response.data;
+}
+
+/**
+ * Verifies TOTP setup with a 6-digit code from authenticator app
+ *
+ * On success, stores the TOTP secret and returns backup codes.
+ * The backup codes are shown only once and should be saved securely.
+ *
+ * Requires authenticated onboarding session with pending TOTP setup.
+ *
+ * @param token - 6-digit TOTP code from authenticator app
+ * @returns Promise resolving to backup codes response
+ * @throws Error if code is invalid, expired, or no pending setup exists
+ *
+ * @example
+ * ```typescript
+ * import { verifyTotpSetup } from './services/onboarding.service';
+ *
+ * try {
+ *   const response = await verifyTotpSetup('123456');
+ *
+ *   if (response.success) {
+ *     console.log('2FA enabled successfully!');
+ *
+ *     // Display backup codes to user (they must save these)
+ *     response.backupCodes.forEach(code => {
+ *       console.log('Backup code:', code);
+ *     });
+ *
+ *     console.log('Warning:', response.warning);
+ *   }
+ * } catch (error) {
+ *   console.error('TOTP verification failed:', error);
+ * }
+ * ```
+ */
+export async function verifyTotpSetup(
+  token: string,
+): Promise<BackupCodesResponse> {
+  const response: AxiosResponse<BackupCodesResponse> = await axios.post(
+    "cloud-api/onboarding/2fa/totp/verify",
+    { token },
+  );
+
+  return response.data;
+}
+
+/**
+ * Skips 2FA setup and completes onboarding without MFA
+ *
+ * Users can enable 2FA later from their account settings.
+ * Completes the onboarding process and activates the account.
+ *
+ * Requires authenticated onboarding session.
+ *
+ * @returns Promise resolving to success response
+ * @throws Error if session is invalid or onboarding already complete
+ *
+ * @example
+ * ```typescript
+ * import { skip2FASetup } from './services/onboarding.service';
+ *
+ * try {
+ *   const response = await skip2FASetup();
+ *
+ *   if (response.success) {
+ *     console.log('2FA skipped, onboarding complete');
+ *     // Redirect to dashboard
+ *   }
+ * } catch (error) {
+ *   console.error('Failed to skip 2FA:', error);
+ * }
+ * ```
+ */
+export async function skip2FASetup(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const response: AxiosResponse<{ success: boolean; message: string }> =
+    await axios.post("cloud-api/onboarding/2fa/skip");
+
+  return response.data;
+}
+
+/**
+ * Gets current 2FA status for the authenticated user
+ *
+ * Returns information about whether 2FA is enabled, the method used,
+ * and remaining backup codes.
+ *
+ * Requires authenticated onboarding session.
+ *
+ * @returns Promise resolving to 2FA status
+ * @throws Error if session is invalid
+ *
+ * @example
+ * ```typescript
+ * import { get2FAStatus } from './services/onboarding.service';
+ *
+ * try {
+ *   const status = await get2FAStatus();
+ *
+ *   if (status.isEnabled) {
+ *     console.log('2FA is enabled via:', status.method);
+ *     console.log('Backup codes remaining:', status.backupCodesRemaining);
+ *   } else {
+ *     console.log('2FA is not enabled');
+ *   }
+ * } catch (error) {
+ *   console.error('Failed to get 2FA status:', error);
+ * }
+ * ```
+ */
+export async function get2FAStatus(): Promise<TwoFactorStatusResponse> {
+  const response: AxiosResponse<TwoFactorStatusResponse> = await axios.get(
+    "cloud-api/onboarding/2fa/status",
+  );
+
+  return response.data;
+}
+
+// ============================================================================
+// Passkey (WebAuthn) 2FA API Functions
+// ============================================================================
+
+/**
+ * Passkey registration options response from the API
+ * Contains the WebAuthn credential creation options
+ */
+export interface PasskeyRegistrationOptionsResponse {
+  /** WebAuthn credential creation options to pass to the browser */
+  options: PublicKeyCredentialCreationOptions;
+}
+
+/**
+ * WebAuthn credential creation options (simplified type for frontend)
+ */
+export interface PublicKeyCredentialCreationOptions {
+  rp: { name: string; id?: string };
+  user: { id: string; name: string; displayName: string };
+  challenge: string;
+  pubKeyCredParams: Array<{ alg: number; type: "public-key" }>;
+  timeout?: number;
+  excludeCredentials?: Array<{
+    id: string;
+    type: "public-key";
+    transports?: string[];
+  }>;
+  authenticatorSelection?: {
+    authenticatorAttachment?: "platform" | "cross-platform";
+    residentKey?: "discouraged" | "preferred" | "required";
+    requireResidentKey?: boolean;
+    userVerification?: "discouraged" | "preferred" | "required";
+  };
+  attestation?: "none" | "indirect" | "direct" | "enterprise";
+}
+
+/**
+ * WebAuthn registration response from browser (simplified type)
+ */
+export interface RegistrationResponseJSON {
+  id: string;
+  rawId: string;
+  response: {
+    clientDataJSON: string;
+    attestationObject: string;
+    transports?: string[];
+  };
+  authenticatorAttachment?: "platform" | "cross-platform";
+  clientExtensionResults: Record<string, unknown>;
+  type: "public-key";
+}
+
+/**
+ * Initiates Passkey setup for the authenticated user
+ *
+ * Generates WebAuthn registration options for creating a new passkey.
+ * The returned options should be passed to the browser's WebAuthn API
+ * via @simplewebauthn/browser's startRegistration function.
+ *
+ * Requires authenticated onboarding session.
+ *
+ * @returns Promise resolving to passkey registration options
+ * @throws Error if user already has 2FA enabled or session is invalid
+ *
+ * @example
+ * ```typescript
+ * import { initiatePasskeySetup } from './services/onboarding.service';
+ * import { startRegistration } from '@simplewebauthn/browser';
+ *
+ * try {
+ *   const { options } = await initiatePasskeySetup();
+ *   const credential = await startRegistration(options);
+ *   // Then verify with verifyPasskeySetup(credential)
+ * } catch (error) {
+ *   console.error('Failed to initiate passkey setup:', error);
+ * }
+ * ```
+ */
+export async function initiatePasskeySetup(): Promise<PasskeyRegistrationOptionsResponse> {
+  const response: AxiosResponse<PasskeyRegistrationOptionsResponse> =
+    await axios.post("cloud-api/onboarding/2fa/passkey/setup");
+
+  return response.data;
+}
+
+/**
+ * Verifies Passkey setup with the credential from the browser
+ *
+ * On success, stores the passkey and returns backup codes.
+ * The backup codes are shown only once and should be saved securely.
+ *
+ * Requires authenticated onboarding session with pending passkey setup.
+ *
+ * @param credential - Registration response from browser's WebAuthn API
+ * @returns Promise resolving to backup codes response
+ * @throws Error if verification fails or no pending setup exists
+ *
+ * @example
+ * ```typescript
+ * import { verifyPasskeySetup } from './services/onboarding.service';
+ *
+ * try {
+ *   const response = await verifyPasskeySetup(credential);
+ *
+ *   if (response.success) {
+ *     console.log('Passkey registered successfully!');
+ *     // Display backup codes to user
+ *   }
+ * } catch (error) {
+ *   console.error('Passkey verification failed:', error);
+ * }
+ * ```
+ */
+export async function verifyPasskeySetup(
+  credential: RegistrationResponseJSON,
+): Promise<BackupCodesResponse> {
+  const response: AxiosResponse<BackupCodesResponse> = await axios.post(
+    "cloud-api/onboarding/2fa/passkey/verify",
+    { credential },
+  );
+
+  return response.data;
+}

@@ -192,3 +192,128 @@ export async function login(data: LoginDto): Promise<LoginResponse> {
 
   return response.data;
 }
+
+// ============================================================================
+// Passkey (WebAuthn) Authentication API Functions
+// ============================================================================
+
+/**
+ * WebAuthn authentication options (simplified type for frontend)
+ */
+export interface PublicKeyCredentialRequestOptions {
+  challenge: string;
+  timeout?: number;
+  rpId?: string;
+  allowCredentials?: Array<{
+    id: string;
+    type: "public-key";
+    transports?: string[];
+  }>;
+  userVerification?: "discouraged" | "preferred" | "required";
+}
+
+/**
+ * Passkey authentication options response from the API
+ */
+export interface PasskeyAuthOptionsResponse {
+  /** WebAuthn credential request options to pass to the browser */
+  options: PublicKeyCredentialRequestOptions;
+  /** Session ID to include when verifying the authentication */
+  sessionId: string;
+}
+
+/**
+ * WebAuthn authentication response from browser (simplified type)
+ */
+export interface AuthenticationResponseJSON {
+  id: string;
+  rawId: string;
+  response: {
+    clientDataJSON: string;
+    authenticatorData: string;
+    signature: string;
+    userHandle?: string;
+  };
+  authenticatorAttachment?: "platform" | "cross-platform";
+  clientExtensionResults: Record<string, unknown>;
+  type: "public-key";
+}
+
+/**
+ * Starts passkey authentication flow
+ *
+ * Generates WebAuthn authentication options for logging in with a passkey.
+ * The returned options should be passed to the browser's WebAuthn API
+ * via @simplewebauthn/browser's startAuthentication function.
+ *
+ * @param email - Optional email to filter allowed credentials
+ * @returns Promise resolving to passkey auth options with session ID
+ *
+ * @example
+ * ```typescript
+ * import { startPasskeyLogin } from './services/auth.service';
+ * import { startAuthentication } from '@simplewebauthn/browser';
+ *
+ * try {
+ *   const { options, sessionId } = await startPasskeyLogin();
+ *   const credential = await startAuthentication(options);
+ *   // Then verify with verifyPasskeyLogin(sessionId, credential)
+ * } catch (error) {
+ *   console.error('Failed to start passkey login:', error);
+ * }
+ * ```
+ */
+export async function startPasskeyLogin(
+  email?: string,
+): Promise<PasskeyAuthOptionsResponse> {
+  const response: AxiosResponse<PasskeyAuthOptionsResponse> = await axios.post(
+    "cloud-api/auth/passkey/start",
+    { email },
+    { public: true },
+  );
+
+  return response.data;
+}
+
+/**
+ * Verifies passkey authentication and logs in the user
+ *
+ * On success, returns access token and user info.
+ * The refresh token is set as an httpOnly cookie automatically.
+ *
+ * @param sessionId - Session ID from startPasskeyLogin response
+ * @param credential - Authentication response from browser's WebAuthn API
+ * @returns Promise resolving to login response with access token
+ * @throws Error if verification fails or passkey not found
+ *
+ * @example
+ * ```typescript
+ * import { verifyPasskeyLogin } from './services/auth.service';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+ *
+ * try {
+ *   const response = await verifyPasskeyLogin(sessionId, credential);
+ *
+ *   if (response.accessToken) {
+ *     setToken(response.accessToken);
+ *     scheduleTokenRefresh(response.expiresIn);
+ *   }
+ *
+ *   // Navigate to dashboard
+ * } catch (error) {
+ *   console.error('Passkey login failed:', error);
+ * }
+ * ```
+ */
+export async function verifyPasskeyLogin(
+  sessionId: string,
+  credential: AuthenticationResponseJSON,
+): Promise<LoginResponse> {
+  const response: AxiosResponse<LoginResponse> = await axios.post(
+    "cloud-api/auth/passkey/verify",
+    { sessionId, credential },
+    { public: true },
+  );
+
+  return response.data;
+}
