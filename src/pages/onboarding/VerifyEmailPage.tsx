@@ -4,7 +4,6 @@ import { Field, FieldGroup, FieldLabel, Form } from "@vritti/quantum-ui/Form";
 import { OTPField } from "@vritti/quantum-ui/OTPField";
 import { Typography } from "@vritti/quantum-ui/Typography";
 import type React from "react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MultiStepProgressIndicator } from "../../components/onboarding/MultiStepProgressIndicator";
@@ -17,7 +16,6 @@ import { otpSchema } from "../../schemas/auth";
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
   const { email, refetch, signupMethod } = useOnboarding();
-  const [resendSuccess, setResendSuccess] = useState(false);
 
   const verifyEmailMutation = useVerifyEmail({
     onSuccess: async () => {
@@ -29,7 +27,12 @@ export const VerifyEmailPage: React.FC = () => {
       console.error("Email verification failed:", error);
     },
   });
-  const resendOtpMutation = useResendEmailOtp();
+
+  const resendOtpMutation = useResendEmailOtp({
+    onSuccess: () => {
+      form.reset();
+    },
+  });
 
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
@@ -37,23 +40,6 @@ export const VerifyEmailPage: React.FC = () => {
       code: "",
     },
   });
-
-  const handleResend = async () => {
-    setResendSuccess(false);
-    form.clearErrors();
-
-    try {
-      await resendOtpMutation.mutateAsync(undefined);
-      // Show success message
-      setResendSuccess(true);
-      // Reset OTP field
-      form.reset();
-      // Clear success message after 3 seconds
-      setTimeout(() => setResendSuccess(false), 3000);
-    } catch {
-      // Error is already handled by mutation
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -90,18 +76,6 @@ export const VerifyEmailPage: React.FC = () => {
         transformSubmit={(data: OTPFormData) => data.code}
       >
         <FieldGroup>
-          {/* Success message for resend OTP */}
-          {resendSuccess && (
-            <div className="rounded-md bg-green-50 p-4 border border-green-200">
-              <Typography
-                variant="body2"
-                className="text-green-800 text-center"
-              >
-                Verification code resent successfully. Check your email.
-              </Typography>
-            </div>
-          )}
-
           <Field>
             <FieldLabel className="sr-only">Verification Code</FieldLabel>
             <OTPField
@@ -142,7 +116,10 @@ export const VerifyEmailPage: React.FC = () => {
             <Button
               variant="link"
               className="p-0 h-auto font-medium underline disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleResend}
+              onClick={() => {
+                form.clearErrors();
+                resendOtpMutation.mutate(undefined);
+              }}
               disabled={
                 resendOtpMutation.isPending || verifyEmailMutation.isPending
               }

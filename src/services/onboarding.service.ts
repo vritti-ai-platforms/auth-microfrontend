@@ -121,6 +121,9 @@ export async function verifyEmail(
   const response: AxiosResponse<OnboardingStatusResponse> = await axios.post(
     "cloud-api/onboarding/verify-email",
     { otp },
+    {
+      showSuccessToast: false, // Navigates to next onboarding step, no toast needed
+    },
   );
 
   return response.data;
@@ -148,7 +151,10 @@ export async function verifyEmail(
  * ```
  */
 export async function resendEmailOtp(): Promise<void> {
-  await axios.post("cloud-api/onboarding/resend-email-otp");
+  await axios.post("cloud-api/onboarding/resend-email-otp", undefined, {
+    loadingMessage: "Sending code...",
+    successMessage: "Code sent! Check your email.",
+  });
 }
 
 /**
