@@ -135,7 +135,10 @@ export async function signup(data: SignupDto): Promise<SignupResponse> {
   const response: AxiosResponse<SignupResponse> = await axios.post(
     "cloud-api/auth/signup",
     data,
-    { public: true }, // Bypass token recovery for public auth endpoint
+    {
+      public: true, // Bypass token recovery for public auth endpoint
+      showSuccessToast: false, // Navigates to onboarding, no toast needed
+    },
   );
 
   return response.data;
@@ -181,7 +184,10 @@ export async function login(data: LoginDto): Promise<LoginResponse> {
   const response: AxiosResponse<LoginResponse> = await axios.post(
     "cloud-api/auth/login",
     data,
-    { public: true }, // Bypass token recovery for public auth endpoint
+    {
+      public: true, // Bypass token recovery for public auth endpoint
+      showSuccessToast: false, // Navigates to dashboard/onboarding, no toast needed
+    },
   );
 
   return response.data;
