@@ -251,6 +251,35 @@ export async function startOnboarding(): Promise<StartOnboardingResponse> {
   return response.data;
 }
 
+/**
+ * Set password response from the API
+ */
+export interface SetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Sets password for OAuth users during onboarding
+ *
+ * Called after OAuth signup to set a password for the account.
+ * Moves user to MOBILE_VERIFICATION step on success.
+ *
+ * @param password - The password to set
+ * @returns Promise resolving to success response
+ * @throws Error if password validation fails or user is not on SET_PASSWORD step
+ */
+export async function setPassword(
+  password: string,
+): Promise<SetPasswordResponse> {
+  const response: AxiosResponse<SetPasswordResponse> = await axios.post(
+    "cloud-api/onboarding/set-password",
+    { password },
+  );
+
+  return response.data;
+}
+
 // ============================================================================
 // Two-Factor Authentication (2FA) API Functions
 // ============================================================================
