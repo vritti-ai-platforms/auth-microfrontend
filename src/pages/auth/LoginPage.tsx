@@ -15,18 +15,7 @@ import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
 import { useLogin } from '../../hooks/useLogin';
 import type { LoginFormData } from '../../schemas/auth';
 import { loginSchema } from '../../schemas/auth';
-import { OnboardingStep } from '../../services/auth.service';
-
-/**
- * Mapping of onboarding steps to their respective routes
- */
-const STEP_ROUTES: Record<string, string> = {
-  [OnboardingStep.EMAIL_VERIFICATION]: '/onboarding/verify-email',
-  [OnboardingStep.SET_PASSWORD]: '/onboarding/set-password',
-  [OnboardingStep.PHONE_VERIFICATION]: '/onboarding/verify-mobile',
-  [OnboardingStep.MFA_SETUP]: '/onboarding/mfa-setup',
-  [OnboardingStep.COMPLETED]: '/dashboard',
-};
+import { STEP_ROUTES } from '../../constants/routes';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +30,16 @@ export const LoginPage: React.FC = () => {
 
   const loginMutation = useLogin({
     onSuccess: (response) => {
+      // Check if MFA is required
+      if (response.requiresMfa && response.mfaChallenge) {
+        // Navigate to MFA verification with challenge data
+        navigate('/mfa-verify', {
+          state: { mfaChallenge: response.mfaChallenge },
+          replace: true,
+        });
+        return;
+      }
+
       // Store access token
       if (response.accessToken) {
         setToken(response.accessToken);

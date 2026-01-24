@@ -28,6 +28,25 @@ export enum AccountStatus {
 export type SignupMethod = "email" | "oauth";
 
 /**
+ * MFA method types
+ */
+export type MFAMethod = "totp" | "sms" | "passkey";
+
+/**
+ * MFA challenge data returned when login requires MFA
+ */
+export interface MFAChallenge {
+  /** Session ID for MFA verification */
+  sessionId: string;
+  /** Available MFA methods for the user */
+  availableMethods: MFAMethod[];
+  /** Default/recommended MFA method */
+  defaultMethod: MFAMethod;
+  /** Masked phone number for SMS (e.g., "+1 *** *** 4567") */
+  maskedPhone?: string;
+}
+
+/**
  * User signup data transfer object
  */
 export interface SignupDto {
@@ -99,6 +118,10 @@ export interface LoginResponse {
   requiresOnboarding?: boolean;
   /** Current onboarding step if requiresOnboarding is true */
   onboardingStep?: OnboardingStep;
+  /** Whether MFA verification is required */
+  requiresMfa?: boolean;
+  /** MFA challenge data if requiresMfa is true */
+  mfaChallenge?: MFAChallenge;
 }
 
 /**
@@ -187,6 +210,200 @@ export async function login(data: LoginDto): Promise<LoginResponse> {
     {
       public: true, // Bypass token recovery for public auth endpoint
       showSuccessToast: false, // Navigates to dashboard/onboarding, no toast needed
+    },
+  );
+
+  return response.data;
+}
+
+// ============================================================================
+// MFA Verification API Functions
+// ============================================================================
+
+/**
+ * Verifies TOTP code for MFA authentication
+ *
+ * @param sessionId - MFA session ID from login response
+ * @param code - 6-digit TOTP code from authenticator app
+ * @returns Promise resolving to login response with access token
+ * @throws Error if code is invalid or session expired
+ *
+ * @example
+ * ```typescript
+ * import { verifyTotp } from './services/auth.service';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+ *
+ * try {
+ *   const response = await verifyTotp(sessionId, '123456');
+ *
+ *   if (response.accessToken) {
+ *     setToken(response.accessToken);
+ *     scheduleTokenRefresh(response.expiresIn);
+ *   }
+ *   // Navigate to dashboard
+ * } catch (error) {
+ *   console.error('TOTP verification failed:', error);
+ * }
+ * ```
+ */
+export async function verifyTotp(
+  sessionId: string,
+  code: string,
+): Promise<LoginResponse> {
+  const response: AxiosResponse<LoginResponse> = await axios.post(
+    "cloud-api/auth/mfa/verify-totp",
+    { sessionId, code },
+    {
+      public: true,
+      showSuccessToast: false,
+    },
+  );
+
+  return response.data;
+}
+
+/**
+ * Sends SMS verification code for MFA authentication
+ *
+ * @param sessionId - MFA session ID from login response
+ * @returns Promise that resolves when SMS is sent
+ * @throws Error if session is invalid or SMS rate limited
+ *
+ * @example
+ * ```typescript
+ * import { sendSmsCode } from './services/auth.service';
+ *
+ * try {
+ *   await sendSmsCode(sessionId);
+ *   console.log('SMS code sent successfully');
+ * } catch (error) {
+ *   console.error('Failed to send SMS:', error);
+ * }
+ * ```
+ */
+export async function sendSmsCode(sessionId: string): Promise<void> {
+  await axios.post(
+    "cloud-api/auth/mfa/sms/send",
+    { sessionId },
+    {
+      public: true,
+      loadingMessage: "Sending code...",
+      successMessage: "Code sent! Check your phone.",
+    },
+  );
+}
+
+/**
+ * Verifies SMS code for MFA authentication
+ *
+ * @param sessionId - MFA session ID from login response
+ * @param code - 6-digit SMS code
+ * @returns Promise resolving to login response with access token
+ * @throws Error if code is invalid or session expired
+ *
+ * @example
+ * ```typescript
+ * import { verifySms } from './services/auth.service';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+ *
+ * try {
+ *   const response = await verifySms(sessionId, '123456');
+ *
+ *   if (response.accessToken) {
+ *     setToken(response.accessToken);
+ *     scheduleTokenRefresh(response.expiresIn);
+ *   }
+ *   // Navigate to dashboard
+ * } catch (error) {
+ *   console.error('SMS verification failed:', error);
+ * }
+ * ```
+ */
+export async function verifySms(
+  sessionId: string,
+  code: string,
+): Promise<LoginResponse> {
+  const response: AxiosResponse<LoginResponse> = await axios.post(
+    "cloud-api/auth/mfa/sms/verify",
+    { sessionId, code },
+    {
+      public: true,
+      showSuccessToast: false,
+    },
+  );
+
+  return response.data;
+}
+
+/**
+ * Starts passkey verification for MFA authentication
+ *
+ * @param sessionId - MFA session ID from login response
+ * @returns Promise resolving to passkey auth options
+ * @throws Error if session is invalid or passkey not configured
+ *
+ * @example
+ * ```typescript
+ * import { startPasskeyVerification } from './services/auth.service';
+ * import { startAuthentication } from '@simplewebauthn/browser';
+ *
+ * try {
+ *   const { options, sessionId } = await startPasskeyVerification(mfaSessionId);
+ *   const credential = await startAuthentication(options);
+ *   // Then verify with verifyPasskeyMfa(sessionId, credential)
+ * } catch (error) {
+ *   console.error('Failed to start passkey verification:', error);
+ * }
+ * ```
+ */
+export async function startPasskeyVerification(
+  sessionId: string,
+): Promise<PasskeyAuthOptionsResponse> {
+  const response: AxiosResponse<PasskeyAuthOptionsResponse> = await axios.post(
+    "cloud-api/auth/mfa/passkey/start",
+    { sessionId },
+    { public: true },
+  );
+
+  return response.data;
+}
+
+/**
+ * Verifies passkey for MFA authentication
+ *
+ * @param sessionId - Session ID from startPasskeyVerification response
+ * @param credential - Authentication response from browser's WebAuthn API
+ * @returns Promise resolving to login response with access token
+ * @throws Error if verification fails
+ *
+ * @example
+ * ```typescript
+ * import { verifyPasskeyMfa } from './services/auth.service';
+ * import { setToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
+ *
+ * try {
+ *   const response = await verifyPasskeyMfa(sessionId, credential);
+ *
+ *   if (response.accessToken) {
+ *     setToken(response.accessToken);
+ *     scheduleTokenRefresh(response.expiresIn);
+ *   }
+ *   // Navigate to dashboard
+ * } catch (error) {
+ *   console.error('Passkey verification failed:', error);
+ * }
+ * ```
+ */
+export async function verifyPasskeyMfa(
+  sessionId: string,
+  credential: AuthenticationResponseJSON,
+): Promise<LoginResponse> {
+  const response: AxiosResponse<LoginResponse> = await axios.post(
+    "cloud-api/auth/mfa/passkey/verify",
+    { sessionId, credential },
+    {
+      public: true,
+      showSuccessToast: false,
     },
   );
 

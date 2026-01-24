@@ -6,6 +6,7 @@ import { OnboardingProvider } from './context';
 import './index.css';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { LoginPage } from './pages/auth/LoginPage';
+import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { SignupSuccessPage } from './pages/auth/SignupSuccessPage';
 import { OAuthErrorPage } from './pages/onboarding/OAuthErrorPage';
@@ -39,6 +40,10 @@ export const authRoutes: RouteObject[] = [
       {
         path: 'forgot-password',
         element: <ForgotPasswordPage />,
+      },
+      {
+        path: 'mfa-verify',
+        element: <MFAVerificationPage />,
       },
       // OAuth callback routes - OUTSIDE OnboardingProvider to prevent premature token fetch
       // These routes extract token from URL params before any provider fetches data

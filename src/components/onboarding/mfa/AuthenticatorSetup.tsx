@@ -64,7 +64,7 @@ export const AuthenticatorSetup: React.FC<AuthenticatorSetupProps> = ({
         </div>
       )}
 
-      <Form form={form} onSubmit={handleSubmit} csrfEndpoint="/csrf/token">
+      <Form form={form} onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex justify-center">
             <div className="w-[200px] h-[200px] border border-border rounded-lg p-2 bg-white">

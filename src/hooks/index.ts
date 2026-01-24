@@ -22,3 +22,11 @@ export { useMobileVerificationRealtime } from './useMobileVerificationRealtime';
 // 2FA hooks
 export { useInitiateTotpSetup, useVerifyTotpSetup, useSkip2FASetup } from './use2FA';
 export { usePasskeyRegistration, usePasskeyLogin } from './usePasskey';
+
+// MFA Verification hooks
+export {
+  useVerifyTotp,
+  useSendSmsCode,
+  useVerifySms,
+  useVerifyPasskey,
+} from './useMFAVerification';
