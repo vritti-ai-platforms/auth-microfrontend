@@ -634,9 +634,8 @@ export async function verifyPasskeySetup(
  * }
  * ```
  */
-export async function setPassword(password: string): Promise<void> {
-  await axios.post("cloud-api/onboarding/set-password", { password });
-}
+
+
 
 // ============================================================================
 // Mobile Verification
