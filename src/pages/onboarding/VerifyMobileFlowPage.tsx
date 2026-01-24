@@ -5,8 +5,7 @@ import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { PhoneField, type PhoneValue } from '@vritti/quantum-ui/PhoneField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, CheckCircle, ChevronRight, Loader2, MessageSquare, Phone, QrCode, Smartphone } from 'lucide-react';
-import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
@@ -14,7 +13,7 @@ import { MultiStepProgressIndicator } from '../../components/onboarding/MultiSte
 import { useOnboarding } from '../../context';
 import {
   useInitiateMobileVerification,
-  useMobileVerificationStatus,
+  useMobileVerificationRealtime,
   useVerifyMobileOtp,
   useResendMobileVerification,
 } from '../../hooks';
@@ -39,16 +38,27 @@ const mapToApiMethod = (method: UIVerificationMethod): VerificationMethod => {
   }
 };
 
-export const VerifyMobileFlowPage: React.FC = () => {
+export const VerifyMobileFlowPage: React.FC = React.memo(() => {
   const { refetch, signupMethod } = useOnboarding();
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<UIVerificationMethod>(null);
   const [phoneNumber, setPhoneNumber] = useState<PhoneValue>();
   const [phoneCountry, setPhoneCountry] = useState<string>('IN');
-  const [isPolling, setIsPolling] = useState(false);
+  const [isWaitingForVerification, setIsWaitingForVerification] = useState(false);
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [verificationData, setVerificationData] = useState<MobileVerificationStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Helper to advance to success state and refetch after delay
+  const advanceAfterSuccess = useCallback(() => {
+    setCurrentStep(3);
+    setIsWaitingForVerification(false);
+    setTimeout(() => {
+      refetch().catch((err) => {
+        console.error('Failed to refetch onboarding status:', err);
+      });
+    }, 1500);
+  }, [refetch]);
 
   // Phone form for manual entry
   const phoneForm = useForm<PhoneFormData>({
@@ -76,8 +86,8 @@ export const VerifyMobileFlowPage: React.FC = () => {
         // For manual OTP, show OTP input step
         setShowOtpStep(true);
       } else {
-        // For WhatsApp/SMS inbound, start polling
-        setIsPolling(true);
+        // For WhatsApp/SMS inbound, start waiting for SSE/polling verification
+        setIsWaitingForVerification(true);
       }
       setCurrentStep(2);
     },
@@ -99,30 +109,32 @@ export const VerifyMobileFlowPage: React.FC = () => {
 
   const verifyOtpMutation = useVerifyMobileOtp({
     onSuccess: () => {
-      setCurrentStep(3);
-      setIsPolling(false);
-      // Wait briefly to show success state, then advance
-      setTimeout(() => {
-        refetch().catch((err) => {
-          console.error('Failed to refetch onboarding status:', err);
-        });
-      }, 1500);
+      advanceAfterSuccess();
     },
     onError: (err) => {
       setError(err.message || 'Invalid OTP. Please try again.');
     },
   });
 
-  // Poll for verification status (WhatsApp/SMS inbound methods)
-  const { data: statusData, error: pollingError } = useMobileVerificationStatus(
-    isPolling && (selectedMethod === 'whatsapp' || selectedMethod === 'sms'),
-    3000, // Poll every 3 seconds
-  );
+  // Real-time verification status via SSE
+  const { connectionMode, sseError } = useMobileVerificationRealtime({
+    enabled: isWaitingForVerification && (selectedMethod === 'whatsapp' || selectedMethod === 'sms'),
+    onVerified: () => {
+      advanceAfterSuccess();
+    },
+    onFailed: (message) => {
+      setError(message || 'Verification failed. Please try again.');
+    },
+    onExpired: () => {
+      setError('Verification expired. Please try again.');
+      handleBackToMethods();
+    },
+  });
 
   // Handler to go back to method selection - defined before useEffects that use it
   const handleBackToMethods = useCallback(() => {
     setSelectedMethod(null);
-    setIsPolling(false);
+    setIsWaitingForVerification(false);
     setShowOtpStep(false);
     setVerificationData(null);
     setError(null);
@@ -131,49 +143,14 @@ export const VerifyMobileFlowPage: React.FC = () => {
     setCurrentStep(1);
   }, [phoneForm, otpForm]);
 
-  // Auto-advance when webhook verification completes
+  // Handle SSE connection errors (show warning but continue with polling fallback)
   useEffect(() => {
-    if (statusData?.isVerified && isPolling) {
-      setIsPolling(false);
-      setCurrentStep(3);
-
-      // Wait briefly to show success state, then advance
-      setTimeout(() => {
-        refetch().catch((err) => {
-          console.error('Failed to refetch onboarding status:', err);
-        });
-      }, 1500);
+    if (sseError && isWaitingForVerification) {
+      console.warn('SSE connection error, using polling fallback:', sseError);
     }
-  }, [statusData?.isVerified, isPolling, refetch]);
+  }, [sseError, isWaitingForVerification]);
 
-  // Handle polling errors
-  useEffect(() => {
-    if (pollingError && isPolling) {
-      setIsPolling(false);
-      setError(pollingError.message || 'Failed to check verification status. Please try again.');
-    }
-  }, [pollingError, isPolling]);
-
-  // Handle verification expiry
-  useEffect(() => {
-    if (isPolling && verificationData?.expiresAt) {
-      const expiryTime = new Date(verificationData.expiresAt).getTime();
-      const now = Date.now();
-      const timeUntilExpiry = expiryTime - now;
-
-      if (timeUntilExpiry > 0) {
-        const timeout = setTimeout(() => {
-          setIsPolling(false);
-          setError('Verification expired. Please try again.');
-          handleBackToMethods();
-        }, timeUntilExpiry);
-
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [isPolling, verificationData?.expiresAt, handleBackToMethods]);
-
-  const handleMethodSelect = (method: UIVerificationMethod) => {
+  const handleMethodSelect = useCallback((method: UIVerificationMethod) => {
     if (!method) return;
 
     setSelectedMethod(method);
@@ -192,9 +169,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
         // No phone needed for QR methods - it comes from webhook
       });
     }
-  };
+  }, [initiateMutation]);
 
-  const handleSendOtp = async (data: PhoneFormData) => {
+  const handleSendOtp = useCallback(async (data: PhoneFormData) => {
     const phone = data.phone;
     setPhoneNumber(phone as PhoneValue);
 
@@ -203,13 +180,13 @@ export const VerifyMobileFlowPage: React.FC = () => {
       phoneCountry,
       method: mapToApiMethod(selectedMethod),
     });
-  };
+  }, [initiateMutation, phoneCountry, selectedMethod]);
 
-  const handleVerifyOtp = async (data: OTPFormData) => {
+  const handleVerifyOtp = useCallback(async (data: OTPFormData) => {
     verifyOtpMutation.mutate(data.code);
-  };
+  }, [verifyOtpMutation]);
 
-  const handleResendOtp = async () => {
+  const handleResendOtp = useCallback(async () => {
     if (!phoneNumber) return;
 
     resendMutation.mutate({
@@ -217,9 +194,9 @@ export const VerifyMobileFlowPage: React.FC = () => {
       phoneCountry,
       method: mapToApiMethod(selectedMethod),
     });
-  };
+  }, [phoneNumber, resendMutation, phoneCountry, selectedMethod]);
 
-  const handleContinue = async () => {
+  const handleContinue = useCallback(async () => {
     // Refetch onboarding status - OnboardingRouter will render the next step (Dashboard)
     try {
       await refetch();
@@ -227,19 +204,17 @@ export const VerifyMobileFlowPage: React.FC = () => {
       console.error('Failed to refetch onboarding status:', err);
       setError('Failed to continue. Please try again.');
     }
-  };
+  }, [refetch]);
 
-  // Generate QR code URL for inbound methods (universal WhatsApp link)
-  const getQrCodeUrl = (): string => {
+  // Memoized QR code URL for inbound methods (universal WhatsApp link)
+  const qrCodeUrl = useMemo(() => {
     if (!verificationData?.verificationToken) return '';
-
     const token = verificationData.verificationToken;
-
     // Use WhatsApp business number from server response
     // This is configured on the backend via WHATSAPP_BUSINESS_NUMBER env variable
     const whatsappNumber = verificationData.whatsappNumber || '15551560440';
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(token)}`;
-  };
+  }, [verificationData?.verificationToken, verificationData?.whatsappNumber]);
 
   // Step 1: Method Selection
   const renderMethodSelection = () => {
@@ -349,8 +324,6 @@ export const VerifyMobileFlowPage: React.FC = () => {
       );
     }
 
-    const qrCodeUrl = getQrCodeUrl();
-
     return (
       <div className="space-y-6">
         <Link
@@ -414,11 +387,11 @@ export const VerifyMobileFlowPage: React.FC = () => {
           </div>
 
           {/* Waiting Status */}
-          {isPolling && (
+          {isWaitingForVerification && (
             <div className="flex items-center justify-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <Typography variant="body2" intent="muted">
-                Waiting for verification...
+                {connectionMode === 'sse' ? 'Connected - waiting for verification...' : 'Checking for verification...'}
               </Typography>
             </div>
           )}
@@ -467,8 +440,6 @@ export const VerifyMobileFlowPage: React.FC = () => {
         </div>
       );
     }
-
-    const qrCodeUrl = getQrCodeUrl();
 
     return (
       <div className="space-y-6">
@@ -533,11 +504,11 @@ export const VerifyMobileFlowPage: React.FC = () => {
           </div>
 
           {/* Waiting Status */}
-          {isPolling && (
+          {isWaitingForVerification && (
             <div className="flex items-center justify-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <Typography variant="body2" intent="muted">
-                Waiting for verification...
+                {connectionMode === 'sse' ? 'Connected - waiting for verification...' : 'Checking for verification...'}
               </Typography>
             </div>
           )}
@@ -744,16 +715,16 @@ export const VerifyMobileFlowPage: React.FC = () => {
     </div>
   );
 
-  // Calculate sub-step progress for step 2 (Verify Mobile)
-  const calculateStepProgress = (): number => {
+  // Memoized sub-step progress for step 2 (Verify Mobile)
+  const stepProgress = useMemo((): number => {
     if (currentStep === 1) return 33; // Method Selection
     if (currentStep === 2) return 66; // Verification in progress
     return 100; // Success
-  };
+  }, [currentStep]);
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={2} stepProgress={{ 2: calculateStepProgress() }} signupMethod={signupMethod} />
+      <MultiStepProgressIndicator currentStep={2} stepProgress={{ 2: stepProgress }} signupMethod={signupMethod} />
 
       {currentStep === 1 && renderMethodSelection()}
       {currentStep === 2 && selectedMethod === 'whatsapp' && renderWhatsAppVerification()}
@@ -762,4 +733,4 @@ export const VerifyMobileFlowPage: React.FC = () => {
       {currentStep === 3 && renderSuccess()}
     </div>
   );
-};
+});
