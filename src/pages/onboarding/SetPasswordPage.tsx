@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
-import { useSetPassword } from '../../hooks';
+import { useSetPassword } from '../../hooks/useSetPassword';
 import type { SetPasswordFormData } from '../../schemas/auth';
 import { setPasswordSchema } from '../../schemas/auth';
 
@@ -105,7 +105,7 @@ export const SetPasswordPage: React.FC = () => {
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              disabled={setPasswordMutation.isPending}
+              disabled={form.formState.isSubmitting || setPasswordMutation.isPending}
             >
               {setPasswordMutation.isPending ? 'Setting Password...' : 'Set Password'}
             </Button>
