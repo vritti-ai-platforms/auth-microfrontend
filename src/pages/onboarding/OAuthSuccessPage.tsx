@@ -29,13 +29,13 @@ export const OAuthSuccessPage: React.FC = () => {
         // Validate required parameters
         if (!token) {
           setError('No authentication token received. Please try again.');
-          setTimeout(() => navigate('/signup', { replace: true }), 3000);
+          setTimeout(() => navigate('../signup', { replace: true }), 3000);
           return;
         }
 
         if (!step) {
           setError('Invalid OAuth response. Please try again.');
-          setTimeout(() => navigate('/signup', { replace: true }), 3000);
+          setTimeout(() => navigate('../signup', { replace: true }), 3000);
           return;
         }
 
@@ -54,12 +54,12 @@ export const OAuthSuccessPage: React.FC = () => {
         if (step === 'COMPLETE') {
           navigate('/dashboard', { replace: true });
         } else {
-          navigate('/onboarding', { replace: true });
+          navigate('.', { replace: true });
         }
       } catch (err) {
         console.error('OAuth callback processing error:', err);
         setError('An error occurred during authentication. Please try again.');
-        setTimeout(() => navigate('/signup', { replace: true }), 3000);
+        setTimeout(() => navigate('../signup', { replace: true }), 3000);
       }
     };
 

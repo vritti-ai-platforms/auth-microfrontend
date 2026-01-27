@@ -48,7 +48,7 @@ export const MFAVerificationPage: React.FC = () => {
   // Redirect to login if no MFA challenge
   useEffect(() => {
     if (!mfaChallenge) {
-      navigate("/login", { replace: true });
+      navigate("../login", { replace: true });
     }
   }, [mfaChallenge, navigate]);
 
@@ -70,7 +70,7 @@ export const MFAVerificationPage: React.FC = () => {
     // Navigate based on onboarding status
     if (response.requiresOnboarding && response.onboardingStep) {
       const stepRoute = STEP_ROUTES[response.onboardingStep];
-      navigate(stepRoute || "/onboarding/verify-email", { replace: true });
+      navigate(stepRoute ? `../${stepRoute}` : "../onboarding/verify-email", { replace: true });
     } else {
       navigate("/dashboard", { replace: true });
     }
@@ -156,7 +156,7 @@ export const MFAVerificationPage: React.FC = () => {
         className="p-0 h-auto text-sm text-muted-foreground hover:text-foreground"
         asChild
       >
-        <Link to="/login" className="inline-flex items-center gap-2">
+        <Link to="../login" className="inline-flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to login
         </Link>

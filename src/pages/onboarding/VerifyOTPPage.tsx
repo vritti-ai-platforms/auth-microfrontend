@@ -24,7 +24,7 @@ export const VerifyOTPPage: React.FC = () => {
   const onSubmit = async (data: OTPFormData) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('Verifying OTP:', data.code);
-    navigate('/onboarding/set-password');
+    navigate('set-password');
   };
 
   const handleResend = () => {
@@ -80,7 +80,7 @@ export const VerifyOTPPage: React.FC = () => {
             <Button
               variant="link"
               className="p-0 h-auto font-normal underline"
-              onClick={() => navigate('/onboarding/mobile')}
+              onClick={() => navigate('mobile')}
             >
               Change number
             </Button>

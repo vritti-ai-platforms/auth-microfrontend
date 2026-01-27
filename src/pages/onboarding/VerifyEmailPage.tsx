@@ -63,7 +63,7 @@ export const VerifyEmailPage: React.FC = () => {
           <button
             type="button"
             className="text-sm text-primary hover:text-primary/80"
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("../signup")}
           >
             Change
           </button>

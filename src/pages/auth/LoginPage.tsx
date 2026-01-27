@@ -33,7 +33,7 @@ export const LoginPage: React.FC = () => {
       // Check if MFA is required
       if (response.requiresMfa && response.mfaChallenge) {
         // Navigate to MFA verification with challenge data
-        navigate('/mfa-verify', {
+        navigate('../mfa-verify', {
           state: { mfaChallenge: response.mfaChallenge },
           replace: true,
         });
@@ -51,7 +51,7 @@ export const LoginPage: React.FC = () => {
       // Navigate based on onboarding status
       if (response.requiresOnboarding && response.onboardingStep) {
         const stepRoute = STEP_ROUTES[response.onboardingStep];
-        navigate(stepRoute || '/onboarding/verify-email', { replace: true });
+        navigate(stepRoute ? `../${stepRoute}` : '../onboarding/verify-email', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
@@ -92,7 +92,7 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <FieldLabel>Password</FieldLabel>
               <Button variant="link" className="p-0 h-auto text-sm font-medium">
-                <Link to="/forgot-password">Forgot?</Link>
+                <Link to="../forgot-password">Forgot?</Link>
               </Button>
             </div>
             <PasswordField
@@ -121,7 +121,7 @@ export const LoginPage: React.FC = () => {
         <Typography variant="body2" align="center" intent="muted">
           Don't have an account?{' '}
           <Button variant="link" className="p-0 h-auto font-medium">
-            <Link to="/signup">Create one</Link>
+            <Link to="../signup">Create one</Link>
           </Button>
         </Typography>
       </div>

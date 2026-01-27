@@ -41,11 +41,11 @@ export const OAuthErrorPage: React.FC = () => {
   };
 
   const handleBackToSignup = () => {
-    navigate('/signup', { replace: true });
+    navigate('../signup', { replace: true });
   };
 
   const handleBackToLogin = () => {
-    navigate('/login', { replace: true });
+    navigate('../login', { replace: true });
   };
 
   return (

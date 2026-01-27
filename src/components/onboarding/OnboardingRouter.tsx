@@ -49,6 +49,6 @@ export const OnboardingRouter: React.FC = () => {
 
     default:
       console.warn(`Unknown onboarding step: ${currentStep}`);
-      return <Navigate to="/login" replace />;
+      return <Navigate to="../login" replace />;
   }
 };

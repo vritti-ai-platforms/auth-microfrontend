@@ -42,7 +42,7 @@ export const SignupPage: React.FC = () => {
       }
 
       // Navigate to success page with email and onboarding state
-      navigate('/signup-success', {
+      navigate('../signup-success', {
         state: {
           email: form.getValues('email'),
           isNewUser: response.isNewUser,
@@ -70,7 +70,7 @@ export const SignupPage: React.FC = () => {
 
   const handleLoginInstead = () => {
     const email = form.getValues('email');
-    navigate('/login', { state: { email } });
+    navigate('../login', { state: { email } });
   };
 
   return (
@@ -187,7 +187,7 @@ export const SignupPage: React.FC = () => {
         <Typography variant="body2" align="center" intent="muted">
           Already have an account?{' '}
           <Button variant="link" className="p-0 h-auto font-medium">
-            <Link to="/login">Login</Link>
+            <Link to="../login">Login</Link>
           </Button>
         </Typography>
       </div>
