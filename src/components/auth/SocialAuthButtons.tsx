@@ -71,12 +71,11 @@ const SocialButton: React.FC<SocialButtonProps> = ({ provider, onClick }) => {
 
 export const SocialAuthButtons: React.FC = () => {
   const handleOAuthLogin = (provider: string) => {
-    // Get API URL from environment variable
-    const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
-
-    // Redirect to backend OAuth endpoint
-    // Backend will redirect to the OAuth provider, then back to our success/error pages
-    window.location.href = `${apiUrl}/cloud-api/auth/oauth/${provider}`;
+    // ZERO ENVIRONMENT VARIABLES APPROACH:
+    // Use relative /api path - works in both development and production
+    // Dev: Rsbuild proxy forwards /api/* to localhost:3000
+    // Prod: Nginx proxy forwards /api/* to backend service
+    window.location.href = `/api/cloud-api/auth/oauth/${provider}`;
   };
 
   return (
