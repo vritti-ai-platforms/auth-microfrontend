@@ -312,6 +312,29 @@ export interface BackupCodesResponse {
   backupCodes: string[];
   /** Warning message about saving backup codes */
   warning: string;
+  /** JWT access token (returned after onboarding completion) */
+  accessToken?: string;
+  /** Token expiration time in seconds */
+  expiresIn?: number;
+  /** Type of the token (always "Bearer") */
+  tokenType?: string;
+}
+
+/**
+ * Skip 2FA response from the API
+ * Returned when user skips 2FA setup during onboarding
+ */
+export interface Skip2FAResponse {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** Human-readable success message */
+  message: string;
+  /** JWT access token (returned after onboarding completion) */
+  accessToken?: string;
+  /** Token expiration time in seconds */
+  expiresIn?: number;
+  /** Type of the token (always "Bearer") */
+  tokenType?: string;
 }
 
 /**
@@ -438,11 +461,8 @@ export async function verifyTotpSetup(
  * }
  * ```
  */
-export async function skip2FASetup(): Promise<{
-  success: boolean;
-  message: string;
-}> {
-  const response: AxiosResponse<{ success: boolean; message: string }> =
+export async function skip2FASetup(): Promise<Skip2FAResponse> {
+  const response: AxiosResponse<Skip2FAResponse> =
     await axios.post("cloud-api/onboarding/2fa/skip");
 
   return response.data;

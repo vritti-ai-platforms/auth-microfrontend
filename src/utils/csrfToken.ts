@@ -45,11 +45,11 @@ export async function refreshCsrfToken(): Promise<string> {
 
     tokenFetchInProgress = true;
 
-    const response = await axios.get<{ token: string }>('/csrf/token', {
+    const response = await axios.get<{ csrfToken: string }>('/csrf/token', {
       withCredentials: true,
     });
 
-    const newToken = response.data.token;
+    const newToken = response.data.csrfToken;
 
     if (!newToken || typeof newToken !== 'string') {
       throw new Error('Invalid CSRF token received from server');
