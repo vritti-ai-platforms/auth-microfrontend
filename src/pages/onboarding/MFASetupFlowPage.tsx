@@ -1,3 +1,4 @@
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import type React from 'react';
@@ -59,7 +60,14 @@ export const MFASetupFlowPage: React.FC = () => {
 
   const handleSkip = async () => {
     try {
-      await skipMutation.mutateAsync();
+      const response = await skipMutation.mutateAsync();
+      // Store access token if returned
+      if (response.accessToken) {
+        setToken(response.accessToken);
+        if (response.expiresIn) {
+          scheduleTokenRefresh(response.expiresIn);
+        }
+      }
       setCurrentStep(4);
     } catch {
       // Error is available via skipMutation.error
@@ -77,6 +85,13 @@ export const MFASetupFlowPage: React.FC = () => {
   const handlePasskeyRegister = async () => {
     try {
       const response = await passkeyMutation.mutateAsync();
+      // Store access token if returned
+      if (response.accessToken) {
+        setToken(response.accessToken);
+        if (response.expiresIn) {
+          scheduleTokenRefresh(response.expiresIn);
+        }
+      }
       setBackupCodes(response.backupCodes);
       setBackupWarning(response.warning);
       setCurrentStep(3);
@@ -88,6 +103,13 @@ export const MFASetupFlowPage: React.FC = () => {
   const handleVerify = async (code: string) => {
     try {
       const response = await verifyMutation.mutateAsync(code);
+      // Store access token if returned
+      if (response.accessToken) {
+        setToken(response.accessToken);
+        if (response.expiresIn) {
+          scheduleTokenRefresh(response.expiresIn);
+        }
+      }
       setBackupCodes(response.backupCodes);
       setBackupWarning(response.warning);
       setCurrentStep(3);
