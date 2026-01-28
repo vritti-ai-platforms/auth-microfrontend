@@ -12,7 +12,7 @@ jobs:
     uses: vritti-ai-platforms/infrastructure/.github/workflows/build-web.yml@main
     with:
       app_type: microfrontend
-      app_name: vritti-auth
+      app_name: auth-microfrontend
       deploy_path: /vritti-auth
       node_version: '20'
       build_command: pnpm build

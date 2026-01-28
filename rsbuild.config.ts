@@ -6,6 +6,9 @@ import { pluginReact } from '@rsbuild/plugin-react';
 const useHttps = process.env.USE_HTTPS === 'true';
 
 export default defineConfig({
+  output: {
+    assetPrefix: '/auth-microfrontend/',
+  },
   dev: {
     writeToDisk: true, // Write build outputs to disk in dev mode
   },
