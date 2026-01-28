@@ -27,9 +27,9 @@ jobs:
     uses: vritti-ai-platforms/infrastructure/.github/workflows/reusable-deploy-web-build.yml@main
     with:
       artifact_name: ${{ needs.build.outputs.artifact_name }}
-      deploy_path: /opt/vritti/www/vritti-auth
+      deploy_path: /opt/vritti/www/auth-microfrontend
       backup_existing: true
-      health_check_url: https://${{ vars.APP_DOMAIN }}/vritti-auth/mf-manifest.json
+      health_check_url: https://${{ vars.APP_DOMAIN }}/auth-microfrontend/mf-manifest.json
     secrets:
       SERVER_VM_HOST: ${{ secrets.SERVER_VM_HOST }}
       SERVER_VM_USER: ${{ secrets.SERVER_VM_USER }}
