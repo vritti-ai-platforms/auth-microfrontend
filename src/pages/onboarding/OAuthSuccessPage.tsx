@@ -50,11 +50,13 @@ export const OAuthSuccessPage: React.FC = () => {
           }
         }
 
-        // Navigate to onboarding - OnboardingRouter will render the correct step
+        // Navigate based on onboarding step
+        // Note: We use '../' to navigate to /onboarding parent route after extracting token
+        // This avoids staying on /onboarding/oauth-success which would lose query params on re-render
         if (step === 'COMPLETE') {
           navigate('/dashboard', { replace: true });
         } else {
-          navigate('.', { replace: true });
+          navigate('/onboarding', { replace: true });
         }
       } catch (err) {
         console.error('OAuth callback processing error:', err);
