@@ -86,6 +86,105 @@ import { Button, Typography } from '@vritti/quantum-ui';
 - Use `setToken`, `scheduleTokenRefresh` for token management
 - Navigate based on onboarding status after login/signup
 
+### 6. Rsbuild Configuration Patterns
+
+**CRITICAL: Follow these optimization patterns in `rsbuild.config.ts`.**
+
+1. **Extract shared dependencies to constants**
+   - Improves maintainability and reusability
+   - Use `as const` for readonly configuration
+   - Centralize Module Federation shared config
+
+2. **Type custom plugins properly**
+   - Import `RsbuildPlugin` type from `@rsbuild/core`
+   - Provides type safety and autocomplete for plugin API
+   - Makes plugin contract explicit
+
+3. **Optimize imports for tree-shaking**
+   - Use specific imports: `import { readFileSync } from 'node:fs'`
+   - Avoid wildcard imports: `import * as fs from 'fs'`
+   - Enables better bundle optimization
+
+4. **Extract environment-derived values**
+   - Calculate protocol, host, and URLs once at top level
+   - Avoids repeated conditional logic
+   - Makes configuration clearer
+
+**Example** (`rsbuild.config.ts`):
+```typescript
+import { readFileSync } from 'node:fs';
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+import { defineConfig, type RsbuildPlugin } from '@rsbuild/core';
+import { pluginReact } from '@rsbuild/plugin-react';
+
+// Environment configuration
+const useHttps = process.env.USE_HTTPS === 'true';
+const protocol = useHttps ? 'https' : 'http';
+const host = 'local.vrittiai.com';
+const defaultApiHost = `${protocol}://${host}:3000`;
+
+// Shared dependencies configuration for Module Federation
+const SHARED_DEPENDENCIES = {
+  react: {
+    singleton: true,
+    requiredVersion: '^19.2.0',
+    eager: true,
+  },
+  'react-dom': {
+    singleton: true,
+    requiredVersion: '^19.2.0',
+    eager: true,
+  },
+  'react-router-dom': {
+    singleton: true,
+    eager: true,
+  },
+  '@vritti/quantum-ui': {
+    singleton: true,
+    eager: true,
+  },
+} as const;
+
+// Custom plugin with proper typing
+const manifestMessagePlugin: RsbuildPlugin = {
+  name: 'plugin-manifest-message',
+  setup: (api) => {
+    api.onAfterStartDevServer(({ port }) => {
+      api.logger.info(`➜  Manifest: ${protocol}://${host}:${port}/mf-manifest.json`);
+    });
+  },
+};
+
+export default defineConfig({
+  // ... rest of config
+  plugins: [
+    pluginReact(),
+    manifestMessagePlugin,
+    pluginModuleFederation({
+      name: 'vritti_auth',
+      exposes: {
+        './routes': './src/routes.tsx',
+      },
+      shared: SHARED_DEPENDENCIES,
+    }),
+  ],
+});
+```
+
+**DO**:
+- ✅ Extract `SHARED_DEPENDENCIES` constant for Module Federation
+- ✅ Type custom plugins with `RsbuildPlugin` interface
+- ✅ Use specific imports: `import { readFileSync } from 'node:fs'`
+- ✅ Calculate environment-derived values at top level
+- ✅ Use arrow functions for inline plugin callbacks
+
+**DON'T**:
+- ❌ Repeat shared dependency configuration
+- ❌ Leave custom plugins untyped
+- ❌ Use wildcard imports: `import * as fs from 'fs'`
+- ❌ Repeat protocol/host calculation throughout config
+- ❌ Inline complex configuration objects
+
 ## Directory Structure
 
 ```
@@ -131,3 +230,33 @@ export const MyIcon: React.FC<{ className?: string }> = ({ className }) => (
   <span>An error occurred</span>
 </div>
 ```
+
+## Starting the Application
+
+**Prerequisites**:
+- If using HTTPS mode, SSL certificates must be in `./certs/` directory
+- API backend should be running on `http://local.vrittiai.com:3000` or `https://local.vrittiai.com:3000`
+
+**Available npm scripts**:
+```bash
+# HTTP mode (default)
+pnpm dev                    # Starts on http://local.vrittiai.com:3001
+
+# HTTPS mode
+USE_HTTPS=true pnpm dev     # Starts on https://local.vrittiai.com:3001
+```
+
+**Running standalone vs with host**:
+- **Standalone**: Run `pnpm dev` to test auth flows in isolation
+- **With host**: Run `vritti-web-nexus` first, it will load this as a remote
+
+**Access URLs**:
+- **HTTP**: `http://local.vrittiai.com:3001`
+- **HTTPS**: `https://local.vrittiai.com:3001`
+- **Manifest**: `{protocol}://local.vrittiai.com:3001/mf-manifest.json`
+
+**Important Notes**:
+- Port `3001` is the default for vritti-auth
+- When running with host, protocol must match (HTTP with HTTP, HTTPS with HTTPS)
+- The dev server writes build outputs to disk (`writeToDisk: true`)
+- Manifest URL is logged on server start for Module Federation setup

@@ -1,9 +1,53 @@
-import fs from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
-import { defineConfig } from '@rsbuild/core';
+import { defineConfig, type RsbuildPlugin } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 
+// Environment configuration
 const useHttps = process.env.USE_HTTPS === 'true';
+const protocol = useHttps ? 'https' : 'http';
+const host = 'local.vrittiai.com';
+const defaultApiHost = `${protocol}://${host}:3000`;
+
+// Shared dependencies configuration for Module Federation
+const SHARED_DEPENDENCIES = {
+  react: {
+    singleton: true,
+    requiredVersion: '^19.2.0',
+    eager: true,
+  },
+  'react-dom': {
+    singleton: true,
+    requiredVersion: '^19.2.0',
+    eager: true,
+  },
+  'react-router-dom': {
+    singleton: true,
+    eager: true,
+  },
+  '@vritti/quantum-ui': {
+    singleton: true,
+    eager: true,
+  },
+  axios: {
+    singleton: true,
+    eager: true,
+  },
+  '@tanstack/react-query': {
+    singleton: true,
+    eager: true,
+  },
+} as const;
+
+// Custom plugin to log manifest URL on dev server start
+const manifestMessagePlugin: RsbuildPlugin = {
+  name: 'plugin-manifest-message',
+  setup: (api) => {
+    api.onAfterStartDevServer(({ port }) => {
+      api.logger.info(`➜  Manifest: ${protocol}://${host}:${port}/mf-manifest.json`);
+    });
+  },
+};
 
 export default defineConfig({
   output: {
@@ -16,61 +60,27 @@ export default defineConfig({
     port: 3001,
     ...(useHttps && {
       https: {
-        key: fs.readFileSync('./certs/local.vrittiai.com+4-key.pem'),
-        cert: fs.readFileSync('./certs/local.vrittiai.com+4.pem'),
+        key: readFileSync('./certs/local.vrittiai.com+4-key.pem'),
+        cert: readFileSync('./certs/local.vrittiai.com+4.pem'),
       },
     }),
     proxy: {
       '/api': {
-        target: process.env.REACT_API_HOST || 'http://localhost:3000',
+        target: process.env.REACT_API_HOST || defaultApiHost,
         changeOrigin: true,
-        pathRewrite: { '^/api': '' },
+        pathRewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
   plugins: [
     pluginReact(),
-    {
-      name: 'plugin-manifest-message',
-      setup: (api) => {
-        api.onAfterStartDevServer(({ port }: { port: number }) => {
-          api.logger.info(`➜  Manifest: ${useHttps ? 'https' : 'http'}://local.vrittiai.com:${port}/mf-manifest.json`);
-        });
-      },
-    },
+    manifestMessagePlugin,
     pluginModuleFederation({
       name: 'vritti_auth',
       exposes: {
         './routes': './src/routes.tsx',
       },
-      shared: {
-        react: {
-          singleton: true,
-          requiredVersion: '^19.2.0',
-          eager: true,
-        },
-        'react-dom': {
-          singleton: true,
-          requiredVersion: '^19.2.0',
-          eager: true,
-        },
-        'react-router-dom': {
-          singleton: true,
-          eager: true,
-        },
-        '@vritti/quantum-ui': {
-          singleton: true,
-          eager: true,
-        },
-        axios: {
-          singleton: true,
-          eager: true,
-        },
-        '@tanstack/react-query': {
-          singleton: true,
-          eager: true,
-        },
-      },
+      shared: SHARED_DEPENDENCIES,
       dts: false, // Disable DTS generation to avoid issues with malformed type declarations
     }),
   ],
