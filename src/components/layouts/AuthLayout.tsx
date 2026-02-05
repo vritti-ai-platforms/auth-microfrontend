@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from '@vritti/quantum-ui/Card';
-import { ThemeToggle } from '@vritti/quantum-ui/ThemeToggle';
+import { ThemeToggle } from '@vritti/quantum-ui/theme';
 import type React from 'react';
 import { Outlet } from 'react-router-dom';
 import Logo from '../../assets/logo.png';

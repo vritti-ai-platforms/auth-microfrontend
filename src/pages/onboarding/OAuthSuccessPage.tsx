@@ -39,7 +39,7 @@ export const OAuthSuccessPage: React.FC = () => {
           return;
         }
 
-        // Store access token (refresh token is in httpOnly cookie set by backend)
+        // Store access token (setToken automatically dispatches auth-state-change event)
         setToken(token);
 
         // Schedule proactive token refresh if expiresIn is provided

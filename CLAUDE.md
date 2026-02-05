@@ -80,6 +80,52 @@ import { Button, Typography } from '@vritti/quantum-ui';
 - Use quantum-ui Form components (`Form`, `Field`, `FieldGroup`, etc.)
 - Mutations should use TanStack Query hooks
 
+#### API Error Handling in Forms
+
+**CRITICAL: Always enable `showRootError` for forms that may receive general API errors.**
+
+The quantum-ui `Form` component automatically maps API errors to form fields using `mapApiErrorsToForm`:
+
+```typescript
+// API returns: { errors: [{ field: "email", message: "Invalid" }] }
+// → Error displays inline on the email field
+
+// API returns: { errors: [{ message: "Invalid credentials" }] }
+// → Error displays as root error (if showRootError is enabled)
+```
+
+**Form Configuration:**
+
+```tsx
+// CORRECT - Enable root error display for auth forms
+<Form form={form} mutation={loginMutation} showRootError>
+  <TextField name="email" />
+  <PasswordField name="password" />
+</Form>
+
+// WRONG - Root errors will be silently lost!
+<Form form={form} mutation={loginMutation}>
+  <TextField name="email" />
+  <PasswordField name="password" />
+</Form>
+```
+
+**When to use `showRootError={true}`:**
+- Login forms (auth errors aren't field-specific)
+- Any form where the API might return general errors
+- Forms with complex validation that spans multiple fields
+
+**Root Error Position:**
+```tsx
+<Form
+  form={form}
+  mutation={mutation}
+  showRootError
+  rootErrorPosition="top"  // or "bottom" (default)
+  rootErrorClassName="my-2"
+>
+```
+
 ### 5. Authentication Flow
 
 - Auth tokens are managed via `@vritti/quantum-ui/axios`

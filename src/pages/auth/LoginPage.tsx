@@ -53,7 +53,8 @@ export const LoginPage: React.FC = () => {
         const stepRoute = STEP_ROUTES[response.onboardingStep];
         navigate(stepRoute ? `../${stepRoute}` : '../onboarding/verify-email', { replace: true });
       } else {
-        navigate('/dashboard', { replace: true });
+        // Full page reload to refresh auth state and routes
+        window.location.href = '/';
       }
     },
   });
@@ -79,7 +80,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {/* Form */}
-      <Form form={form} mutation={loginMutation}>
+      <Form form={form} mutation={loginMutation} showRootError>
         <FieldGroup>
           <TextField
             name="email"

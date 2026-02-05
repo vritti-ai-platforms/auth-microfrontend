@@ -72,7 +72,8 @@ export const MFAVerificationPage: React.FC = () => {
       const stepRoute = STEP_ROUTES[response.onboardingStep];
       navigate(stepRoute ? `../${stepRoute}` : "../onboarding/verify-email", { replace: true });
     } else {
-      navigate("/dashboard", { replace: true });
+      // Full page reload to refresh auth state and routes
+      window.location.href = '/';
     }
   };
 

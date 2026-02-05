@@ -32,7 +32,7 @@ export const SignupPage: React.FC = () => {
 
   const signupMutation = useSignup({
     onSuccess: (response) => {
-      // Store access token (refresh token is in httpOnly cookie set by backend)
+      // Store access token (setToken automatically dispatches auth-state-change event)
       if (response.accessToken) {
         setToken(response.accessToken);
         // Schedule proactive token refresh
