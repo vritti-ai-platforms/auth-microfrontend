@@ -1,3 +1,6 @@
+// Utility hooks
+export { useResendTimer } from './useResendTimer';
+
 // Auth hooks
 export { useSignup, useLogin } from './auth';
 

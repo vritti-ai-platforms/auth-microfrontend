@@ -8,13 +8,16 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MultiStepProgressIndicator } from "../../components/onboarding/MultiStepProgressIndicator";
 import { useOnboarding } from "../../context";
-import { useResendEmailOtp, useVerifyEmail } from "../../hooks";
+import { useResendEmailOtp, useResendTimer, useVerifyEmail } from "../../hooks";
 import type { OTPFormData } from "../../schemas/auth";
 import { otpSchema } from "../../schemas/auth";
 
 export const VerifyEmailPage: React.FC = () => {
   const navigate = useNavigate();
   const { email, refetch, signupMethod } = useOnboarding();
+  const { secondsRemaining, isResendAvailable, reset: resetTimer } = useResendTimer({
+    initialSeconds: 30,
+  });
 
   const verifyEmailMutation = useVerifyEmail({
     onSuccess: async () => {
@@ -30,6 +33,7 @@ export const VerifyEmailPage: React.FC = () => {
   const resendOtpMutation = useResendEmailOtp({
     onSuccess: () => {
       form.reset();
+      resetTimer();
     },
   });
 
@@ -120,10 +124,15 @@ export const VerifyEmailPage: React.FC = () => {
                 resendOtpMutation.mutate(undefined);
               }}
               disabled={
-                resendOtpMutation.isPending || verifyEmailMutation.isPending
+                !isResendAvailable || resendOtpMutation.isPending || verifyEmailMutation.isPending
               }
+              aria-disabled={!isResendAvailable || resendOtpMutation.isPending}
             >
-              {resendOtpMutation.isPending ? "Sending..." : "Resend"}
+              {resendOtpMutation.isPending
+                ? "Sending..."
+                : isResendAvailable
+                  ? "Resend"
+                  : `Resend in ${secondsRemaining}s`}
             </Button>
           </Typography>
         </FieldGroup>
