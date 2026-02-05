@@ -4,10 +4,9 @@ import { AuthLayout } from './components/layouts/AuthLayout';
 import { OnboardingRouter } from './components/onboarding/OnboardingRouter';
 import { OnboardingProvider } from './context';
 import './index.css';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { SignupSuccessPage } from './pages/auth/SignupSuccessPage';
 import { OAuthErrorPage } from './pages/onboarding/OAuthErrorPage';
@@ -41,10 +40,6 @@ export const authRoutes: RouteObject[] = [
       {
         path: 'forgot-password',
         element: <ForgotPasswordPage />,
-      },
-      {
-        path: 'reset-password',
-        element: <ResetPasswordPage />,
       },
       {
         path: 'mfa-verify',

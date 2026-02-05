@@ -1,5 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { verifyResetOtp, type VerifyResetOtpResponse } from '../services/auth.service';
+import { verifyResetOtp, type VerifyResetOtpResponse } from '../../services/auth.service';
 
 interface VerifyResetOtpParams {
   email: string;

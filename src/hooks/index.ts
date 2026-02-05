@@ -1,37 +1,44 @@
 // Auth hooks
-export { useSignup } from './useSignup';
-export { useLogin } from './useLogin';
+export { useSignup, useLogin } from './auth';
 
 // Onboarding hooks
-export { useRegister } from './useRegister';
-export { useVerifyEmail } from './useVerifyEmail';
-export { useResendEmailOtp } from './useResendEmailOtp';
-export { useStartOnboarding } from './useStartOnboarding';
-export { useSetPassword } from './useSetPassword';
+export {
+  useRegister,
+  useVerifyEmail,
+  useResendEmailOtp,
+  useStartOnboarding,
+  useSetPassword,
+} from './onboarding';
 
 // Mobile verification hooks
-export { useInitiateMobileVerification } from './useInitiateMobileVerification';
-export { useMobileVerificationStatus } from './useMobileVerificationStatus';
-export { useVerifyMobileOtp } from './useVerifyMobileOtp';
-export { useResendMobileVerification } from './useResendMobileVerification';
-
-// Real-time verification hooks (SSE + polling fallback)
-export { useMobileVerificationSSE } from './useMobileVerificationSSE';
-export { useMobileVerificationRealtime } from './useMobileVerificationRealtime';
-
-// 2FA hooks
-export { useInitiateTotpSetup, useVerifyTotpSetup, useSkip2FASetup } from './use2FA';
-export { usePasskeyRegistration, usePasskeyLogin } from './usePasskey';
-
-// MFA Verification hooks
 export {
+  useInitiateMobileVerification,
+  useMobileVerificationStatus,
+  useVerifyMobileOtp,
+  useResendMobileVerification,
+  useMobileVerificationSSE,
+  useMobileVerificationRealtime,
+} from './mobile-verification';
+
+// MFA hooks (2FA, passkey, verification)
+export {
+  useInitiateTotpSetup,
+  useVerifyTotpSetup,
+  useSkip2FASetup,
+  usePasskeyRegistration,
+  usePasskeyLogin,
   useVerifyTotp,
   useSendSmsCode,
   useVerifySms,
   useVerifyPasskey,
-} from './useMFAVerification';
+} from './mfa';
 
 // Password reset hooks
-export { useForgotPassword } from './useForgotPassword';
-export { useVerifyResetOtp } from './useVerifyResetOtp';
-export { useResetPassword } from './useResetPassword';
+export {
+  useForgotPassword,
+  useVerifyResetOtp,
+  useResetPassword,
+  usePasswordResetFlow,
+  type PasswordResetFlow,
+  type Step,
+} from './password-reset';

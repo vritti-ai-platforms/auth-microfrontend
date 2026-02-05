@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
-import { useLogin } from '../../hooks/useLogin';
+import { useLogin } from '../../hooks';
 import type { LoginFormData } from '../../schemas/auth';
 import { loginSchema } from '../../schemas/auth';
 import { STEP_ROUTES } from '../../constants/routes';

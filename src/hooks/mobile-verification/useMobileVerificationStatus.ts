@@ -2,7 +2,7 @@ import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import {
   getMobileVerificationStatus,
   type MobileVerificationStatusResponse,
-} from '../services/onboarding.service';
+} from '../../services/onboarding.service';
 
 type UseMobileVerificationStatusOptions = Omit<
   UseQueryOptions<MobileVerificationStatusResponse, Error>,

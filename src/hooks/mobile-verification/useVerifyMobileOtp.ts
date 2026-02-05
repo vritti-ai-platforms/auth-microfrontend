@@ -1,5 +1,5 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
-import { verifyMobileOtp } from '../services/onboarding.service';
+import { verifyMobileOtp } from '../../services/onboarding.service';
 
 interface VerifyMobileOtpResponse {
   success: boolean;

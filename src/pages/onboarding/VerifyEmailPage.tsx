@@ -8,8 +8,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MultiStepProgressIndicator } from "../../components/onboarding/MultiStepProgressIndicator";
 import { useOnboarding } from "../../context";
-import { useResendEmailOtp } from "../../hooks/useResendEmailOtp";
-import { useVerifyEmail } from "../../hooks/useVerifyEmail";
+import { useResendEmailOtp, useVerifyEmail } from "../../hooks";
 import type { OTPFormData } from "../../schemas/auth";
 import { otpSchema } from "../../schemas/auth";
 

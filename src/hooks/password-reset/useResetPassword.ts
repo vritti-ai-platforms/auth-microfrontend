@@ -1,5 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { resetPassword, type ResetPasswordResponse } from '../services/auth.service';
+import { resetPassword, type ResetPasswordResponse } from '../../services/auth.service';
 
 interface ResetPasswordParams {
   resetToken: string;

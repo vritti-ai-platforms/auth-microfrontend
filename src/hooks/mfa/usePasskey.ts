@@ -8,13 +8,13 @@ import {
   verifyPasskeySetup,
   type BackupCodesResponse,
   type RegistrationResponseJSON,
-} from "../services/onboarding.service";
+} from "../../services/onboarding.service";
 import {
   startPasskeyLogin,
   verifyPasskeyLogin,
   type LoginResponse,
   type AuthenticationResponseJSON,
-} from "../services/auth.service";
+} from "../../services/auth.service";
 
 type UsePasskeyRegistrationOptions = Omit<
   UseMutationOptions<BackupCodesResponse, Error, void>,

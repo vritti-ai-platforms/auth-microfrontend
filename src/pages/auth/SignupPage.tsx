@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
 import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
-import { useSignup } from '../../hooks/useSignup';
+import { useSignup } from '../../hooks';
 import type { SignupFormData } from '../../schemas/auth';
 import { signupSchema } from '../../schemas/auth';
 

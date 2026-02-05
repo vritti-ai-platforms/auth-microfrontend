@@ -5,7 +5,7 @@ import {
   skip2FASetup,
   type TotpSetupResponse,
   type BackupCodesResponse,
-} from '../services/onboarding.service';
+} from '../../services/onboarding.service';
 
 type UseInitiateTotpSetupOptions = Omit<UseMutationOptions<TotpSetupResponse, Error, void>, 'mutationFn'>;
 type UseVerifyTotpSetupOptions = Omit<UseMutationOptions<BackupCodesResponse, Error, string>, 'mutationFn'>;

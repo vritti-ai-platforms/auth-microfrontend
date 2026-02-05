@@ -16,7 +16,7 @@ import {
   useVerifyPasskey,
   useVerifySms,
   useVerifyTotp,
-} from "../../hooks/useMFAVerification";
+} from "../../hooks";
 import { STEP_ROUTES } from "../../constants/routes";
 import {
   type MFAChallenge,

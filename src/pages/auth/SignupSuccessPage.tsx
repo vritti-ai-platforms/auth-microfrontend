@@ -3,7 +3,7 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { CheckCircle2 } from 'lucide-react';
 import type React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useStartOnboarding } from '../../hooks/useStartOnboarding';
+import { useStartOnboarding } from '../../hooks';
 import type { SignupMethod } from '../../services/auth.service';
 import { OnboardingStep } from '../../services/auth.service';
 
