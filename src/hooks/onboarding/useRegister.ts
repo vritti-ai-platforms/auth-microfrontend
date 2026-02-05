@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import type { OnboardingStatusResponse, RegisterDto } from '../services/onboarding.service';
-import { register } from '../services/onboarding.service';
+import type { OnboardingStatusResponse, RegisterDto } from '../../services/onboarding.service';
+import { register } from '../../services/onboarding.service';
 
 /**
  * Hook for registering a new user directly without auth token handling.

@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { AuthenticatorSetup, BackupCodesDisplay, MFAMethodSelection, PasskeySetup } from '../../components/onboarding/mfa';
 import { useOnboarding } from '../../context';
-import { useInitiateTotpSetup, useSkip2FASetup, useVerifyTotpSetup } from '../../hooks/use2FA';
-import { usePasskeyRegistration } from '../../hooks/usePasskey';
+import { useInitiateTotpSetup, useSkip2FASetup, useVerifyTotpSetup, usePasskeyRegistration } from '../../hooks';
 import type { TotpSetupResponse } from '../../services/onboarding.service';
 
 type MFAMethod = 'authenticator' | 'passkey';

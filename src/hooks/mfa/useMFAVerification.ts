@@ -8,7 +8,7 @@ import {
   verifyPasskeyMfa,
   type LoginResponse,
   type AuthenticationResponseJSON,
-} from "../services/auth.service";
+} from "../../services/auth.service";
 
 // ============================================================================
 // TOTP Verification Hook

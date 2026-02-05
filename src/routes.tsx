@@ -4,7 +4,7 @@ import { AuthLayout } from './components/layouts/AuthLayout';
 import { OnboardingRouter } from './components/onboarding/OnboardingRouter';
 import { OnboardingProvider } from './context';
 import './index.css';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';

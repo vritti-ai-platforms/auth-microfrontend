@@ -534,3 +534,89 @@ export async function verifyPasskeyLogin(
 
   return response.data;
 }
+
+// ============================================================================
+// Password Reset API Functions
+// ============================================================================
+
+/**
+ * Response from forgot password request
+ */
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Response from OTP verification - returns reset token
+ */
+export interface VerifyResetOtpResponse {
+  resetToken: string;
+}
+
+/**
+ * Response from password reset
+ */
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Requests a password reset OTP to be sent to the provided email
+ *
+ * @param email - Email address to send the reset code to
+ * @returns Promise resolving to success response
+ */
+export async function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+  const response: AxiosResponse<ForgotPasswordResponse> = await axios.post(
+    "cloud-api/auth/forgot-password",
+    { email },
+    {
+      public: true,
+      showSuccessToast: false,
+    },
+  );
+
+  return response.data;
+}
+
+/**
+ * Verifies the password reset OTP and returns a reset token
+ *
+ * @param email - Email address used for password reset
+ * @param otp - 6-digit OTP code from email
+ * @returns Promise resolving to reset token
+ */
+export async function verifyResetOtp(email: string, otp: string): Promise<VerifyResetOtpResponse> {
+  const response: AxiosResponse<VerifyResetOtpResponse> = await axios.post(
+    "cloud-api/auth/verify-reset-otp",
+    { email, otp },
+    {
+      public: true,
+      showSuccessToast: false,
+    },
+  );
+
+  return response.data;
+}
+
+/**
+ * Resets the password using the reset token from OTP verification
+ *
+ * @param resetToken - Token received after OTP verification
+ * @param newPassword - New password to set
+ * @returns Promise resolving to success response
+ */
+export async function resetPassword(resetToken: string, newPassword: string): Promise<ResetPasswordResponse> {
+  const response: AxiosResponse<ResetPasswordResponse> = await axios.post(
+    "cloud-api/auth/reset-password",
+    { resetToken, newPassword },
+    {
+      public: true,
+      showSuccessToast: false,
+    },
+  );
+
+  return response.data;
+}

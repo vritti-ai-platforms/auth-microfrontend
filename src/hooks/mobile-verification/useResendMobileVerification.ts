@@ -1,30 +1,32 @@
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
 import {
-  initiateMobileVerification,
+  resendMobileVerification,
   type InitiateMobileVerificationDto,
   type MobileVerificationStatusResponse,
-} from '../services/onboarding.service';
+} from '../../services/onboarding.service';
 
-type UseInitiateMobileVerificationOptions = Omit<
+type UseResendMobileVerificationOptions = Omit<
   UseMutationOptions<MobileVerificationStatusResponse, Error, InitiateMobileVerificationDto>,
   'mutationFn'
 >;
 
 /**
- * React Query hook for initiating mobile verification
+ * React Query hook for resending mobile verification
+ *
+ * This generates a new verification token and sends it again.
  *
  * @param options - Optional mutation options
- * @returns Mutation object for initiating verification
+ * @returns Mutation object for resending verification
  *
  * @example
  * ```tsx
- * const { mutate, isPending, error } = useInitiateMobileVerification({
+ * const { mutate, isPending } = useResendMobileVerification({
  *   onSuccess: (data) => {
- *     console.log('Verification initiated:', data.verificationToken);
+ *     console.log('New verification sent:', data.verificationToken);
  *   }
  * });
  *
- * // Initiate verification
+ * // Resend verification
  * mutate({
  *   phone: '+919876543210',
  *   phoneCountry: 'IN',
@@ -32,9 +34,9 @@ type UseInitiateMobileVerificationOptions = Omit<
  * });
  * ```
  */
-export const useInitiateMobileVerification = (options?: UseInitiateMobileVerificationOptions) => {
+export const useResendMobileVerification = (options?: UseResendMobileVerificationOptions) => {
   return useMutation<MobileVerificationStatusResponse, Error, InitiateMobileVerificationDto>({
-    mutationFn: (data: InitiateMobileVerificationDto) => initiateMobileVerification(data),
+    mutationFn: (data: InitiateMobileVerificationDto) => resendMobileVerification(data),
     ...options,
   });
 };

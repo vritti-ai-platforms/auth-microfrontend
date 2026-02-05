@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '../../context';
-import { useSetPassword } from '../../hooks/useSetPassword';
+import { useSetPassword } from '../../hooks';
 import type { SetPasswordFormData } from '../../schemas/auth';
 import { setPasswordSchema } from '../../schemas/auth';
 

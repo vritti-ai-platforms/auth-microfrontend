@@ -1,5 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { setPassword, type SetPasswordResponse } from '../services/onboarding.service';
+import { setPassword, type SetPasswordResponse } from '../../services/onboarding.service';
 
 type UseSetPasswordOptions = Omit<UseMutationOptions<SetPasswordResponse, Error, string>, 'mutationFn'>;
 
