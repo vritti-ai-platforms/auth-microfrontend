@@ -30,3 +30,8 @@ export {
   useVerifySms,
   useVerifyPasskey,
 } from './useMFAVerification';
+
+// Password reset hooks
+export { useForgotPassword } from './useForgotPassword';
+export { useVerifyResetOtp } from './useVerifyResetOtp';
+export { useResetPassword } from './useResetPassword';
