@@ -5,11 +5,12 @@ import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import type { OTPFormData } from '../../../../schemas/auth';
 import { otpSchema } from '../../../../schemas/auth';
-import type { PasswordResetFlow } from '../../../../hooks';
+import { useResendTimer, type PasswordResetFlow } from '../../../../hooks';
 
 interface OtpStepProps {
   email: PasswordResetFlow['email'];
@@ -28,6 +29,21 @@ export const OtpStep: React.FC<OtpStepProps> = ({
   forgotPasswordMutation,
   verifyOtpMutation,
 }) => {
+  const { secondsRemaining, isResendAvailable, reset: resetTimer } = useResendTimer({
+    initialSeconds: 30,
+  });
+
+  // Track previous isSuccess state to detect successful resend
+  const prevIsSuccess = useRef(forgotPasswordMutation.isSuccess);
+
+  useEffect(() => {
+    // Reset timer when resend succeeds (isSuccess changes from false to true)
+    if (forgotPasswordMutation.isSuccess && !prevIsSuccess.current) {
+      resetTimer();
+    }
+    prevIsSuccess.current = forgotPasswordMutation.isSuccess;
+  }, [forgotPasswordMutation.isSuccess, resetTimer]);
+
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: '' },
@@ -103,11 +119,16 @@ export const OtpStep: React.FC<OtpStepProps> = ({
             <Button
               type="button"
               variant="link"
-              className="p-0 h-auto text-sm"
+              className="p-0 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleResend}
-              disabled={forgotPasswordMutation.isPending || verifyOtpMutation.isPending}
+              disabled={!isResendAvailable || forgotPasswordMutation.isPending || verifyOtpMutation.isPending}
+              aria-disabled={!isResendAvailable || forgotPasswordMutation.isPending}
             >
-              {forgotPasswordMutation.isPending ? 'Sending...' : 'Resend code'}
+              {forgotPasswordMutation.isPending
+                ? 'Sending...'
+                : isResendAvailable
+                  ? 'Resend code'
+                  : `Resend code in ${secondsRemaining}s`}
             </Button>
           </div>
         </FieldGroup>
