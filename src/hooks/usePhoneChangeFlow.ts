@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { parsePhoneNumber } from 'libphonenumber-js';
-import { usePhoneVerification } from './usePhoneVerification';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useCallback, useEffect, useState } from 'react';
+import { verificationService } from '../services/verification.service';
 
 export type PhoneChangeStep = 'identity' | 'newPhone' | 'verify' | 'success';
 
@@ -19,6 +20,8 @@ export interface PhoneChangeFlowState {
 }
 
 export function usePhoneChangeFlow(currentPhone: string, currentCountry: string) {
+  const queryClient = useQueryClient();
+
   const [state, setState] = useState<PhoneChangeFlowState>({
     step: 'identity',
     currentPhone,
@@ -35,14 +38,6 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
 
   const [resendTimer, setResendTimer] = useState(0);
 
-  const {
-    requestIdentityVerification,
-    verifyIdentity,
-    requestChange,
-    verifyChange,
-    resendOtp,
-  } = usePhoneVerification();
-
   // Resend timer countdown
   useEffect(() => {
     if (resendTimer > 0) {
@@ -51,15 +46,74 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
     }
   }, [resendTimer]);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
-  };
+  }, []);
 
-  // Step 1: Request identity verification
-  const startFlow = async () => {
+  // Mutation: Verify identity OTP (Step 2)
+  const identityMutation = useMutation({
+    mutationFn: async (data: { code: string }) =>
+      verificationService.verifyPhoneIdentity({
+        verificationId: state.identityVerificationId,
+        otpCode: data.code,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response) => {
+      setState((prev) => ({
+        ...prev,
+        changeRequestId: response.changeRequestId,
+        changeRequestsToday: response.changeRequestsToday,
+        step: 'newPhone',
+      }));
+    },
+  });
+
+  // Mutation: Request phone change (Step 3)
+  // Phone is passed as-is in E.164 format from PhoneField (e.g. "+919876543210")
+  const changePhoneMutation = useMutation({
+    mutationFn: async (data: { newPhone: string; phoneCountry: string }) =>
+      verificationService.requestPhoneChange({
+        changeRequestId: state.changeRequestId,
+        newPhone: data.newPhone,
+        phoneCountry: data.phoneCountry,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response, variables) => {
+      setState((prev) => ({
+        ...prev,
+        newPhone: variables.newPhone,
+        newPhoneCountry: variables.phoneCountry,
+        changeVerificationId: response.verificationId,
+        step: 'verify',
+      }));
+      setResendTimer(45);
+    },
+  });
+
+  // Mutation: Verify new phone OTP (Step 4)
+  const verifyPhoneMutation = useMutation({
+    mutationFn: async (data: { code: string }) =>
+      verificationService.verifyPhoneChange({
+        changeRequestId: state.changeRequestId,
+        verificationId: state.changeVerificationId,
+        otpCode: data.code,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setState((prev) => ({
+        ...prev,
+        revertToken: response.revertToken,
+        step: 'success',
+      }));
+    },
+  });
+
+  // Step 1: Request identity verification (not a form submission)
+  const startFlow = useCallback(async () => {
     clearError();
     try {
-      const response = await requestIdentityVerification.mutateAsync();
+      const response = await verificationService.requestPhoneIdentityVerification();
       setState((prev) => ({
         ...prev,
         identityVerificationId: response.verificationId,
@@ -72,121 +126,14 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
         error: err instanceof Error ? err.message : 'Failed to send verification code',
       }));
     }
-  };
+  }, [clearError]);
 
-  // Step 2: Verify identity OTP
-  const submitIdentityCode = async (code: string) => {
-    clearError();
-    try {
-      const response = await verifyIdentity.mutateAsync({
-        verificationId: state.identityVerificationId,
-        otpCode: code,
-      });
-      setState((prev) => ({
-        ...prev,
-        changeRequestId: response.changeRequestId,
-        changeRequestsToday: response.changeRequestsToday,
-        step: 'newPhone',
-      }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Invalid verification code',
-      }));
-    }
-  };
-
-  // Step 3: Request phone change
-  const submitNewPhone = async (newPhoneValue: string, phoneCountry: string) => {
-    clearError();
-    try {
-      // Normalize phone number - remove + and country code prefix
-      // The PhoneField returns full number like "+916301216587"
-      // Backend expects just digits without country code like "6301216587"
-      let normalizedPhone: string;
-
-      try {
-        // Try to parse with libphonenumber-js for accurate country code removal
-        const phoneNumber = parsePhoneNumber(newPhoneValue, phoneCountry as any);
-        normalizedPhone = phoneNumber?.nationalNumber || '';
-      } catch {
-        // Fallback: manual parsing if libphonenumber-js fails
-        // Remove all non-digits first
-        const digitsOnly = newPhoneValue.replace(/\D/g, '');
-
-        // Country code length mapping for common countries
-        const countryCodeLengths: Record<string, number> = {
-          IN: 2,  // +91
-          US: 1,  // +1
-          CA: 1,  // +1
-          GB: 2,  // +44
-          AU: 2,  // +61
-          CN: 2,  // +86
-          JP: 2,  // +81
-          DE: 2,  // +49
-          FR: 2,  // +33
-          BR: 2,  // +55
-        };
-
-        const codeLength = countryCodeLengths[phoneCountry] || 0;
-        // Only remove country code if we have enough digits
-        normalizedPhone = codeLength && digitsOnly.length > 10
-          ? digitsOnly.slice(codeLength)
-          : digitsOnly;
-      }
-
-      const response = await requestChange.mutateAsync({
-        changeRequestId: state.changeRequestId,
-        newPhone: normalizedPhone,
-        phoneCountry,
-      });
-      setState((prev) => ({
-        ...prev,
-        newPhone: newPhoneValue,
-        newPhoneCountry: phoneCountry,
-        changeVerificationId: response.verificationId,
-        step: 'verify',
-      }));
-      setResendTimer(45);
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Failed to send verification code',
-      }));
-    }
-  };
-
-  // Step 4: Verify new phone OTP
-  const submitVerificationCode = async (code: string) => {
-    clearError();
-    try {
-      const response = await verifyChange.mutateAsync({
-        changeRequestId: state.changeRequestId,
-        verificationId: state.changeVerificationId,
-        otpCode: code,
-      });
-      setState((prev) => ({
-        ...prev,
-        revertToken: response.revertToken,
-        step: 'success',
-      }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Invalid verification code',
-      }));
-    }
-  };
-
-  // Resend OTP
+  // Resend OTP (not a form submission)
   const handleResendOtp = async () => {
     clearError();
     try {
-      const verificationId =
-        state.step === 'identity'
-          ? state.identityVerificationId
-          : state.changeVerificationId;
-      await resendOtp.mutateAsync({ verificationId });
+      const verificationId = state.step === 'identity' ? state.identityVerificationId : state.changeVerificationId;
+      await verificationService.resendPhoneOtp({ verificationId });
       setResendTimer(45);
     } catch (err) {
       setState((prev) => ({
@@ -201,17 +148,12 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
     clearError();
     setState((prev) => ({
       ...prev,
-      step:
-        prev.step === 'verify'
-          ? 'newPhone'
-          : prev.step === 'newPhone'
-            ? 'identity'
-            : prev.step,
+      step: prev.step === 'verify' ? 'newPhone' : prev.step === 'newPhone' ? 'identity' : prev.step,
     }));
   };
 
   // Reset flow
-  const reset = () => {
+  const reset = useCallback(() => {
     setState({
       step: 'identity',
       currentPhone,
@@ -226,15 +168,15 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
       error: null,
     });
     setResendTimer(0);
-  };
+  }, [currentPhone, currentCountry]);
 
   return {
     state,
     resendTimer,
     startFlow,
-    submitIdentityCode,
-    submitNewPhone,
-    submitVerificationCode,
+    identityMutation,
+    changePhoneMutation,
+    verifyPhoneMutation,
     handleResendOtp,
     goBack,
     reset,

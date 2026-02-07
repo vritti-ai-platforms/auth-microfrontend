@@ -1,12 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@vritti/quantum-ui/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { TextField } from '@vritti/quantum-ui/TextField';
@@ -15,9 +9,9 @@ import { AlertCircle, CheckCircle, Clock, Info } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { z } from 'zod';
 import { useEmailChangeFlow } from '../../hooks/useEmailChangeFlow';
 import { newEmailSchema, otpSchema } from '../../schemas/verification';
-import type { z } from 'zod';
 
 interface Props {
   isOpen: boolean;
@@ -25,18 +19,14 @@ interface Props {
   currentEmail: string;
 }
 
-export const EmailVerificationDialog: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  currentEmail,
-}) => {
+export const EmailVerificationDialog: React.FC<Props> = ({ isOpen, onClose, currentEmail }) => {
   const {
     state,
     resendTimer,
     startFlow,
-    submitIdentityCode,
-    submitNewEmail,
-    submitVerificationCode,
+    identityMutation,
+    changeEmailMutation,
+    verifyEmailMutation,
     handleResendOtp,
     goBack,
     reset,
@@ -51,7 +41,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
     } else {
       reset();
     }
-  }, [isOpen]);
+  }, [isOpen, startFlow, reset]);
 
   // Success auto-redirect countdown
   useEffect(() => {
@@ -70,29 +60,17 @@ export const EmailVerificationDialog: React.FC<Props> = ({
     defaultValues: { code: '' },
   });
 
-  const handleIdentitySubmit = (data: z.infer<typeof otpSchema>) => {
-    submitIdentityCode(data.code);
-  };
-
   // Step 2: New Email Form
   const emailForm = useForm<z.infer<typeof newEmailSchema>>({
     resolver: zodResolver(newEmailSchema),
     defaultValues: { newEmail: '' },
   });
 
-  const handleEmailSubmit = (data: z.infer<typeof newEmailSchema>) => {
-    submitNewEmail(data.newEmail);
-  };
-
   // Step 3: Verification Form
   const verifyForm = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: '' },
   });
-
-  const handleVerifySubmit = (data: z.infer<typeof otpSchema>) => {
-    submitVerificationCode(data.code);
-  };
 
   if (!isOpen) return null;
 
@@ -116,12 +94,9 @@ export const EmailVerificationDialog: React.FC<Props> = ({
           </CardTitle>
           {state.step !== 'success' && (
             <CardDescription>
-              {state.step === 'identity' &&
-                'We need to verify your identity before making changes'}
-              {state.step === 'newEmail' &&
-                'Enter the new email address you want to use'}
-              {state.step === 'verify' &&
-                'Enter the verification code sent to your new email'}
+              {state.step === 'identity' && 'We need to verify your identity before making changes'}
+              {state.step === 'newEmail' && 'Enter the new email address you want to use'}
+              {state.step === 'verify' && 'Enter the verification code sent to your new email'}
             </CardDescription>
           )}
         </CardHeader>
@@ -129,10 +104,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
             <Typography variant="body2" intent="muted" className="text-xs text-right">
               {progress}%
@@ -151,13 +123,12 @@ export const EmailVerificationDialog: React.FC<Props> = ({
 
           {/* Step 1: Identity Confirmation */}
           {state.step === 'identity' && (
-            <Form form={identityForm} onSubmit={handleIdentitySubmit}>
+            <Form form={identityForm} mutation={identityMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    For your security, please verify your identity before changing your
-                    email address
+                    For your security, please verify your identity before changing your email address
                   </Typography>
                 </div>
 
@@ -169,15 +140,13 @@ export const EmailVerificationDialog: React.FC<Props> = ({
                 </div>
 
                 <div className="space-y-4">
-                  <Typography variant="body2">
-                    Enter the verification code sent to your email
-                  </Typography>
+                  <Typography variant="body2">Enter the verification code sent to your email</Typography>
                   <Field className="flex justify-center">
                     <OTPField
                       name="code"
                       onChange={(value) => {
                         if (value.length === 6) {
-                          identityForm.handleSubmit(handleIdentitySubmit)();
+                          identityForm.handleSubmit((data) => identityMutation.mutateAsync(data))();
                         }
                       }}
                     />
@@ -191,9 +160,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
                       disabled={resendTimer > 0}
                     >
                       <Clock className="h-4 w-4 mr-2" />
-                      {resendTimer > 0
-                        ? `Resend code in ${resendTimer}s`
-                        : 'Resend code'}
+                      {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </Button>
                   </div>
                 </div>
@@ -210,7 +177,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
 
           {/* Step 2: New Email */}
           {state.step === 'newEmail' && (
-            <Form form={emailForm} onSubmit={handleEmailSubmit}>
+            <Form form={emailForm} mutation={changeEmailMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -219,18 +186,9 @@ export const EmailVerificationDialog: React.FC<Props> = ({
                   </Typography>
                 </div>
 
-                <TextField
-                  label="Current Email"
-                  value={currentEmail}
-                  disabled
-                  readOnly
-                />
+                <TextField label="Current Email" value={currentEmail} disabled readOnly />
 
-                <TextField
-                  name="newEmail"
-                  label="New Email"
-                  placeholder="newemail@example.com"
-                />
+                <TextField name="newEmail" label="New Email" placeholder="newemail@example.com" />
 
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -251,13 +209,12 @@ export const EmailVerificationDialog: React.FC<Props> = ({
 
           {/* Step 3: Verify New Email */}
           {state.step === 'verify' && (
-            <Form form={verifyForm} onSubmit={handleVerifySubmit}>
+            <Form form={verifyForm} mutation={verifyEmailMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    Please enter the 6-digit code sent to{' '}
-                    <span className="font-semibold">{state.newEmail}</span>
+                    Please enter the 6-digit code sent to <span className="font-semibold">{state.newEmail}</span>
                   </Typography>
                 </div>
 
@@ -267,7 +224,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
                       name="code"
                       onChange={(value) => {
                         if (value.length === 6) {
-                          verifyForm.handleSubmit(handleVerifySubmit)();
+                          verifyForm.handleSubmit((data) => verifyEmailMutation.mutateAsync(data))();
                         }
                       }}
                     />
@@ -281,9 +238,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
                       disabled={resendTimer > 0}
                     >
                       <Clock className="h-4 w-4 mr-2" />
-                      {resendTimer > 0
-                        ? `Resend code in ${resendTimer}s`
-                        : 'Resend code'}
+                      {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </Button>
                   </div>
                   <Typography variant="body2" intent="muted" className="text-xs text-center">
@@ -311,9 +266,7 @@ export const EmailVerificationDialog: React.FC<Props> = ({
               </div>
 
               <div className="space-y-2">
-                <Typography variant="body1">
-                  Your email has been successfully changed to
-                </Typography>
+                <Typography variant="body1">Your email has been successfully changed to</Typography>
                 <Typography variant="body1" className="font-semibold">
                   {state.newEmail}
                 </Typography>
@@ -322,8 +275,8 @@ export const EmailVerificationDialog: React.FC<Props> = ({
               <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                 <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <Typography variant="body2" className="text-primary text-left">
-                  For your security, we sent a notification to your previous email (
-                  {currentEmail}) with a revert link valid for 72 hours
+                  For your security, we sent a notification to your previous email ({currentEmail}) with a revert link
+                  valid for 72 hours
                 </Typography>
               </div>
 

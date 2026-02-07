@@ -1,12 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@vritti/quantum-ui/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { PhoneField } from '@vritti/quantum-ui/PhoneField';
@@ -15,9 +9,10 @@ import { AlertCircle, CheckCircle, Clock, Info } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+
+import type { z } from 'zod';
 import { usePhoneChangeFlow } from '../../hooks/usePhoneChangeFlow';
 import { newPhoneSchema, otpSchema } from '../../schemas/verification';
-import type { z } from 'zod';
 
 interface Props {
   isOpen: boolean;
@@ -26,19 +21,14 @@ interface Props {
   currentCountry: string;
 }
 
-export const PhoneVerificationDialog: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  currentPhone,
-  currentCountry,
-}) => {
+export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, currentPhone, currentCountry }) => {
   const {
     state,
     resendTimer,
     startFlow,
-    submitIdentityCode,
-    submitNewPhone,
-    submitVerificationCode,
+    identityMutation,
+    changePhoneMutation,
+    verifyPhoneMutation,
     handleResendOtp,
     goBack,
     reset,
@@ -54,7 +44,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
     } else {
       reset();
     }
-  }, [isOpen]);
+  }, [isOpen, startFlow, reset]);
 
   // Success auto-redirect countdown
   useEffect(() => {
@@ -73,29 +63,17 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
     defaultValues: { code: '' },
   });
 
-  const handleIdentitySubmit = (data: z.infer<typeof otpSchema>) => {
-    submitIdentityCode(data.code);
-  };
-
   // Step 2: New Phone Form
   const phoneForm = useForm<z.infer<typeof newPhoneSchema>>({
     resolver: zodResolver(newPhoneSchema),
     defaultValues: { newPhone: '', phoneCountry: currentCountry },
   });
 
-  const handlePhoneSubmit = (data: z.infer<typeof newPhoneSchema>) => {
-    submitNewPhone(data.newPhone, phoneCountry);
-  };
-
   // Step 3: Verification Form
   const verifyForm = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: '' },
   });
-
-  const handleVerifySubmit = (data: z.infer<typeof otpSchema>) => {
-    submitVerificationCode(data.code);
-  };
 
   if (!isOpen) return null;
 
@@ -119,12 +97,9 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
           </CardTitle>
           {state.step !== 'success' && (
             <CardDescription>
-              {state.step === 'identity' &&
-                'We need to verify your identity before making changes'}
-              {state.step === 'newPhone' &&
-                'Enter the new phone number you want to use'}
-              {state.step === 'verify' &&
-                'Enter the verification code sent to your new phone'}
+              {state.step === 'identity' && 'We need to verify your identity before making changes'}
+              {state.step === 'newPhone' && 'Enter the new phone number you want to use'}
+              {state.step === 'verify' && 'Enter the verification code sent to your new phone'}
             </CardDescription>
           )}
         </CardHeader>
@@ -132,10 +107,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
             <Typography variant="body2" intent="muted" className="text-xs text-right">
               {progress}%
@@ -154,13 +126,12 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
 
           {/* Step 1: Identity Confirmation */}
           {state.step === 'identity' && (
-            <Form form={identityForm} onSubmit={handleIdentitySubmit}>
+            <Form form={identityForm} mutation={identityMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    For your security, please verify your identity before changing your
-                    phone number
+                    For your security, please verify your identity before changing your phone number
                   </Typography>
                 </div>
 
@@ -172,15 +143,13 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
                 </div>
 
                 <div className="space-y-4">
-                  <Typography variant="body2">
-                    Enter the verification code sent to your phone
-                  </Typography>
+                  <Typography variant="body2">Enter the verification code sent to your phone</Typography>
                   <Field className="flex justify-center">
                     <OTPField
                       name="code"
                       onChange={(value) => {
                         if (value.length === 6) {
-                          identityForm.handleSubmit(handleIdentitySubmit)();
+                          identityForm.handleSubmit((data) => identityMutation.mutateAsync(data))();
                         }
                       }}
                     />
@@ -194,9 +163,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
                       disabled={resendTimer > 0}
                     >
                       <Clock className="h-4 w-4 mr-2" />
-                      {resendTimer > 0
-                        ? `Resend code in ${resendTimer}s`
-                        : 'Resend code'}
+                      {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </Button>
                   </div>
                 </div>
@@ -213,7 +180,12 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
 
           {/* Step 2: New Phone */}
           {state.step === 'newPhone' && (
-            <Form form={phoneForm} onSubmit={handlePhoneSubmit}>
+            <Form
+              form={phoneForm}
+              mutation={changePhoneMutation}
+              transformSubmit={(data) => ({ ...data, phoneCountry })}
+              showRootError
+            >
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -222,18 +194,11 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
                   </Typography>
                 </div>
 
-                <PhoneField
-                  label="Current Phone"
-                  value={currentPhone as any}
-                  defaultCountry={currentCountry as any}
-                  disabled
-                />
+                <PhoneField label="Current Phone" disabled />
 
                 <PhoneField
                   name="newPhone"
                   label="New Phone Number"
-                  placeholder="+1 234 567 8900"
-                  defaultCountry={phoneCountry as any}
                   onChange={(value) => {
                     if (typeof value === 'object' && value !== null && 'country' in value) {
                       setPhoneCountry((value as { country?: string }).country || 'IN');
@@ -260,13 +225,12 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
 
           {/* Step 3: Verify New Phone */}
           {state.step === 'verify' && (
-            <Form form={verifyForm} onSubmit={handleVerifySubmit}>
+            <Form form={verifyForm} mutation={verifyPhoneMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    Please enter the 6-digit code sent to{' '}
-                    <span className="font-semibold">{state.newPhone}</span>
+                    Please enter the 6-digit code sent to <span className="font-semibold">{state.newPhone}</span>
                   </Typography>
                 </div>
 
@@ -276,7 +240,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
                       name="code"
                       onChange={(value) => {
                         if (value.length === 6) {
-                          verifyForm.handleSubmit(handleVerifySubmit)();
+                          verifyForm.handleSubmit((data) => verifyPhoneMutation.mutateAsync(data))();
                         }
                       }}
                     />
@@ -290,9 +254,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
                       disabled={resendTimer > 0}
                     >
                       <Clock className="h-4 w-4 mr-2" />
-                      {resendTimer > 0
-                        ? `Resend code in ${resendTimer}s`
-                        : 'Resend code'}
+                      {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend code'}
                     </Button>
                   </div>
                   <Typography variant="body2" intent="muted" className="text-xs text-center">
@@ -320,9 +282,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
               </div>
 
               <div className="space-y-2">
-                <Typography variant="body1">
-                  Your phone number has been successfully changed to
-                </Typography>
+                <Typography variant="body1">Your phone number has been successfully changed to</Typography>
                 <Typography variant="body1" className="font-semibold">
                   {state.newPhone}
                 </Typography>
@@ -331,8 +291,8 @@ export const PhoneVerificationDialog: React.FC<Props> = ({
               <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                 <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <Typography variant="body2" className="text-primary text-left">
-                  For your security, we sent a notification to your previous phone (
-                  {currentPhone}) with a revert link valid for 72 hours
+                  For your security, we sent a notification to your previous phone ({currentPhone}) with a revert link
+                  valid for 72 hours
                 </Typography>
               </div>
 

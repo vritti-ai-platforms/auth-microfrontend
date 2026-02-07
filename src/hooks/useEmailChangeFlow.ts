@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useEmailVerification } from './useEmailVerification';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
+import { verificationService } from '../services/verification.service';
 
 export type EmailChangeStep = 'identity' | 'newEmail' | 'verify' | 'success';
 
@@ -16,6 +17,8 @@ export interface EmailChangeFlowState {
 }
 
 export function useEmailChangeFlow(currentEmail: string) {
+  const queryClient = useQueryClient();
+
   const [state, setState] = useState<EmailChangeFlowState>({
     step: 'identity',
     currentEmail,
@@ -30,14 +33,6 @@ export function useEmailChangeFlow(currentEmail: string) {
 
   const [resendTimer, setResendTimer] = useState(0);
 
-  const {
-    requestIdentityVerification,
-    verifyIdentity,
-    requestChange,
-    verifyChange,
-    resendOtp,
-  } = useEmailVerification();
-
   // Resend timer countdown
   useEffect(() => {
     if (resendTimer > 0) {
@@ -46,15 +41,71 @@ export function useEmailChangeFlow(currentEmail: string) {
     }
   }, [resendTimer]);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setState((prev) => ({ ...prev, error: null }));
-  };
+  }, []);
 
-  // Step 1: Request identity verification
-  const startFlow = async () => {
+  // Mutation: Verify identity OTP (Step 2)
+  const identityMutation = useMutation({
+    mutationFn: async (data: { code: string }) =>
+      verificationService.verifyEmailIdentity({
+        verificationId: state.identityVerificationId,
+        otpCode: data.code,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response) => {
+      setState((prev) => ({
+        ...prev,
+        changeRequestId: response.changeRequestId,
+        changeRequestsToday: response.changeRequestsToday,
+        step: 'newEmail',
+      }));
+    },
+  });
+
+  // Mutation: Request email change (Step 3)
+  const changeEmailMutation = useMutation({
+    mutationFn: async (data: { newEmail: string }) =>
+      verificationService.requestEmailChange({
+        changeRequestId: state.changeRequestId,
+        newEmail: data.newEmail,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response, variables) => {
+      setState((prev) => ({
+        ...prev,
+        newEmail: variables.newEmail,
+        changeVerificationId: response.verificationId,
+        step: 'verify',
+      }));
+      setResendTimer(45);
+    },
+  });
+
+  // Mutation: Verify new email OTP (Step 4)
+  const verifyEmailMutation = useMutation({
+    mutationFn: async (data: { code: string }) =>
+      verificationService.verifyEmailChange({
+        changeRequestId: state.changeRequestId,
+        verificationId: state.changeVerificationId,
+        otpCode: data.code,
+      }),
+    onMutate: () => clearError(),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setState((prev) => ({
+        ...prev,
+        revertToken: response.revertToken,
+        step: 'success',
+      }));
+    },
+  });
+
+  // Step 1: Request identity verification (not a form submission)
+  const startFlow = useCallback(async () => {
     clearError();
     try {
-      const response = await requestIdentityVerification.mutateAsync();
+      const response = await verificationService.requestEmailIdentityVerification();
       setState((prev) => ({
         ...prev,
         identityVerificationId: response.verificationId,
@@ -67,76 +118,9 @@ export function useEmailChangeFlow(currentEmail: string) {
         error: err instanceof Error ? err.message : 'Failed to send verification code',
       }));
     }
-  };
+  }, [clearError]);
 
-  // Step 2: Verify identity OTP
-  const submitIdentityCode = async (code: string) => {
-    clearError();
-    try {
-      const response = await verifyIdentity.mutateAsync({
-        verificationId: state.identityVerificationId,
-        otpCode: code,
-      });
-      setState((prev) => ({
-        ...prev,
-        changeRequestId: response.changeRequestId,
-        changeRequestsToday: response.changeRequestsToday,
-        step: 'newEmail',
-      }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Invalid verification code',
-      }));
-    }
-  };
-
-  // Step 3: Request email change
-  const submitNewEmail = async (newEmailValue: string) => {
-    clearError();
-    try {
-      const response = await requestChange.mutateAsync({
-        changeRequestId: state.changeRequestId,
-        newEmail: newEmailValue,
-      });
-      setState((prev) => ({
-        ...prev,
-        newEmail: newEmailValue,
-        changeVerificationId: response.verificationId,
-        step: 'verify',
-      }));
-      setResendTimer(45);
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Failed to send verification code',
-      }));
-    }
-  };
-
-  // Step 4: Verify new email OTP
-  const submitVerificationCode = async (code: string) => {
-    clearError();
-    try {
-      const response = await verifyChange.mutateAsync({
-        changeRequestId: state.changeRequestId,
-        verificationId: state.changeVerificationId,
-        otpCode: code,
-      });
-      setState((prev) => ({
-        ...prev,
-        revertToken: response.revertToken,
-        step: 'success',
-      }));
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Invalid verification code',
-      }));
-    }
-  };
-
-  // Resend OTP
+  // Resend OTP (not a form submission)
   const handleResendOtp = async () => {
     clearError();
     try {
@@ -144,7 +128,7 @@ export function useEmailChangeFlow(currentEmail: string) {
         state.step === 'identity'
           ? state.identityVerificationId
           : state.changeVerificationId;
-      await resendOtp.mutateAsync({ verificationId });
+      await verificationService.resendEmailOtp({ verificationId });
       setResendTimer(45);
     } catch (err) {
       setState((prev) => ({
@@ -169,7 +153,7 @@ export function useEmailChangeFlow(currentEmail: string) {
   };
 
   // Reset flow
-  const reset = () => {
+  const reset = useCallback(() => {
     setState({
       step: 'identity',
       currentEmail,
@@ -182,15 +166,15 @@ export function useEmailChangeFlow(currentEmail: string) {
       error: null,
     });
     setResendTimer(0);
-  };
+  }, [currentEmail]);
 
   return {
     state,
     resendTimer,
     startFlow,
-    submitIdentityCode,
-    submitNewEmail,
-    submitVerificationCode,
+    identityMutation,
+    changeEmailMutation,
+    verifyEmailMutation,
     handleResendOtp,
     goBack,
     reset,
