@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { startAuthentication } from '@simplewebauthn/browser';
 import {
   MethodSwitcher,
   PasskeyVerification,
@@ -13,6 +14,7 @@ import {
 } from '../../components/auth/mfa-verification';
 import { STEP_ROUTES } from '../../constants/routes';
 import { useVerifyPasskey } from '../../hooks';
+import { startPasskeyVerification } from '../../services/auth.service';
 import type { LoginResponse, MFAChallenge, MFAMethod, OnboardingStep } from '../../services/auth.service';
 
 /**
@@ -69,7 +71,22 @@ export const MFAVerificationPage: React.FC = () => {
   // Handle Passkey verification
   const handlePasskeyVerify = async () => {
     if (!mfaChallenge) return;
-    await passkeyMutation.mutateAsync(mfaChallenge.sessionId);
+
+    try {
+      // Step 1: Start passkey verification to get WebAuthn options
+      const { options, sessionId } = await startPasskeyVerification(mfaChallenge.sessionId);
+
+      // Step 2: Trigger browser's WebAuthn API
+      // @ts-expect-error - Type mismatch between our simplified types and @simplewebauthn types
+      const credential = await startAuthentication({ optionsJSON: options });
+
+      // Step 3: Verify the credential with the server
+      // @ts-expect-error - Type mismatch in clientExtensionResults
+      await passkeyMutation.mutateAsync({ sessionId, credential });
+    } catch (error) {
+      // Error is already handled by the mutation's error state
+      console.error('Passkey verification failed:', error);
+    }
   };
 
   // Don't render if no challenge (will redirect)

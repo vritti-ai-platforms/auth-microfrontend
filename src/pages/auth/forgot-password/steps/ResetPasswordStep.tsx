@@ -1,22 +1,25 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { Field, FieldGroup } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { KeyRound } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import type { PasswordResetFlow } from '../../../../hooks';
 import type { ResetPasswordFormData } from '../../../../schemas/auth';
 import { resetPasswordSchema } from '../../../../schemas/auth';
 
 interface ResetPasswordStepProps {
   resetToken: PasswordResetFlow['resetToken'];
-  resetPasswordMutation: PasswordResetFlow['resetPasswordMutation'];
+  submitPassword: PasswordResetFlow['submitPassword'];
 }
 
-export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ resetToken, resetPasswordMutation }) => {
+export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ submitPassword }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -24,6 +27,15 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ resetToken
       confirmPassword: '',
     },
   });
+
+  const handleSubmit = async (data: ResetPasswordFormData) => {
+    setIsSubmitting(true);
+    try {
+      await submitPassword(data.password);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -42,15 +54,7 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ resetToken
         </Typography>
       </div>
 
-      <Form
-        form={form}
-        mutation={resetPasswordMutation}
-        transformSubmit={(data) => ({
-          resetToken,
-          newPassword: data.password,
-        })}
-        showRootError
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FieldGroup>
           <PasswordField
             name="password"
@@ -70,13 +74,14 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ resetToken
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
+              isLoading={isSubmitting}
               loadingText="Resetting..."
             >
               Reset Password
             </Button>
           </Field>
         </FieldGroup>
-      </Form>
+      </form>
 
       <div className="text-center">
         <Link to="../login" className="text-sm text-muted-foreground hover:text-foreground">

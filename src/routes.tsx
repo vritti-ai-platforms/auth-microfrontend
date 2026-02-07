@@ -11,6 +11,8 @@ import { SignupPage } from './pages/auth/SignupPage';
 import { SignupSuccessPage } from './pages/auth/SignupSuccessPage';
 import { OAuthErrorPage } from './pages/onboarding/OAuthErrorPage';
 import { OAuthSuccessPage } from './pages/onboarding/OAuthSuccessPage';
+import { ProfilePage } from './pages/settings/ProfilePage';
+import { SecurityPage } from './pages/settings/SecurityPage';
 
 /**
  * Auth routes configuration - exported for Module Federation consumption
@@ -71,6 +73,17 @@ export const authRoutes: RouteObject[] = [
         ],
       },
     ],
+  },
+];
+
+export const accountRoutes: RouteObject[] = [
+  {
+    path: 'profile',
+    element: <ProfilePage />,
+  },
+  {
+    path: 'security',
+    element: <SecurityPage />,
   },
 ];
 

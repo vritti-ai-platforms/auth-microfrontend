@@ -19,10 +19,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
 
-    /* Shadcn */
+    /* Path aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],

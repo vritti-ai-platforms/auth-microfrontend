@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { Field, FieldGroup } from '@vritti/quantum-ui/Form';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, Mail } from 'lucide-react';
@@ -12,14 +12,18 @@ import { forgotPasswordSchema } from '../../../../schemas/auth';
 import type { PasswordResetFlow } from '../../../../hooks';
 
 interface EmailStepProps {
-  forgotPasswordMutation: PasswordResetFlow['forgotPasswordMutation'];
+  submitEmail: PasswordResetFlow['submitEmail'];
 }
 
-export const EmailStep: React.FC<EmailStepProps> = ({ forgotPasswordMutation }) => {
+export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail }) => {
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   });
+
+  const handleSubmit = async (data: ForgotPasswordFormData) => {
+    await submitEmail(data.email);
+  };
 
   return (
     <div className="space-y-6">
@@ -37,12 +41,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({ forgotPasswordMutation }) 
         </Typography>
       </div>
 
-      <Form
-        form={form}
-        mutation={forgotPasswordMutation}
-        transformSubmit={(data) => data.email}
-        showRootError
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FieldGroup>
           <TextField
             name="email"
@@ -61,7 +60,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({ forgotPasswordMutation }) 
             </Button>
           </Field>
         </FieldGroup>
-      </Form>
+      </form>
     </div>
   );
 };

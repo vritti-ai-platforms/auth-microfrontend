@@ -5,7 +5,7 @@ import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { PhoneField, type PhoneValue } from '@vritti/quantum-ui/PhoneField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, CheckCircle, ChevronRight, Loader2, MessageSquare, Phone, QrCode, Smartphone } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
@@ -121,19 +121,19 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
   });
 
   // Real-time verification status via SSE
-  const { connectionMode, sseError } = useMobileVerificationRealtime({
-    enabled: isWaitingForVerification && (selectedMethod === 'whatsapp' || selectedMethod === 'sms'),
-    onVerified: () => {
-      advanceAfterSuccess();
-    },
-    onFailed: (message) => {
-      setError(message || 'Verification failed. Please try again.');
-    },
-    onExpired: () => {
-      setError('Verification expired. Please try again.');
-      handleBackToMethods();
-    },
-  });
+  useMobileVerificationRealtime(
+    isWaitingForVerification && (selectedMethod === 'whatsapp' || selectedMethod === 'sms')
+      ? verificationData?.verificationId
+      : undefined,
+    {
+      onVerified: () => {
+        advanceAfterSuccess();
+      },
+      onError: (err) => {
+        setError(err.message || 'Verification failed. Please try again.');
+      },
+    }
+  );
 
   // Handler to go back to method selection - defined before useEffects that use it
   const handleBackToMethods = useCallback(() => {
@@ -146,13 +146,6 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
     otpForm.reset();
     setCurrentStep(1);
   }, [phoneForm, otpForm]);
-
-  // Handle SSE connection errors (show warning but continue with polling fallback)
-  useEffect(() => {
-    if (sseError && isWaitingForVerification) {
-      console.warn('SSE connection error, using polling fallback:', sseError);
-    }
-  }, [sseError, isWaitingForVerification]);
 
   const handleMethodSelect = useCallback((method: UIVerificationMethod) => {
     if (!method) return;
@@ -380,7 +373,7 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
             <div className="flex items-center justify-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <Typography variant="body2" intent="muted">
-                {connectionMode === 'sse' ? 'Connected - waiting for verification...' : 'Checking for verification...'}
+                Waiting for verification...
               </Typography>
             </div>
           )}
@@ -497,7 +490,7 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
             <div className="flex items-center justify-center gap-2 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <Typography variant="body2" intent="muted">
-                {connectionMode === 'sse' ? 'Connected - waiting for verification...' : 'Checking for verification...'}
+                Waiting for verification...
               </Typography>
             </div>
           )}
