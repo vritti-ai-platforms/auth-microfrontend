@@ -1,4 +1,4 @@
-import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
+import { recoverToken, scheduleTokenRefresh } from '@vritti/quantum-ui/axios';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -8,10 +8,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
  * OAuth Success Page
  *
  * Handles the redirect after successful OAuth authentication.
- * Extracts token and user state from query parameters and navigates
- * to the appropriate onboarding step.
+ * Recovers the access token from the httpOnly refresh cookie (set by the OAuth callback)
+ * and navigates to the appropriate onboarding step.
  *
- * Uses unified auth: accessToken in query params, refreshToken in httpOnly cookie
+ * Uses unified auth: refreshToken in httpOnly cookie, accessToken recovered via GET /auth/token
  */
 export const OAuthSuccessPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,19 +19,9 @@ export const OAuthSuccessPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const processOAuthCallback = () => {
+    const processOAuthCallback = async () => {
       try {
-        // Extract query parameters
-        const token = searchParams.get('token');
-        const expiresIn = searchParams.get('expiresIn');
         const step = searchParams.get('step');
-
-        // Validate required parameters
-        if (!token) {
-          setError('No authentication token received. Please try again.');
-          setTimeout(() => navigate('../signup', { replace: true }), 3000);
-          return;
-        }
 
         if (!step) {
           setError('Invalid OAuth response. Please try again.');
@@ -39,20 +29,21 @@ export const OAuthSuccessPage: React.FC = () => {
           return;
         }
 
-        // Store access token (setToken automatically dispatches auth-state-change event)
-        setToken(token);
+        // Recover token from httpOnly cookie (set by OAuth callback before redirect)
+        const { success, expiresIn } = await recoverToken();
 
-        // Schedule proactive token refresh if expiresIn is provided
-        if (expiresIn) {
-          const expiresInSeconds = parseInt(expiresIn, 10);
-          if (!Number.isNaN(expiresInSeconds)) {
-            scheduleTokenRefresh(expiresInSeconds);
-          }
+        if (!success) {
+          setError('Failed to recover authentication session. Please try again.');
+          setTimeout(() => navigate('../signup', { replace: true }), 3000);
+          return;
+        }
+
+        // Schedule proactive token refresh
+        if (expiresIn > 0) {
+          scheduleTokenRefresh(expiresIn);
         }
 
         // Navigate based on onboarding step
-        // Note: We use '../' to navigate to /onboarding parent route after extracting token
-        // This avoids staying on /onboarding/oauth-success which would lose query params on re-render
         if (step === 'COMPLETE') {
           navigate('/dashboard', { replace: true });
         } else {

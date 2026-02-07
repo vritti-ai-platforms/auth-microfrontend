@@ -74,7 +74,6 @@ export interface UserResponseDto {
   lastName?: string;
   emailVerified: boolean;
   phoneVerified: boolean;
-  mfaEnabled: boolean;
 }
 
 /**
@@ -82,15 +81,6 @@ export interface UserResponseDto {
  * Uses unified auth: accessToken in response, refreshToken in httpOnly cookie
  */
 export interface SignupResponse {
-  userId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  currentStep: OnboardingStep;
-  onboardingComplete: boolean;
-  accountStatus: AccountStatus;
-  emailVerified: boolean;
-  phoneVerified: boolean;
   /** Access token for API requests (store in memory) */
   accessToken: string;
   /** Token lifetime in seconds */
@@ -99,6 +89,8 @@ export interface SignupResponse {
   isNewUser: boolean;
   /** The method used to signup (email or oauth) */
   signupMethod: SignupMethod;
+  /** Current onboarding step */
+  currentStep: OnboardingStep;
 }
 
 /**
@@ -108,12 +100,8 @@ export interface SignupResponse {
 export interface LoginResponse {
   /** Access token for API requests (store in memory) */
   accessToken?: string;
-  /** Token type (always 'Bearer') */
-  tokenType?: string;
   /** Token lifetime in seconds */
   expiresIn?: number;
-  /** Authenticated user info */
-  user: UserResponseDto;
   /** Whether user needs to complete onboarding */
   requiresOnboarding?: boolean;
   /** Current onboarding step if requiresOnboarding is true */
