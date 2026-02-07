@@ -1,6 +1,6 @@
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { AlertCircle, KeyRound, Loader2, Smartphone } from 'lucide-react';
+import { AlertCircle, KeyRound, Smartphone } from 'lucide-react';
 import type React from 'react';
 
 type MFAMethod = 'authenticator' | 'passkey';
@@ -111,32 +111,22 @@ export const MFAMethodSelection: React.FC<MFAMethodSelectionProps> = ({
       <Button
         onClick={onContinue}
         className="w-full bg-primary text-primary-foreground"
-        disabled={!selectedMethod || isLoading || isSkipping}
+        isLoading={isLoading}
+        loadingText="Setting up..."
+        disabled={!selectedMethod || isSkipping}
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Setting up...
-          </>
-        ) : (
-          'Continue'
-        )}
+        Continue
       </Button>
 
       <Button
         variant="outline"
         onClick={onSkip}
         className="w-full border-border text-foreground"
-        disabled={isLoading || isSkipping}
+        isLoading={isSkipping}
+        loadingText="Skipping..."
+        disabled={isLoading}
       >
-        {isSkipping ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Skipping...
-          </>
-        ) : (
-          'Skip for now'
-        )}
+        Skip for now
       </Button>
     </div>
   );

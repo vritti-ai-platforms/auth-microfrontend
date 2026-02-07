@@ -3,19 +3,19 @@ import { Button } from "@vritti/quantum-ui/Button";
 import { Field, FieldGroup, Form } from "@vritti/quantum-ui/Form";
 import { OTPField } from "@vritti/quantum-ui/OTPField";
 import { Typography } from "@vritti/quantum-ui/Typography";
-import { AlertCircle, Loader2, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import type React from "react";
 import { useForm } from "react-hook-form";
+import { useVerifyTotp } from "../../../hooks";
 import type { OTPFormData } from "../../../schemas/auth";
 import { otpSchema } from "../../../schemas/auth";
+import type { LoginResponse } from "../../../services/auth.service";
 
 interface TOTPVerificationProps {
-  /** Callback when TOTP code is submitted */
-  onVerify: (code: string) => Promise<void>;
-  /** Whether verification is in progress */
-  isVerifying: boolean;
-  /** Error message to display */
-  error: string | null;
+  /** MFA session ID for verification */
+  sessionId: string;
+  /** Callback when TOTP verification succeeds */
+  onSuccess: (response: LoginResponse) => void;
 }
 
 /**
@@ -23,20 +23,19 @@ interface TOTPVerificationProps {
  *
  * Displays authenticator app icon and 6-digit OTP input field.
  * Automatically submits when 6 digits are entered.
+ *
+ * Owns its own mutation and uses Form's mutation prop for automatic error handling.
  */
 export const TOTPVerification: React.FC<TOTPVerificationProps> = ({
-  onVerify,
-  isVerifying,
-  error,
+  sessionId,
+  onSuccess,
 }) => {
+  const verifyTotpMutation = useVerifyTotp({ onSuccess });
+
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: "" },
   });
-
-  const handleSubmit = async (data: OTPFormData) => {
-    await onVerify(data.code);
-  };
 
   return (
     <div className="space-y-6">
@@ -52,25 +51,20 @@ export const TOTPVerification: React.FC<TOTPVerificationProps> = ({
         Enter the 6-digit code from your authenticator app
       </Typography>
 
-      {/* Error Display */}
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-          <Typography variant="body2" className="text-destructive">
-            {error}
-          </Typography>
-        </div>
-      )}
-
       {/* OTP Form */}
-      <Form form={form} onSubmit={handleSubmit}>
+      <Form
+        form={form}
+        mutation={verifyTotpMutation}
+        transformSubmit={(data) => ({ sessionId, code: data.code })}
+        showRootError
+      >
         <FieldGroup>
           <div className="flex justify-center">
             <OTPField
               name="code"
               onChange={(value) => {
-                if (value.length === 6 && !isVerifying) {
-                  form.handleSubmit(handleSubmit)();
+                if (value.length === 6 && !verifyTotpMutation.isPending) {
+                  verifyTotpMutation.mutate({ sessionId, code: value });
                 }
               }}
             />
@@ -80,16 +74,9 @@ export const TOTPVerification: React.FC<TOTPVerificationProps> = ({
             <Button
               type="submit"
               className="w-full h-9 rounded-[10px] bg-primary text-primary-foreground"
-              disabled={isVerifying}
+              loadingText="Verifying..."
             >
-              {isVerifying ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify"
-              )}
+              Verify
             </Button>
           </Field>
         </FieldGroup>

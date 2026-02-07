@@ -78,7 +78,11 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
 
   // API hooks
   const initiateMutation = useInitiateMobileVerification({
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      // Set phone number from the request for manual OTP flow
+      if (variables.phone) {
+        setPhoneNumber(variables.phone as PhoneValue);
+      }
       setVerificationData(data);
       setError(null);
 
@@ -170,21 +174,6 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
       });
     }
   }, [initiateMutation]);
-
-  const handleSendOtp = useCallback(async (data: PhoneFormData) => {
-    const phone = data.phone;
-    setPhoneNumber(phone as PhoneValue);
-
-    initiateMutation.mutate({
-      phone,
-      phoneCountry,
-      method: mapToApiMethod(selectedMethod),
-    });
-  }, [initiateMutation, phoneCountry, selectedMethod]);
-
-  const handleVerifyOtp = useCallback(async (data: OTPFormData) => {
-    verifyOtpMutation.mutate(data.code);
-  }, [verifyOtpMutation]);
 
   const handleResendOtp = useCallback(async () => {
     if (!phoneNumber) return;
@@ -558,7 +547,16 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
             </div>
           )}
 
-          <Form form={phoneForm} onSubmit={handleSendOtp}>
+          <Form
+            form={phoneForm}
+            mutation={initiateMutation}
+            transformSubmit={(data) => ({
+              phone: data.phone,
+              phoneCountry,
+              method: mapToApiMethod(selectedMethod),
+            })}
+            showRootError
+          >
             <FieldGroup>
               <PhoneField
                 name="phone"
@@ -575,9 +573,9 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
                 <Button
                   type="submit"
                   className="w-full bg-primary text-primary-foreground"
-                  disabled={initiateMutation.isPending}
+                  loadingText="Sending Code..."
                 >
-                  {initiateMutation.isPending ? 'Sending Code...' : 'Send Code'}
+                  Send Code
                 </Button>
               </Field>
             </FieldGroup>
@@ -621,7 +619,12 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
           </div>
         )}
 
-        <Form form={otpForm} onSubmit={handleVerifyOtp}>
+        <Form
+          form={otpForm}
+          mutation={verifyOtpMutation}
+          transformSubmit={(data) => data.code}
+          showRootError
+        >
           <FieldGroup>
             <div className="flex justify-center">
               <Smartphone className="h-8 w-8 text-primary" />
@@ -633,8 +636,9 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
                 name="code"
                 onChange={(value) => {
                   setError(null);
-                  if (value.length === 6) {
-                    otpForm.handleSubmit(handleVerifyOtp)();
+                  if (value.length === 6 && !verifyOtpMutation.isPending) {
+                    // Auto-submit when 6 digits entered
+                    verifyOtpMutation.mutate(value);
                   }
                 }}
               />
@@ -647,9 +651,9 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
               <Button
                 type="submit"
                 className="w-full bg-primary text-primary-foreground"
-                disabled={verifyOtpMutation.isPending}
+                loadingText="Verifying..."
               >
-                {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify & Continue'}
+                Verify & Continue
               </Button>
             </Field>
 
@@ -670,9 +674,10 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
                 variant="link"
                 className="p-0 h-auto font-normal underline"
                 onClick={handleResendOtp}
-                disabled={resendMutation.isPending}
+                isLoading={resendMutation.isPending}
+                loadingText="Sending..."
               >
-                {resendMutation.isPending ? 'Sending...' : 'Resend code'}
+                Resend code
               </Button>
             </div>
           </FieldGroup>

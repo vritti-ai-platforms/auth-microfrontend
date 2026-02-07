@@ -7,19 +7,16 @@ import { KeyRound } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import type { PasswordResetFlow } from '../../../../hooks';
 import type { ResetPasswordFormData } from '../../../../schemas/auth';
 import { resetPasswordSchema } from '../../../../schemas/auth';
-import type { PasswordResetFlow } from '../../../../hooks';
 
 interface ResetPasswordStepProps {
-  submitPassword: PasswordResetFlow['submitPassword'];
+  resetToken: PasswordResetFlow['resetToken'];
   resetPasswordMutation: PasswordResetFlow['resetPasswordMutation'];
 }
 
-export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
-  submitPassword,
-  resetPasswordMutation,
-}) => {
+export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ resetToken, resetPasswordMutation }) => {
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -27,10 +24,6 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
       confirmPassword: '',
     },
   });
-
-  const onSubmit = (data: ResetPasswordFormData) => {
-    submitPassword(data.password);
-  };
 
   return (
     <div className="space-y-6">
@@ -49,7 +42,15 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
         </Typography>
       </div>
 
-      <Form form={form} onSubmit={onSubmit}>
+      <Form
+        form={form}
+        mutation={resetPasswordMutation}
+        transformSubmit={(data) => ({
+          resetToken,
+          newPassword: data.password,
+        })}
+        showRootError
+      >
         <FieldGroup>
           <PasswordField
             name="password"
@@ -69,9 +70,9 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              disabled={resetPasswordMutation.isPending}
+              loadingText="Resetting..."
             >
-              {resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'}
+              Reset Password
             </Button>
           </Field>
         </FieldGroup>

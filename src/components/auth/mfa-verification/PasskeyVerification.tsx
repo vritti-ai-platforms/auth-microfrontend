@@ -1,6 +1,6 @@
 import { Button } from "@vritti/quantum-ui/Button";
 import { Typography } from "@vritti/quantum-ui/Typography";
-import { AlertCircle, KeyRound, Loader2 } from "lucide-react";
+import { AlertCircle, KeyRound } from "lucide-react";
 import type React from "react";
 
 interface PasskeyVerificationProps {
@@ -80,16 +80,10 @@ export const PasskeyVerification: React.FC<PasskeyVerificationProps> = ({
       <Button
         onClick={onVerify}
         className="w-full h-9 rounded-[10px] bg-primary text-primary-foreground"
-        disabled={isVerifying}
+        isLoading={isVerifying}
+        loadingText="Verifying..."
       >
-        {isVerifying ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Verifying...
-          </>
-        ) : (
-          "Verify with passkey"
-        )}
+        Verify with passkey
       </Button>
     </div>
   );

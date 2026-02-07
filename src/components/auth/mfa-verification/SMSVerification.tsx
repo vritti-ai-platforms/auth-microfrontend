@@ -3,26 +3,22 @@ import { Button } from "@vritti/quantum-ui/Button";
 import { Field, FieldGroup, Form } from "@vritti/quantum-ui/Form";
 import { OTPField } from "@vritti/quantum-ui/OTPField";
 import { Typography } from "@vritti/quantum-ui/Typography";
-import { AlertCircle, Loader2, Smartphone } from "lucide-react";
+import { Smartphone } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSendSmsCode, useVerifySms } from "../../../hooks";
 import type { OTPFormData } from "../../../schemas/auth";
 import { otpSchema } from "../../../schemas/auth";
+import type { LoginResponse } from "../../../services/auth.service";
 
 interface SMSVerificationProps {
+  /** MFA session ID for verification */
+  sessionId: string;
   /** Masked phone number (e.g., "+1 *** *** 4567") */
   maskedPhone: string;
-  /** Callback to send SMS code */
-  onSendCode: () => Promise<void>;
-  /** Callback when SMS code is submitted */
-  onVerify: (code: string) => Promise<void>;
-  /** Whether sending SMS is in progress */
-  isSending: boolean;
-  /** Whether verification is in progress */
-  isVerifying: boolean;
-  /** Error message to display */
-  error: string | null;
+  /** Callback when SMS verification succeeds */
+  onSuccess: (response: LoginResponse) => void;
 }
 
 /**
@@ -30,34 +26,35 @@ interface SMSVerificationProps {
  *
  * Initially shows "Send SMS code" button. After sending,
  * displays OTP input field with verify button and resend link.
+ *
+ * Owns its own mutations and uses Form's mutation prop for automatic error handling.
  */
 export const SMSVerification: React.FC<SMSVerificationProps> = ({
+  sessionId,
   maskedPhone,
-  onSendCode,
-  onVerify,
-  isSending,
-  isVerifying,
-  error,
+  onSuccess,
 }) => {
   const [codeSent, setCodeSent] = useState(false);
+
+  const sendSmsMutation = useSendSmsCode({
+    onSuccess: () => setCodeSent(true),
+  });
+
+  const verifySmsMutation = useVerifySms({
+    onSuccess,
+  });
 
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: "" },
   });
 
-  const handleSendCode = async () => {
-    await onSendCode();
-    setCodeSent(true);
-    form.reset();
+  const handleSendCode = () => {
+    sendSmsMutation.mutate(sessionId);
   };
 
-  const handleSubmit = async (data: OTPFormData) => {
-    await onVerify(data.code);
-  };
-
-  const handleResend = async () => {
-    await onSendCode();
+  const handleResend = () => {
+    sendSmsMutation.mutate(sessionId);
     form.reset();
   };
 
@@ -77,42 +74,31 @@ export const SMSVerification: React.FC<SMSVerificationProps> = ({
           : `Send verification code to ${maskedPhone}`}
       </Typography>
 
-      {/* Error Display */}
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-          <Typography variant="body2" className="text-destructive">
-            {error}
-          </Typography>
-        </div>
-      )}
-
       {!codeSent ? (
         /* Send Code Button */
         <Button
           onClick={handleSendCode}
           className="w-full h-9 rounded-[10px] bg-primary text-primary-foreground"
-          disabled={isSending}
+          isLoading={sendSmsMutation.isPending}
+          loadingText="Sending..."
         >
-          {isSending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            "Send SMS code"
-          )}
+          Send SMS code
         </Button>
       ) : (
         /* OTP Form */
-        <Form form={form} onSubmit={handleSubmit}>
+        <Form
+          form={form}
+          mutation={verifySmsMutation}
+          transformSubmit={(data) => ({ sessionId, code: data.code })}
+          showRootError
+        >
           <FieldGroup>
             <div className="flex justify-center">
               <OTPField
                 name="code"
                 onChange={(value) => {
-                  if (value.length === 6 && !isVerifying) {
-                    form.handleSubmit(handleSubmit)();
+                  if (value.length === 6 && !verifySmsMutation.isPending) {
+                    verifySmsMutation.mutate({ sessionId, code: value });
                   }
                 }}
               />
@@ -122,16 +108,9 @@ export const SMSVerification: React.FC<SMSVerificationProps> = ({
               <Button
                 type="submit"
                 className="w-full h-9 rounded-[10px] bg-primary text-primary-foreground"
-                disabled={isVerifying}
+                loadingText="Verifying..."
               >
-                {isVerifying ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify"
-                )}
+                Verify
               </Button>
             </Field>
 
@@ -142,9 +121,11 @@ export const SMSVerification: React.FC<SMSVerificationProps> = ({
                 variant="link"
                 className="p-0 h-auto text-sm"
                 onClick={handleResend}
-                disabled={isSending || isVerifying}
+                isLoading={sendSmsMutation.isPending}
+                loadingText="Sending..."
+                disabled={verifySmsMutation.isPending}
               >
-                {isSending ? "Sending..." : "Resend code"}
+                Resend code
               </Button>
             </div>
           </FieldGroup>

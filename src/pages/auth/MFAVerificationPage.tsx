@@ -1,34 +1,28 @@
-import { scheduleTokenRefresh, setToken } from "@vritti/quantum-ui/axios";
-import { Button } from "@vritti/quantum-ui/Button";
-import { Typography } from "@vritti/quantum-ui/Typography";
-import { ArrowLeft } from "lucide-react";
-import type React from "react";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
+import { Button } from '@vritti/quantum-ui/Button';
+import { Typography } from '@vritti/quantum-ui/Typography';
+import { ArrowLeft } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   MethodSwitcher,
   PasskeyVerification,
   SMSVerification,
   TOTPVerification,
-} from "../../components/auth/mfa-verification";
-import {
-  useSendSmsCode,
-  useVerifyPasskey,
-  useVerifySms,
-  useVerifyTotp,
-} from "../../hooks";
-import { STEP_ROUTES } from "../../constants/routes";
-import {
-  type MFAChallenge,
-  type MFAMethod,
-  OnboardingStep,
-} from "../../services/auth.service";
+} from '../../components/auth/mfa-verification';
+import { STEP_ROUTES } from '../../constants/routes';
+import { useVerifyPasskey } from '../../hooks';
+import type { LoginResponse, MFAChallenge, MFAMethod, OnboardingStep } from '../../services/auth.service';
 
 /**
  * MFA Verification Page
  *
  * Single page that handles all MFA verification methods (TOTP, SMS, Passkey).
  * Receives challenge data via location.state from LoginPage.
+ *
+ * TOTP and SMS components now own their own mutations.
+ * Passkey remains in page due to special WebAuthn flow.
  */
 export const MFAVerificationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,27 +32,17 @@ export const MFAVerificationPage: React.FC = () => {
   const mfaChallenge = location.state?.mfaChallenge as MFAChallenge | undefined;
 
   // Current active MFA method
-  const [activeMethod, setActiveMethod] = useState<MFAMethod>(
-    mfaChallenge?.defaultMethod || "totp",
-  );
-
-  // Error state for display
-  const [error, setError] = useState<string | null>(null);
+  const [activeMethod, setActiveMethod] = useState<MFAMethod>(mfaChallenge?.defaultMethod || 'totp');
 
   // Redirect to login if no MFA challenge
   useEffect(() => {
     if (!mfaChallenge) {
-      navigate("../login", { replace: true });
+      navigate('../login', { replace: true });
     }
   }, [mfaChallenge, navigate]);
 
   // Handle successful MFA verification
-  const handleMFASuccess = (response: {
-    accessToken?: string;
-    expiresIn?: number;
-    requiresOnboarding?: boolean;
-    onboardingStep?: OnboardingStep;
-  }) => {
+  const handleMFASuccess = (response: LoginResponse) => {
     // Store access token
     if (response.accessToken) {
       setToken(response.accessToken);
@@ -69,78 +53,22 @@ export const MFAVerificationPage: React.FC = () => {
 
     // Navigate based on onboarding status
     if (response.requiresOnboarding && response.onboardingStep) {
-      const stepRoute = STEP_ROUTES[response.onboardingStep];
-      navigate(stepRoute ? `../${stepRoute}` : "../onboarding/verify-email", { replace: true });
+      const stepRoute = STEP_ROUTES[response.onboardingStep as OnboardingStep];
+      navigate(stepRoute ? `../${stepRoute}` : '../onboarding/verify-email', { replace: true });
     } else {
       // Full page reload to refresh auth state and routes
       window.location.href = '/';
     }
   };
 
-  // TOTP verification mutation
-  const totpMutation = useVerifyTotp({
-    onSuccess: handleMFASuccess,
-    onError: (err) => {
-      setError(err.message || "Invalid code. Please try again.");
-    },
-  });
-
-  // SMS mutations
-  const sendSmsMutation = useSendSmsCode({
-    onError: (err) => {
-      setError(err.message || "Failed to send SMS. Please try again.");
-    },
-  });
-
-  const smsVerifyMutation = useVerifySms({
-    onSuccess: handleMFASuccess,
-    onError: (err) => {
-      setError(err.message || "Invalid code. Please try again.");
-    },
-  });
-
-  // Passkey verification mutation
+  // Passkey verification mutation (kept in page due to WebAuthn flow)
   const passkeyMutation = useVerifyPasskey({
     onSuccess: handleMFASuccess,
   });
 
-  // Clear error when switching methods
-  const handleMethodChange = (method: MFAMethod) => {
-    setError(null);
-    setActiveMethod(method);
-  };
-
-  // Handle TOTP verification
-  const handleTotpVerify = async (code: string) => {
-    if (!mfaChallenge) return;
-    setError(null);
-    await totpMutation.mutateAsync({
-      sessionId: mfaChallenge.sessionId,
-      code,
-    });
-  };
-
-  // Handle SMS code send
-  const handleSendSms = async () => {
-    if (!mfaChallenge) return;
-    setError(null);
-    await sendSmsMutation.mutateAsync(mfaChallenge.sessionId);
-  };
-
-  // Handle SMS verification
-  const handleSmsVerify = async (code: string) => {
-    if (!mfaChallenge) return;
-    setError(null);
-    await smsVerifyMutation.mutateAsync({
-      sessionId: mfaChallenge.sessionId,
-      code,
-    });
-  };
-
   // Handle Passkey verification
   const handlePasskeyVerify = async () => {
     if (!mfaChallenge) return;
-    setError(null);
     await passkeyMutation.mutateAsync(mfaChallenge.sessionId);
   };
 
@@ -152,11 +80,7 @@ export const MFAVerificationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Back to Login Link */}
-      <Button
-        variant="link"
-        className="p-0 h-auto text-sm text-muted-foreground hover:text-foreground"
-        asChild
-      >
+      <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground hover:text-foreground" asChild>
         <Link to="../login" className="inline-flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to login
@@ -175,26 +99,22 @@ export const MFAVerificationPage: React.FC = () => {
 
       {/* Active Verification Method */}
       <div className="pt-2">
-        {activeMethod === "totp" && (
+        {activeMethod === 'totp' && (
           <TOTPVerification
-            onVerify={handleTotpVerify}
-            isVerifying={totpMutation.isPending}
-            error={error}
+            sessionId={mfaChallenge.sessionId}
+            onSuccess={handleMFASuccess}
           />
         )}
 
-        {activeMethod === "sms" && (
+        {activeMethod === 'sms' && (
           <SMSVerification
-            maskedPhone={mfaChallenge.maskedPhone || "+** *** ****"}
-            onSendCode={handleSendSms}
-            onVerify={handleSmsVerify}
-            isSending={sendSmsMutation.isPending}
-            isVerifying={smsVerifyMutation.isPending}
-            error={error}
+            sessionId={mfaChallenge.sessionId}
+            maskedPhone={mfaChallenge.maskedPhone || '+** *** ****'}
+            onSuccess={handleMFASuccess}
           />
         )}
 
-        {activeMethod === "passkey" && (
+        {activeMethod === 'passkey' && (
           <PasskeyVerification
             onVerify={handlePasskeyVerify}
             isVerifying={passkeyMutation.isPending}
@@ -207,7 +127,7 @@ export const MFAVerificationPage: React.FC = () => {
       <MethodSwitcher
         currentMethod={activeMethod}
         availableMethods={mfaChallenge.availableMethods}
-        onMethodChange={handleMethodChange}
+        onMethodChange={setActiveMethod}
       />
     </div>
   );

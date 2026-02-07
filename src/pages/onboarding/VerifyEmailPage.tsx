@@ -119,11 +119,11 @@ export const VerifyEmailPage: React.FC = () => {
                 form.clearErrors();
                 resendOtpMutation.mutate(undefined);
               }}
-              disabled={
-                resendOtpMutation.isPending || verifyEmailMutation.isPending
-              }
+              isLoading={resendOtpMutation.isPending}
+              loadingText="Sending..."
+              disabled={verifyEmailMutation.isPending}
             >
-              {resendOtpMutation.isPending ? "Sending..." : "Resend"}
+              Resend
             </Button>
           </Typography>
         </FieldGroup>

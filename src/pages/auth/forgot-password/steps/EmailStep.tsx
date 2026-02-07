@@ -12,19 +12,14 @@ import { forgotPasswordSchema } from '../../../../schemas/auth';
 import type { PasswordResetFlow } from '../../../../hooks';
 
 interface EmailStepProps {
-  submitEmail: PasswordResetFlow['submitEmail'];
   forgotPasswordMutation: PasswordResetFlow['forgotPasswordMutation'];
 }
 
-export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail, forgotPasswordMutation }) => {
+export const EmailStep: React.FC<EmailStepProps> = ({ forgotPasswordMutation }) => {
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   });
-
-  const onSubmit = (data: ForgotPasswordFormData) => {
-    submitEmail(data.email);
-  };
 
   return (
     <div className="space-y-6">
@@ -42,7 +37,12 @@ export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail, forgotPasswor
         </Typography>
       </div>
 
-      <Form form={form} onSubmit={onSubmit}>
+      <Form
+        form={form}
+        mutation={forgotPasswordMutation}
+        transformSubmit={(data) => data.email}
+        showRootError
+      >
         <FieldGroup>
           <TextField
             name="email"
@@ -55,9 +55,9 @@ export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail, forgotPasswor
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              disabled={forgotPasswordMutation.isPending}
+              loadingText="Sending..."
             >
-              {forgotPasswordMutation.isPending ? 'Sending...' : 'Send reset code'}
+              Send reset code
             </Button>
           </Field>
         </FieldGroup>

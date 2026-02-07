@@ -122,7 +122,8 @@ export const SignupSuccessPage: React.FC = () => {
       <Button
         onClick={() => startOnboardingMutation.mutate()}
         className="w-full bg-primary text-primary-foreground"
-        disabled={startOnboardingMutation.isPending}
+        isLoading={startOnboardingMutation.isPending}
+        loadingText="Loading..."
       >
         {buttonText}
       </Button>

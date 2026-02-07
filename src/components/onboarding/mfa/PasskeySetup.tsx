@@ -1,6 +1,6 @@
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { AlertCircle, ArrowLeft, Fingerprint, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Fingerprint } from 'lucide-react';
 import type React from 'react';
 
 interface PasskeySetupProps {
@@ -76,16 +76,10 @@ export const PasskeySetup: React.FC<PasskeySetupProps> = ({
       <Button
         onClick={onRegister}
         className="w-full bg-primary text-primary-foreground"
-        disabled={isPending}
+        isLoading={isPending}
+        loadingText="Creating passkey..."
       >
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating passkey...
-          </>
-        ) : (
-          'Create Passkey'
-        )}
+        Create Passkey
       </Button>
 
       <Button

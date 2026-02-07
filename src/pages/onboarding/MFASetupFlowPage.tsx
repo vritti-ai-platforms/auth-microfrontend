@@ -1,16 +1,28 @@
+import { Spinner } from '@vritti/quantum-ui';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
-import { AuthenticatorSetup, BackupCodesDisplay, MFAMethodSelection, PasskeySetup } from '../../components/onboarding/mfa';
+import {
+  AuthenticatorSetup,
+  BackupCodesDisplay,
+  MFAMethodSelection,
+  PasskeySetup,
+} from '../../components/onboarding/mfa';
 import { useOnboarding } from '../../context';
-import { useInitiateTotpSetup, useSkip2FASetup, useVerifyTotpSetup, usePasskeyRegistration } from '../../hooks';
+import { useInitiateTotpSetup, usePasskeyRegistration, useSkip2FASetup } from '../../hooks';
 import type { TotpSetupResponse } from '../../services/onboarding.service';
 
 type MFAMethod = 'authenticator' | 'passkey';
 type FlowStep = 1 | 2 | 3 | 4;
 
+/**
+ * MFA Setup Flow Page
+ *
+ * Handles the multi-step MFA setup process during onboarding.
+ * AuthenticatorSetup now owns its own verify mutation.
+ */
 export const MFASetupFlowPage: React.FC = () => {
   const { refetch, signupMethod } = useOnboarding();
 
@@ -23,7 +35,6 @@ export const MFASetupFlowPage: React.FC = () => {
 
   // Mutations - loading/error states come from these
   const initMutation = useInitiateTotpSetup();
-  const verifyMutation = useVerifyTotpSetup();
   const skipMutation = useSkip2FASetup();
   const passkeyMutation = usePasskeyRegistration();
 
@@ -69,7 +80,6 @@ export const MFASetupFlowPage: React.FC = () => {
     setTotpData(null);
     setCurrentStep(1);
     initMutation.reset();
-    verifyMutation.reset();
     passkeyMutation.reset();
   };
 
@@ -84,15 +94,11 @@ export const MFASetupFlowPage: React.FC = () => {
     }
   };
 
-  const handleVerify = async (code: string) => {
-    try {
-      const response = await verifyMutation.mutateAsync(code);
-      setBackupCodes(response.backupCodes);
-      setBackupWarning(response.warning);
-      setCurrentStep(3);
-    } catch {
-      // Error is available via verifyMutation.error
-    }
+  // Handle successful TOTP verification from AuthenticatorSetup
+  const handleTotpVerifySuccess = (response: { backupCodes: string[]; warning: string }) => {
+    setBackupCodes(response.backupCodes);
+    setBackupWarning(response.warning);
+    setCurrentStep(3);
   };
 
   const handleBackupCodesContinue = () => {
@@ -101,7 +107,6 @@ export const MFASetupFlowPage: React.FC = () => {
 
   // Derive error messages from mutations
   const selectionError = initMutation.error?.message || skipMutation.error?.message || null;
-  const setupError = verifyMutation.error?.message || null;
   const passkeyError = passkeyMutation.error || null;
 
   // Calculate progress for indicator
@@ -133,7 +138,7 @@ export const MFASetupFlowPage: React.FC = () => {
       </div>
 
       <div className="flex justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <Spinner />
       </div>
 
       <Typography variant="body2" align="center" intent="muted">
@@ -166,9 +171,7 @@ export const MFASetupFlowPage: React.FC = () => {
         <AuthenticatorSetup
           totpData={totpData}
           onBack={handleBack}
-          onVerify={handleVerify}
-          isVerifying={verifyMutation.isPending}
-          error={setupError}
+          onSuccess={handleTotpVerifySuccess}
         />
       )}
 

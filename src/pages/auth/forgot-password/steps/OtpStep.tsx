@@ -13,7 +13,6 @@ import type { PasswordResetFlow } from '../../../../hooks';
 
 interface OtpStepProps {
   email: PasswordResetFlow['email'];
-  submitOtp: PasswordResetFlow['submitOtp'];
   resendOtp: PasswordResetFlow['resendOtp'];
   goBack: PasswordResetFlow['goBack'];
   forgotPasswordMutation: PasswordResetFlow['forgotPasswordMutation'];
@@ -22,7 +21,6 @@ interface OtpStepProps {
 
 export const OtpStep: React.FC<OtpStepProps> = ({
   email,
-  submitOtp,
   resendOtp,
   goBack,
   forgotPasswordMutation,
@@ -32,10 +30,6 @@ export const OtpStep: React.FC<OtpStepProps> = ({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: '' },
   });
-
-  const onSubmit = (data: OTPFormData) => {
-    submitOtp(data.code);
-  };
 
   const handleBack = () => {
     form.reset();
@@ -76,14 +70,20 @@ export const OtpStep: React.FC<OtpStepProps> = ({
         </Typography>
       </div>
 
-      <Form form={form} onSubmit={onSubmit}>
+      <Form
+        form={form}
+        mutation={verifyOtpMutation}
+        transformSubmit={(data) => ({ email, otp: data.code })}
+        showRootError
+      >
         <FieldGroup>
           <div className="flex justify-center">
             <OTPField
               name="code"
               onChange={(value) => {
                 if (value.length === 6 && !verifyOtpMutation.isPending) {
-                  form.handleSubmit(onSubmit)();
+                  // Auto-submit when 6 digits entered
+                  verifyOtpMutation.mutate({ email, otp: value });
                 }
               }}
             />
@@ -93,9 +93,9 @@ export const OtpStep: React.FC<OtpStepProps> = ({
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              disabled={verifyOtpMutation.isPending}
+              loadingText="Verifying..."
             >
-              {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify'}
+              Verify
             </Button>
           </Field>
 
@@ -105,9 +105,11 @@ export const OtpStep: React.FC<OtpStepProps> = ({
               variant="link"
               className="p-0 h-auto text-sm"
               onClick={handleResend}
-              disabled={forgotPasswordMutation.isPending || verifyOtpMutation.isPending}
+              isLoading={forgotPasswordMutation.isPending}
+              loadingText="Sending..."
+              disabled={verifyOtpMutation.isPending}
             >
-              {forgotPasswordMutation.isPending ? 'Sending...' : 'Resend code'}
+              Resend code
             </Button>
           </div>
         </FieldGroup>
