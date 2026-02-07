@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { Field, FieldGroup } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft } from 'lucide-react';
@@ -10,22 +10,22 @@ import { Link } from 'react-router-dom';
 import type { OTPFormData } from '../../../../schemas/auth';
 import { otpSchema } from '../../../../schemas/auth';
 import type { PasswordResetFlow } from '../../../../hooks';
+import { useState } from 'react';
 
 interface OtpStepProps {
   email: PasswordResetFlow['email'];
-  resendOtp: PasswordResetFlow['resendOtp'];
+  submitOtp: PasswordResetFlow['submitOtp'];
   goBack: PasswordResetFlow['goBack'];
-  forgotPasswordMutation: PasswordResetFlow['forgotPasswordMutation'];
-  verifyOtpMutation: PasswordResetFlow['verifyOtpMutation'];
 }
 
 export const OtpStep: React.FC<OtpStepProps> = ({
   email,
-  resendOtp,
+  submitOtp,
   goBack,
-  forgotPasswordMutation,
-  verifyOtpMutation,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
     defaultValues: { code: '' },
@@ -36,9 +36,23 @@ export const OtpStep: React.FC<OtpStepProps> = ({
     goBack();
   };
 
-  const handleResend = () => {
+  const handleSubmit = async (data: OTPFormData) => {
+    setIsSubmitting(true);
+    try {
+      await submitOtp(data.code);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsResending(true);
     form.reset();
-    resendOtp();
+    try {
+      await submitOtp(email); // Resend by triggering forgot password again
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -70,20 +84,17 @@ export const OtpStep: React.FC<OtpStepProps> = ({
         </Typography>
       </div>
 
-      <Form
-        form={form}
-        mutation={verifyOtpMutation}
-        transformSubmit={(data) => ({ email, otp: data.code })}
-        showRootError
-      >
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FieldGroup>
           <div className="flex justify-center">
             <OTPField
               name="code"
               onChange={(value) => {
-                if (value.length === 6 && !verifyOtpMutation.isPending) {
+                if (value.length === 6 && !isSubmitting) {
                   // Auto-submit when 6 digits entered
-                  verifyOtpMutation.mutate({ email, otp: value });
+                  submitOtp(value).catch(() => {
+                    // Error handling is done in the flow hook
+                  });
                 }
               }}
             />
@@ -93,6 +104,7 @@ export const OtpStep: React.FC<OtpStepProps> = ({
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
+              isLoading={isSubmitting}
               loadingText="Verifying..."
             >
               Verify
@@ -105,15 +117,15 @@ export const OtpStep: React.FC<OtpStepProps> = ({
               variant="link"
               className="p-0 h-auto text-sm"
               onClick={handleResend}
-              isLoading={forgotPasswordMutation.isPending}
+              isLoading={isResending}
               loadingText="Sending..."
-              disabled={verifyOtpMutation.isPending}
+              disabled={isSubmitting}
             >
               Resend code
             </Button>
           </div>
         </FieldGroup>
-      </Form>
+      </form>
 
       <Link
         to="../login"

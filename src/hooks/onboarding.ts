@@ -10,7 +10,6 @@ import type {
   TotpSetupResponse,
 } from '../services/onboarding.service';
 import {
-  get2FAStatus,
   initiateTotpSetup,
   initiatePasskeySetup,
   register,

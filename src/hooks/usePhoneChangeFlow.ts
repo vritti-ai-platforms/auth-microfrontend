@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { parsePhoneNumber } from 'libphonenumber-js';
 import { usePhoneVerification } from './usePhoneVerification';
 
 export type PhoneChangeStep = 'identity' | 'newPhone' | 'verify' | 'success';
@@ -99,9 +100,44 @@ export function usePhoneChangeFlow(currentPhone: string, currentCountry: string)
   const submitNewPhone = async (newPhoneValue: string, phoneCountry: string) => {
     clearError();
     try {
+      // Normalize phone number - remove + and country code prefix
+      // The PhoneField returns full number like "+916301216587"
+      // Backend expects just digits without country code like "6301216587"
+      let normalizedPhone: string;
+
+      try {
+        // Try to parse with libphonenumber-js for accurate country code removal
+        const phoneNumber = parsePhoneNumber(newPhoneValue, phoneCountry as any);
+        normalizedPhone = phoneNumber?.nationalNumber || '';
+      } catch {
+        // Fallback: manual parsing if libphonenumber-js fails
+        // Remove all non-digits first
+        const digitsOnly = newPhoneValue.replace(/\D/g, '');
+
+        // Country code length mapping for common countries
+        const countryCodeLengths: Record<string, number> = {
+          IN: 2,  // +91
+          US: 1,  // +1
+          CA: 1,  // +1
+          GB: 2,  // +44
+          AU: 2,  // +61
+          CN: 2,  // +86
+          JP: 2,  // +81
+          DE: 2,  // +49
+          FR: 2,  // +33
+          BR: 2,  // +55
+        };
+
+        const codeLength = countryCodeLengths[phoneCountry] || 0;
+        // Only remove country code if we have enough digits
+        normalizedPhone = codeLength && digitsOnly.length > 10
+          ? digitsOnly.slice(codeLength)
+          : digitsOnly;
+      }
+
       const response = await requestChange.mutateAsync({
         changeRequestId: state.changeRequestId,
-        newPhone: newPhoneValue,
+        newPhone: normalizedPhone,
         phoneCountry,
       });
       setState((prev) => ({

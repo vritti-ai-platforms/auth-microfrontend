@@ -125,7 +125,7 @@ export const useMobileVerificationSSE = (
       }
     };
 
-    eventSource.onerror = (error) => {
+    eventSource.onerror = () => {
       setIsConnected(false);
       options?.onError?.(new Error('SSE connection failed'));
       eventSource.close();

@@ -8,23 +8,21 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {flow.step === 'email' && (
-        <EmailStep forgotPasswordMutation={flow.forgotPasswordMutation} />
+        <EmailStep submitEmail={flow.submitEmail} />
       )}
 
       {flow.step === 'otp' && (
         <OtpStep
           email={flow.email}
-          resendOtp={flow.resendOtp}
+          submitOtp={flow.submitOtp}
           goBack={flow.goBack}
-          forgotPasswordMutation={flow.forgotPasswordMutation}
-          verifyOtpMutation={flow.verifyOtpMutation}
         />
       )}
 
       {flow.step === 'reset' && (
         <ResetPasswordStep
           resetToken={flow.resetToken}
-          resetPasswordMutation={flow.resetPasswordMutation}
+          submitPassword={flow.submitPassword}
         />
       )}
 

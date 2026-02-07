@@ -1,12 +1,8 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type {
   AuthenticationResponseJSON,
-  BackupCodesResponse,
   LoginResponse,
   PasskeyAuthOptionsResponse,
-  PasskeyRegistrationOptionsResponse,
-  RegistrationResponseJSON,
-  TotpSetupResponse,
 } from '../services/auth.service';
 import {
   sendSmsCode,
@@ -15,10 +11,14 @@ import {
   verifyPasskeyMfa,
   verifyTotp,
 } from '../services/auth.service';
+import type {
+  BackupCodesResponse,
+  PasskeyRegistrationOptionsResponse,
+  TotpSetupResponse,
+} from '../services/onboarding.service';
 import {
   initiateTotpSetup,
   initiatePasskeySetup,
-  verifyPasskeySetup,
   verifyTotpSetup,
   skip2FASetup,
 } from '../services/onboarding.service';
