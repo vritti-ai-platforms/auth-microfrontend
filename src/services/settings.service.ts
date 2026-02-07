@@ -6,12 +6,59 @@ import type {
   Session,
   UpdateProfileDto,
 } from '../schemas/settings';
+import { AccountStatus } from '../schemas/settings';
+
+/**
+ * Backend response structure from /cloud-api/auth/me endpoint
+ */
+interface AuthStatusResponse {
+  isAuthenticated: boolean;
+  user?: {
+    id: string;
+    email: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    phoneCountry?: string | null;
+    accountStatus: string;
+    locale: string;
+    timezone: string;
+    createdAt: string;
+    lastLoginAt?: string | null;
+    profilePictureUrl?: string | null;
+    // Additional fields from backend that frontend doesn't use yet
+    emailVerified?: boolean;
+    phoneVerified?: boolean;
+    onboardingStep?: string;
+    hasPassword?: boolean;
+  };
+  accessToken?: string;
+  expiresIn?: number;
+}
+
+/**
+ * Map backend AccountStatus enum to frontend enum
+ * @param backendStatus - Backend status value (PENDING_VERIFICATION, ACTIVE, INACTIVE)
+ * @returns Frontend AccountStatus enum value
+ */
+function mapAccountStatus(backendStatus: string): AccountStatus {
+  switch (backendStatus) {
+    case 'PENDING_VERIFICATION':
+      return AccountStatus.PENDING;
+    case 'ACTIVE':
+      return AccountStatus.ACTIVE;
+    case 'INACTIVE':
+      return AccountStatus.DEACTIVATED;
+    default:
+      return AccountStatus.PENDING;
+  }
+}
 
 /**
  * Get current user profile
  *
  * @returns Promise resolving to profile data
- * @throws Error if request fails
+ * @throws Error if user is not authenticated or request fails
  *
  * @example
  * ```typescript
@@ -20,11 +67,31 @@ import type {
  * ```
  */
 export async function getProfile(): Promise<ProfileData> {
-  const response: AxiosResponse<ProfileData> = await axios.get('cloud-api/auth/me', {
+  const response: AxiosResponse<AuthStatusResponse> = await axios.get('cloud-api/auth/me', {
     showSuccessToast: false,
   });
 
-  return response.data;
+  // Extract user object and handle unauthenticated state
+  if (!response.data.isAuthenticated || !response.data.user) {
+    throw new Error('User is not authenticated');
+  }
+
+  // Map backend response to frontend ProfileData format
+  const user = response.data.user;
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phone: user.phone,
+    phoneCountry: user.phoneCountry,
+    accountStatus: mapAccountStatus(user.accountStatus),
+    locale: user.locale,
+    timezone: user.timezone,
+    createdAt: user.createdAt,
+    lastLoginAt: user.lastLoginAt,
+    profilePictureUrl: user.profilePictureUrl,
+  };
 }
 
 /**

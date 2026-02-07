@@ -151,7 +151,6 @@ export const ProfilePage: React.FC = () => {
         </Typography>
       </div>
 
-
       {/* Profile Picture Card */}
       <Card>
         <CardHeader>
@@ -256,12 +255,7 @@ export const ProfilePage: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
-                    <TextField
-                      label="Email"
-                      disabled
-                      readOnly
-                      value={profile.email}
-                    />
+                    <TextField label="Email" disabled readOnly value={profile.email} />
                   </div>
                   {isEditing && (
                     <Button
@@ -336,9 +330,7 @@ export const ProfilePage: React.FC = () => {
               {/* Action Buttons */}
               {isEditing && (
                 <div className="flex gap-3 pt-2">
-                  <Button type="submit" disabled={updateProfileMutation.isPending}>
-                    Save Changes
-                  </Button>
+                  <Button type="submit">Save Changes</Button>
                   <Button
                     type="button"
                     variant="outline"
