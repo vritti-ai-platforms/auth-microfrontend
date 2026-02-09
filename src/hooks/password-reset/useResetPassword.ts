@@ -1,5 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { resetPassword, type ResetPasswordResponse } from '../../services/auth.service';
+import { type ResetPasswordResponse, resetPassword } from '../../services/auth.service';
 
 interface ResetPasswordParams {
   resetToken: string;
@@ -8,9 +8,9 @@ interface ResetPasswordParams {
 
 type UseResetPasswordOptions = Omit<UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordParams>, 'mutationFn'>;
 
-export const useResetPassword = (options?: UseResetPasswordOptions) => {
+export function useResetPassword(options?: UseResetPasswordOptions) {
   return useMutation<ResetPasswordResponse, Error, ResetPasswordParams>({
-    mutationFn: ({ resetToken, newPassword }: ResetPasswordParams) => resetPassword(resetToken, newPassword),
+    mutationFn: ({ resetToken, newPassword }) => resetPassword(resetToken, newPassword),
     ...options,
   });
-};
+}

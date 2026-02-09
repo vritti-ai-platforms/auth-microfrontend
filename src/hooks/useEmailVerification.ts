@@ -8,7 +8,7 @@ import type {
   RevertChangeRequest,
 } from '../services/verification.service';
 
-export const useEmailVerification = () => {
+export function useEmailVerification() {
   const queryClient = useQueryClient();
 
   const requestIdentityVerification = useMutation({
@@ -29,7 +29,6 @@ export const useEmailVerification = () => {
     mutationFn: (data: VerifyChangeRequest) =>
       verificationService.verifyEmailChange(data),
     onSuccess: () => {
-      // Invalidate profile cache to refresh email
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
@@ -55,4 +54,4 @@ export const useEmailVerification = () => {
     resendOtp,
     revert,
   };
-};
+}

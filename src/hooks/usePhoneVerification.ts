@@ -8,7 +8,7 @@ import type {
   RevertChangeRequest,
 } from '../services/verification.service';
 
-export const usePhoneVerification = () => {
+export function usePhoneVerification() {
   const queryClient = useQueryClient();
 
   const requestIdentityVerification = useMutation({
@@ -29,7 +29,6 @@ export const usePhoneVerification = () => {
     mutationFn: (data: VerifyChangeRequest) =>
       verificationService.verifyPhoneChange(data),
     onSuccess: () => {
-      // Invalidate profile cache to refresh phone
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
   });
@@ -55,4 +54,4 @@ export const usePhoneVerification = () => {
     resendOtp,
     revert,
   };
-};
+}
