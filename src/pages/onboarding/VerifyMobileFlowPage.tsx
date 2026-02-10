@@ -121,19 +121,15 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
   });
 
   // Real-time verification status via SSE
-  useMobileVerificationRealtime(
-    isWaitingForVerification && (selectedMethod === 'whatsapp' || selectedMethod === 'sms')
-      ? verificationData?.verificationId
-      : undefined,
-    {
-      onVerified: () => {
-        advanceAfterSuccess();
-      },
-      onError: (err) => {
-        setError(err.message || 'Verification failed. Please try again.');
-      },
-    }
-  );
+  useMobileVerificationRealtime({
+    enabled: isWaitingForVerification && (selectedMethod === 'whatsapp' || selectedMethod === 'sms'),
+    onVerified: () => {
+      advanceAfterSuccess();
+    },
+    onFailed: (message) => {
+      setError(message || 'Verification failed. Please try again.');
+    },
+  });
 
   // Handler to go back to method selection - defined before useEffects that use it
   const handleBackToMethods = useCallback(() => {
@@ -168,7 +164,7 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
     }
   }, [initiateMutation]);
 
-  const handleResendOtp = useCallback(async () => {
+  const handleResendOtp = useCallback(() => {
     if (!phoneNumber) return;
 
     resendMutation.mutate({
@@ -685,8 +681,8 @@ export const VerifyMobileFlowPage: React.FC = React.memo(() => {
       <div className="text-center space-y-6">
         {/* Success Icon */}
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-            <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+          <div className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center">
+            <CheckCircle className="h-10 w-10 text-success" />
           </div>
         </div>
 

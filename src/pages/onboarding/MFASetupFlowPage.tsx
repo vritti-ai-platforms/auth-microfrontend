@@ -83,21 +83,12 @@ export const MFASetupFlowPage: React.FC = () => {
     passkeyMutation.reset();
   };
 
+  // Runs the full passkey registration flow (initiate → WebAuthn → verify)
   const handlePasskeyRegister = async () => {
     try {
-      // Step 1: Initiate passkey setup (returns registration options)
       const response = await passkeyMutation.mutateAsync();
-
-      // TODO: Step 2 & 3 need to be implemented:
-      // - Use WebAuthn API with response.options
-      // - Call verifyPasskeySetup with the credential
-      // - Get backup codes from verification response
-
-      // For now, just log the options (this flow is incomplete)
-      console.log('Passkey registration options:', response.options);
-
-      // This is a temporary workaround - the passkey flow needs proper implementation
-      // with verifyPasskeySetup call to get backup codes
+      setBackupCodes(response.backupCodes);
+      setBackupWarning(response.warning);
       setCurrentStep(3);
     } catch {
       // Error is available via passkeyMutation.error

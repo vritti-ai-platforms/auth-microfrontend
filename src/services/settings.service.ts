@@ -48,7 +48,7 @@ function mapAccountStatus(backendStatus: string): AccountStatus {
 // Gets the current user profile
 export function getProfile(): Promise<ProfileData> {
   return axios
-    .get<AuthStatusResponse>('cloud-api/auth/me', { showSuccessToast: false })
+    .get<AuthStatusResponse>('cloud-api/auth/status', { showSuccessToast: false })
     .then((r) => {
       if (!r.data.isAuthenticated || !r.data.user) {
         throw new Error('User is not authenticated');

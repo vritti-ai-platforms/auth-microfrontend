@@ -15,6 +15,7 @@ export const ForgotPasswordPage: React.FC = () => {
         <OtpStep
           email={flow.email}
           submitOtp={flow.submitOtp}
+          resendOtp={flow.resendOtp}
           goBack={flow.goBack}
         />
       )}

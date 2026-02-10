@@ -42,6 +42,16 @@ export function usePasswordResetFlow() {
     }
   };
 
+  // Convenience wrappers for step components
+  const submitEmail = (emailValue: string) =>
+    forgotPasswordMutation.mutateAsync(emailValue);
+
+  const submitOtp = (otp: string) =>
+    verifyOtpMutation.mutateAsync({ email, otp });
+
+  const submitPassword = (newPassword: string) =>
+    resetPasswordMutation.mutateAsync({ resetToken, newPassword });
+
   return {
     // State
     step,
@@ -51,6 +61,10 @@ export function usePasswordResetFlow() {
     forgotPasswordMutation,
     verifyOtpMutation,
     resetPasswordMutation,
+    // Step submit helpers
+    submitEmail,
+    submitOtp,
+    submitPassword,
     // Actions
     resendOtp,
     goBack,

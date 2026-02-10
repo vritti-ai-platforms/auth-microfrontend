@@ -15,12 +15,14 @@ import { useState } from 'react';
 interface OtpStepProps {
   email: PasswordResetFlow['email'];
   submitOtp: PasswordResetFlow['submitOtp'];
+  resendOtp: PasswordResetFlow['resendOtp'];
   goBack: PasswordResetFlow['goBack'];
 }
 
 export const OtpStep: React.FC<OtpStepProps> = ({
   email,
   submitOtp,
+  resendOtp,
   goBack,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +51,7 @@ export const OtpStep: React.FC<OtpStepProps> = ({
     setIsResending(true);
     form.reset();
     try {
-      await submitOtp(email); // Resend by triggering forgot password again
+      await resendOtp();
     } finally {
       setIsResending(false);
     }
