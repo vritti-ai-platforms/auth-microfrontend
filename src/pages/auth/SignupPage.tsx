@@ -7,7 +7,6 @@ import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Lock, Mail, User } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
@@ -18,7 +17,6 @@ import { signupSchema } from '../../schemas/auth';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showLoginButton, setShowLoginButton] = useState(false);
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -51,19 +49,6 @@ export const SignupPage: React.FC = () => {
         },
       });
     },
-    onError: (error) => {
-      // Check for "user already exists" error to show login button
-      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || '';
-      if (
-        errorMessage.toLowerCase().includes('user already exists') ||
-        errorMessage.toLowerCase().includes('email already registered') ||
-        errorMessage.toLowerCase().includes('account already exists')
-      ) {
-        setShowLoginButton(true);
-      } else {
-        setShowLoginButton(false);
-      }
-    },
   });
 
   const password = form.watch('password');
@@ -95,6 +80,11 @@ export const SignupPage: React.FC = () => {
           firstName: data.firstName,
           lastName: data.lastName,
         })}
+        rootErrorAction={
+          <Button size="xs" variant="default" onClick={handleLoginInstead}>
+            Login
+          </Button>
+        }
       >
         <FieldGroup>
           {/* First Name and Last Name - Side by side */}
@@ -148,15 +138,6 @@ export const SignupPage: React.FC = () => {
               Create Account
             </Button>
           </Field>
-
-          {/* Login Instead Button - Show only if account exists */}
-          {showLoginButton && (
-            <Field>
-              <Button type="button" variant="outline" className="w-full" onClick={handleLoginInstead}>
-                Login Instead
-              </Button>
-            </Field>
-          )}
 
           {/* Terms and Conditions */}
           <Typography variant="body2" align="center" intent="muted" className="text-center">

@@ -1,4 +1,5 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { type VerifyResetOtpResponse, verifyResetOtp } from '../../services/auth.service';
 
 interface VerifyResetOtpParams {
@@ -6,10 +7,13 @@ interface VerifyResetOtpParams {
   otp: string;
 }
 
-type UseVerifyResetOtpOptions = Omit<UseMutationOptions<VerifyResetOtpResponse, Error, VerifyResetOtpParams>, 'mutationFn'>;
+type UseVerifyResetOtpOptions = Omit<
+  UseMutationOptions<VerifyResetOtpResponse, AxiosError, VerifyResetOtpParams>,
+  'mutationFn'
+>;
 
 export function useVerifyResetOtp(options?: UseVerifyResetOtpOptions) {
-  return useMutation<VerifyResetOtpResponse, Error, VerifyResetOtpParams>({
+  return useMutation<VerifyResetOtpResponse, AxiosError, VerifyResetOtpParams>({
     mutationFn: ({ email, otp }) => verifyResetOtp(email, otp),
     ...options,
   });

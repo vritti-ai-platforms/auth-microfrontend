@@ -1,10 +1,11 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { type SignupDto, type SignupResponse, signup } from '../../services/auth.service';
 
-type UseSignupOptions = Omit<UseMutationOptions<SignupResponse, Error, SignupDto>, 'mutationFn'>;
+type UseSignupOptions = Omit<UseMutationOptions<SignupResponse, AxiosError, SignupDto>, 'mutationFn'>;
 
 export function useSignup(options?: UseSignupOptions) {
-  return useMutation<SignupResponse, Error, SignupDto>({
+  return useMutation<SignupResponse, AxiosError, SignupDto>({
     mutationFn: signup,
     ...options,
   });

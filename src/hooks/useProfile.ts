@@ -1,23 +1,31 @@
-import { type UseMutationOptions, type UseQueryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type UseMutationOptions,
+  type UseQueryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import type { ProfileData, UpdateProfileDto } from '../schemas/settings';
+
 import { deleteAccount, getProfile, updateProfile } from '../services/settings.service';
 
 export const PROFILE_QUERY_KEY = ['profile'] as const;
 
-export function useProfile(options?: Omit<UseQueryOptions<ProfileData, Error>, 'queryKey' | 'queryFn'>) {
-  return useQuery<ProfileData, Error>({
+export function useProfile(options?: Omit<UseQueryOptions<ProfileData, AxiosError>, 'queryKey' | 'queryFn'>) {
+  return useQuery<ProfileData, AxiosError>({
     queryKey: PROFILE_QUERY_KEY,
     queryFn: getProfile,
     ...options,
   });
 }
 
-type UseUpdateProfileOptions = Omit<UseMutationOptions<ProfileData, Error, UpdateProfileDto>, 'mutationFn'>;
+type UseUpdateProfileOptions = Omit<UseMutationOptions<ProfileData, AxiosError, UpdateProfileDto>, 'mutationFn'>;
 
 export function useUpdateProfile(options?: UseUpdateProfileOptions) {
   const queryClient = useQueryClient();
 
-  return useMutation<ProfileData, Error, UpdateProfileDto>({
+  return useMutation<ProfileData, AxiosError, UpdateProfileDto>({
     mutationFn: updateProfile,
     onSuccess: (data, ...args) => {
       queryClient.setQueryData(PROFILE_QUERY_KEY, data);
@@ -27,12 +35,12 @@ export function useUpdateProfile(options?: UseUpdateProfileOptions) {
   });
 }
 
-type UseDeleteAccountOptions = Omit<UseMutationOptions<void, Error, void>, 'mutationFn'>;
+type UseDeleteAccountOptions = Omit<UseMutationOptions<void, AxiosError, void>, 'mutationFn'>;
 
 export function useDeleteAccount(options?: UseDeleteAccountOptions) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, void>({
+  return useMutation<void, AxiosError, void>({
     mutationFn: deleteAccount,
     onSuccess: (...args) => {
       queryClient.clear();

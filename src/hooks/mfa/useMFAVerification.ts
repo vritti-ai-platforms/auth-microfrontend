@@ -1,14 +1,16 @@
-import { type UseMutationOptions, useMutation } from "@tanstack/react-query";
-import { startAuthentication } from "@simplewebauthn/browser";
+import { startAuthentication } from '@simplewebauthn/browser';
+import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
 import {
-  verifyTotp,
+  type AuthenticationResponseJSON,
+  type LoginResponse,
   sendSmsCode,
-  verifySms,
   startPasskeyVerification,
   verifyPasskeyMfa,
-  type LoginResponse,
-  type AuthenticationResponseJSON,
-} from "../../services/auth.service";
+  verifySms,
+  verifyTotp,
+} from '../../services/auth.service';
 
 // ============================================================================
 // TOTP Verification Hook
@@ -19,13 +21,10 @@ interface VerifyTotpParams {
   code: string;
 }
 
-type UseVerifyTotpOptions = Omit<
-  UseMutationOptions<LoginResponse, Error, VerifyTotpParams>,
-  "mutationFn"
->;
+type UseVerifyTotpOptions = Omit<UseMutationOptions<LoginResponse, AxiosError, VerifyTotpParams>, 'mutationFn'>;
 
 export function useVerifyTotp(options?: UseVerifyTotpOptions) {
-  return useMutation<LoginResponse, Error, VerifyTotpParams>({
+  return useMutation<LoginResponse, AxiosError, VerifyTotpParams>({
     mutationFn: ({ sessionId, code }) => verifyTotp(sessionId, code),
     ...options,
   });
@@ -35,13 +34,10 @@ export function useVerifyTotp(options?: UseVerifyTotpOptions) {
 // SMS Verification Hooks
 // ============================================================================
 
-type UseSendSmsCodeOptions = Omit<
-  UseMutationOptions<void, Error, string>,
-  "mutationFn"
->;
+type UseSendSmsCodeOptions = Omit<UseMutationOptions<void, AxiosError, string>, 'mutationFn'>;
 
 export function useSendSmsCode(options?: UseSendSmsCodeOptions) {
-  return useMutation<void, Error, string>({
+  return useMutation<void, AxiosError, string>({
     mutationFn: sendSmsCode,
     ...options,
   });
@@ -52,13 +48,10 @@ interface VerifySmsParams {
   code: string;
 }
 
-type UseVerifySmsOptions = Omit<
-  UseMutationOptions<LoginResponse, Error, VerifySmsParams>,
-  "mutationFn"
->;
+type UseVerifySmsOptions = Omit<UseMutationOptions<LoginResponse, AxiosError, VerifySmsParams>, 'mutationFn'>;
 
 export function useVerifySms(options?: UseVerifySmsOptions) {
-  return useMutation<LoginResponse, Error, VerifySmsParams>({
+  return useMutation<LoginResponse, AxiosError, VerifySmsParams>({
     mutationFn: ({ sessionId, code }) => verifySms(sessionId, code),
     ...options,
   });
@@ -68,26 +61,18 @@ export function useVerifySms(options?: UseVerifySmsOptions) {
 // Passkey Verification Hook
 // ============================================================================
 
-type UseVerifyPasskeyOptions = Omit<
-  UseMutationOptions<LoginResponse, Error, string>,
-  "mutationFn"
->;
+type UseVerifyPasskeyOptions = Omit<UseMutationOptions<LoginResponse, AxiosError, string>, 'mutationFn'>;
 
 export function useVerifyPasskey(options?: UseVerifyPasskeyOptions) {
-  return useMutation<LoginResponse, Error, string>({
+  return useMutation<LoginResponse, AxiosError, string>({
     mutationFn: async (mfaSessionId: string) => {
-      const { options: authOptions } =
-        await startPasskeyVerification(mfaSessionId);
+      const { options: authOptions } = await startPasskeyVerification(mfaSessionId);
 
       const credential = await startAuthentication({
-        optionsJSON:
-          authOptions as Parameters<typeof startAuthentication>[0]["optionsJSON"],
+        optionsJSON: authOptions as Parameters<typeof startAuthentication>[0]['optionsJSON'],
       });
 
-      return await verifyPasskeyMfa(
-        mfaSessionId,
-        credential as AuthenticationResponseJSON,
-      );
+      return await verifyPasskeyMfa(mfaSessionId, credential as AuthenticationResponseJSON);
     },
     ...options,
   });

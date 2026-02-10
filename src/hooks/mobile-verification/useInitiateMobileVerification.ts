@@ -1,17 +1,18 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import {
-  initiateMobileVerification,
   type InitiateMobileVerificationDto,
+  initiateMobileVerification,
   type MobileVerificationStatusResponse,
 } from '../../services/onboarding.service';
 
 type UseInitiateMobileVerificationOptions = Omit<
-  UseMutationOptions<MobileVerificationStatusResponse, Error, InitiateMobileVerificationDto>,
+  UseMutationOptions<MobileVerificationStatusResponse, AxiosError, InitiateMobileVerificationDto>,
   'mutationFn'
 >;
 
 export function useInitiateMobileVerification(options?: UseInitiateMobileVerificationOptions) {
-  return useMutation<MobileVerificationStatusResponse, Error, InitiateMobileVerificationDto>({
+  return useMutation<MobileVerificationStatusResponse, AxiosError, InitiateMobileVerificationDto>({
     mutationFn: initiateMobileVerification,
     ...options,
   });

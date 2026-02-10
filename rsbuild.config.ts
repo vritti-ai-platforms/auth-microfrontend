@@ -6,7 +6,7 @@ import { pluginReact } from '@rsbuild/plugin-react';
 // Environment configuration
 const useHttps = process.env.USE_HTTPS === 'true';
 const protocol = useHttps ? 'https' : 'http';
-const host = 'local.vrittiai.com';
+const host = 'cloud.local.vrittiai.com';
 const defaultApiHost = `${protocol}://${host}:3000`;
 
 // Shared dependencies configuration for Module Federation
@@ -70,8 +70,9 @@ export default defineConfig({
     }),
     proxy: {
       '/api': {
-        target: process.env.REACT_API_HOST || defaultApiHost,
+        target: process.env.PUBLIC_API_URL || defaultApiHost,
         changeOrigin: true,
+        secure: false,
         pathRewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
