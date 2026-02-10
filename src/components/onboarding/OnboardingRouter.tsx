@@ -26,9 +26,10 @@ export const OnboardingRouter: React.FC = () => {
     );
   }
 
-  // Completed → dashboard
+  // Completed → full reload to trigger AuthProvider with upgraded CLOUD session
   if (onboardingComplete || currentStep === 'COMPLETED' || currentStep === 'COMPLETE') {
-    return <Navigate to="/dashboard" replace />;
+    window.location.href = '/';
+    return null;
   }
 
   // Render based on currentStep

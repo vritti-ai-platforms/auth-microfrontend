@@ -45,7 +45,8 @@ export const OAuthSuccessPage: React.FC = () => {
 
         // Navigate based on onboarding step
         if (step === 'COMPLETE') {
-          navigate('/dashboard', { replace: true });
+          window.location.href = '/';
+          return;
         } else {
           navigate('/onboarding', { replace: true });
         }

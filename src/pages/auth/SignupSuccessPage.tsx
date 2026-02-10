@@ -57,7 +57,8 @@ export const SignupSuccessPage: React.FC = () => {
     onSuccess: (response) => {
       // Navigate to onboarding - OnboardingRouter will render the correct step
       if (response.currentStep === 'COMPLETED' || response.currentStep === 'COMPLETE') {
-        navigate('/dashboard', { replace: true });
+        window.location.href = '/';
+        return;
       } else {
         navigate('../onboarding', { replace: true });
       }

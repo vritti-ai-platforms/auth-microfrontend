@@ -38,15 +38,15 @@ export const MFASetupFlowPage: React.FC = () => {
   const skipMutation = useSkip2FASetup();
   const passkeyMutation = usePasskeyRegistration();
 
-  // Auto-redirect on completion
+  // Full page reload on completion — triggers AuthProvider to re-fetch with upgraded CLOUD session
   useEffect(() => {
     if (currentStep === 4) {
-      const timer = setTimeout(async () => {
-        await refetch();
+      const timer = setTimeout(() => {
+        window.location.href = '/';
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [currentStep, refetch]);
+  }, [currentStep]);
 
   const handleMethodSelect = (method: MFAMethod) => {
     setSelectedMethod(method);
