@@ -149,7 +149,7 @@ export const SignupPage: React.FC = () => {
             </Button>{' '}
             &{' '}
             <Button variant="link" className="p-0 h-auto font-normal">
-              <a href="https://vrittiai.com/privacy" target="_blank" rel="noopener noreferrer">
+              <a href="https://vrittiai.com/privacy-policy" target="_blank" rel="noopener noreferrer">
                 Privacy
               </a>
             </Button>

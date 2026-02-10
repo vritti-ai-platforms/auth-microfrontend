@@ -12,7 +12,7 @@ export const AuthLayout: React.FC = () => {
         <ThemeToggle />
       </div>
 
-      <Card className="w-full max-w-[448px] border-border shadow-lg">
+      <Card className="w-full max-w-[448px] border-border shadow-lg gap-0">
         <CardHeader className="flex flex-col items-center pt-6 pb-4">
           <img src={Logo} alt="Vritti" className="h-12 sm:h-14 lg:h-12 w-auto mb-4" />
         </CardHeader>
