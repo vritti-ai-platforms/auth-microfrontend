@@ -24,7 +24,7 @@ type FlowStep = 1 | 2 | 3 | 4;
  * AuthenticatorSetup now owns its own verify mutation.
  */
 export const MFASetupFlowPage: React.FC = () => {
-  const { refetch, signupMethod } = useOnboarding();
+  const { signupMethod } = useOnboarding();
 
   // Minimal state - only what's needed for UI flow
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
@@ -169,11 +169,7 @@ export const MFASetupFlowPage: React.FC = () => {
       )}
 
       {currentStep === 2 && selectedMethod === 'authenticator' && totpData && (
-        <AuthenticatorSetup
-          totpData={totpData}
-          onBack={handleBack}
-          onSuccess={handleTotpVerifySuccess}
-        />
+        <AuthenticatorSetup totpData={totpData} onBack={handleBack} onSuccess={handleTotpVerifySuccess} />
       )}
 
       {currentStep === 2 && selectedMethod === 'passkey' && (
