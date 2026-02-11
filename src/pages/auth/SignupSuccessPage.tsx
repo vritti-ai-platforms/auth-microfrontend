@@ -4,42 +4,27 @@ import { CheckCircle2 } from 'lucide-react';
 import type React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useStartOnboarding } from '../../hooks';
-import type { SignupMethod } from '../../services/auth.service';
-import { OnboardingStep } from '../../services/auth.service';
 
-/**
- * Route state passed from SignupPage
- */
 interface SignupSuccessState {
   email?: string;
-  onboardingToken?: string;
-  isNewUser?: boolean;
-  signupMethod?: SignupMethod;
-  currentStep?: OnboardingStep | string;
+  signupMethod?: 'email' | 'oauth';
+  currentStep?: string;
 }
 
-/**
- * Gets the display text for the next steps based on signup method and user status
- */
-function getNextSteps(signupMethod: SignupMethod | undefined, currentStep: string | undefined): string[] {
+// Returns display steps based on signup method
+function getNextSteps(signupMethod: string, currentStep?: string): string[] {
   const steps: string[] = [];
 
-  // For OAuth users, email is already verified, they need to set password first
   if (signupMethod === 'oauth') {
-    if (currentStep === 'SET_PASSWORD' || currentStep === OnboardingStep.SET_PASSWORD) {
+    if (currentStep === 'SET_PASSWORD') {
       steps.push('Set your account password');
     }
   } else {
-    // For email signup users
-    if (currentStep === 'EMAIL_VERIFICATION' || currentStep === OnboardingStep.EMAIL_VERIFICATION) {
-      steps.push('Verify your email address');
-    }
+    steps.push('Verify your email address');
   }
 
-  // Common remaining steps
   steps.push('Set up mobile verification');
   steps.push('Configure two-factor authentication');
-  steps.push('Complete your profile setup');
 
   return steps;
 }
@@ -48,31 +33,26 @@ export const SignupSuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract state from navigation
   const state = (location.state as SignupSuccessState) || {};
-  const { email = 'user@example.com', isNewUser = true, signupMethod = 'email', currentStep } = state;
+  const { email, signupMethod = 'email', currentStep } = state;
 
-  // Use the start onboarding mutation
+  const isOAuth = signupMethod === 'oauth';
+
+  // Calls POST /onboarding/start then navigates to onboarding router
   const startOnboardingMutation = useStartOnboarding({
     onSuccess: (response) => {
-      // Navigate to onboarding - OnboardingRouter will render the correct step
-      if (response.currentStep === 'COMPLETED' || response.currentStep === 'COMPLETE') {
+      if (response.currentStep === 'COMPLETE') {
         window.location.href = '/';
         return;
-      } else {
-        navigate('../onboarding', { replace: true });
       }
+      navigate('../onboarding', { replace: true });
     },
   });
 
-  // Dynamic content based on user status
-  const title = isNewUser ? 'Account created successfully!' : 'Welcome back!';
-  const subtitle = isNewUser
-    ? signupMethod === 'oauth'
-      ? 'Your account has been created using OAuth authentication'
-      : 'Your account has been created successfully'
-    : 'Resume your onboarding to complete account setup';
-  const buttonText = isNewUser ? 'Start Onboarding' : 'Resume Onboarding';
+  const title = isOAuth ? 'Account linked successfully!' : 'Account created successfully!';
+  const subtitle = isOAuth
+    ? 'Your account has been created using OAuth'
+    : 'Your account has been created successfully';
   const nextSteps = getNextSteps(signupMethod, currentStep);
 
   return (
@@ -94,17 +74,19 @@ export const SignupSuccessPage: React.FC = () => {
         </Typography>
       </div>
 
-      {/* Email Display Box */}
-      <div className="bg-accent rounded-lg p-3 text-center border border-border">
-        <Typography variant="caption" intent="muted" className="block mb-1">
-          Account email
-        </Typography>
-        <Typography variant="body2" className="font-medium text-foreground">
-          {email}
-        </Typography>
-      </div>
+      {/* Email Display Box — only shown for email signup */}
+      {email && (
+        <div className="bg-accent rounded-lg p-3 text-center border border-border">
+          <Typography variant="caption" intent="muted" className="block mb-1">
+            Account email
+          </Typography>
+          <Typography variant="body2" className="font-medium text-foreground">
+            {email}
+          </Typography>
+        </div>
+      )}
 
-      {/* Next Steps Section */}
+      {/* Next Steps */}
       <div className="border border-border rounded-lg p-4 space-y-2">
         <Typography variant="body2" className="font-medium text-foreground">
           Next steps:
@@ -119,17 +101,16 @@ export const SignupSuccessPage: React.FC = () => {
         </ul>
       </div>
 
-      {/* Start/Resume Onboarding Button */}
+      {/* Start Onboarding */}
       <Button
         onClick={() => startOnboardingMutation.mutate()}
         className="w-full bg-primary text-primary-foreground"
         isLoading={startOnboardingMutation.isPending}
         loadingText="Loading..."
       >
-        {buttonText}
+        Start Onboarding
       </Button>
 
-      {/* Helper Text */}
       <Typography variant="caption" align="center" intent="muted" className="text-center">
         This will guide you through securing your account
       </Typography>

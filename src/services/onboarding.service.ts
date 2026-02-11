@@ -17,6 +17,7 @@ export interface OnboardingStatusResponse {
   accountStatus: string;
   emailVerified: boolean;
   phoneVerified: boolean;
+  signupMethod: 'email' | 'oauth';
 }
 
 export interface VerifyEmailDto {

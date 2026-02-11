@@ -1,22 +1,4 @@
-export { useLogin, useSignup } from './auth';
-
-export {
-  useRegister,
-  useResendEmailOtp,
-  useSetPassword,
-  useStartOnboarding,
-  useVerifyEmail,
-} from './onboarding';
-
-export {
-  useInitiateMobileVerification,
-  useMobileVerificationRealtime,
-  useMobileVerificationSSE,
-  useMobileVerificationStatus,
-  useResendMobileVerification,
-  useVerifyMobileOtp,
-} from './mobile-verification';
-
+export { useLogin, useOAuthCallback, useSignup } from './auth';
 export {
   useInitiateTotpSetup,
   usePasskeyLogin,
@@ -30,6 +12,22 @@ export {
 } from './mfa';
 
 export {
+  useInitiateMobileVerification,
+  useMobileVerificationRealtime,
+  useMobileVerificationSSE,
+  useMobileVerificationStatus,
+  useResendMobileVerification,
+  useVerifyMobileOtp,
+} from './mobile-verification';
+export {
+  useRegister,
+  useResendEmailOtp,
+  useSetPassword,
+  useStartOnboarding,
+  useVerifyEmail,
+} from './onboarding';
+
+export {
   type PasswordResetFlow,
   type Step,
   useForgotPassword,
@@ -37,10 +35,9 @@ export {
   useResetPassword,
   useVerifyResetOtp,
 } from './password-reset';
-
-export { useDeleteAccount, useProfile, useUpdateProfile } from './useProfile';
-export { useChangePassword, useRevokeSession, useSessions } from './useSecurity';
 export { useEmailChangeFlow } from './useEmailChangeFlow';
 export { useEmailVerification } from './useEmailVerification';
 export { usePhoneChangeFlow } from './usePhoneChangeFlow';
 export { usePhoneVerification } from './usePhoneVerification';
+export { useDeleteAccount, useProfile, useUpdateProfile } from './useProfile';
+export { useChangePassword, useRevokeSession, useSessions } from './useSecurity';

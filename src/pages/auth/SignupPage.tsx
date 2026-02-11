@@ -43,7 +43,6 @@ export const SignupPage: React.FC = () => {
       navigate('../signup-success', {
         state: {
           email: form.getValues('email'),
-          isNewUser: response.isNewUser,
           signupMethod: response.signupMethod,
           currentStep: response.currentStep,
         },

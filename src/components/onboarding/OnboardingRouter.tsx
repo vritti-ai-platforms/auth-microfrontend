@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@vritti/quantum-ui/Spinner';
 import type React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useOnboarding } from '../../context';
@@ -21,7 +21,7 @@ export const OnboardingRouter: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="size-8" />
       </div>
     );
   }
