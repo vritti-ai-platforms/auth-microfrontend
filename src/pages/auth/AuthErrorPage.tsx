@@ -33,11 +33,7 @@ export const AuthErrorPage: React.FC = () => {
     }
   };
 
-  const handleBackToSignup = () => {
-    navigate('../signup', { replace: true });
-  };
-
-  const handleBackToLogin = () => {
+  const handleTryAgain = () => {
     navigate('../login', { replace: true });
   };
 
@@ -58,15 +54,10 @@ export const AuthErrorPage: React.FC = () => {
         <Alert variant="destructive" title="Error" description={getErrorMessage()} />
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-3">
-        <Button type="button" onClick={handleBackToSignup} className="w-full bg-primary text-primary-foreground">
-          Try Again
-        </Button>
-        <Button type="button" onClick={handleBackToLogin} variant="outline" className="w-full">
-          Back to Login
-        </Button>
-      </div>
+      {/* Action Button */}
+      <Button type="button" onClick={handleTryAgain} className="w-full bg-primary text-primary-foreground">
+        Try Again
+      </Button>
 
       {/* Help Text */}
       <Typography variant="caption" align="center" intent="muted" className="text-center">
