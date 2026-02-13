@@ -10,28 +10,10 @@ export const AuthErrorPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const error = searchParams.get('error');
-  const errorDescription = searchParams.get('error_description');
-
-  // Map common error codes to user-friendly messages
-  const getErrorMessage = (): string => {
-    if (errorDescription) {
-      return errorDescription;
-    }
-
-    switch (error) {
-      case 'access_denied':
-        return 'You cancelled the authentication process. Please try again if you want to sign up with Google.';
-      case 'invalid_state':
-        return 'Invalid or expired authentication session. Please try again.';
-      case 'email_exists':
-        return 'An account with this email already exists. Please log in with your password instead.';
-      case 'provider_error':
-        return 'An error occurred with the authentication provider. Please try again later.';
-      default:
-        return 'An unexpected error occurred during authentication. Please try again.';
-    }
-  };
+  const errorDescription =
+    searchParams.get('error_description') ||
+    searchParams.get('error') ||
+    'An unexpected error occurred during authentication. Please try again.';
 
   const handleTryAgain = () => {
     navigate('../login', { replace: true });
@@ -51,7 +33,7 @@ export const AuthErrorPage: React.FC = () => {
         <Typography variant="h4" align="center" className="text-foreground">
           Authentication Failed
         </Typography>
-        <Alert variant="destructive" title="Error" description={getErrorMessage()} />
+        <Alert variant="destructive" title="Error" description={errorDescription} />
       </div>
 
       {/* Action Button */}
