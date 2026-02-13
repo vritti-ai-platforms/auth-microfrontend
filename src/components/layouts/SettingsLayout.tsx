@@ -10,7 +10,7 @@ export const SettingsLayout: React.FC = () => {
       <div className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <img src={Logo} alt="Vritti" className="h-8 w-auto" />
+            <img src={Logo} alt="Vritti AI Cloud" className="h-8 w-auto" />
             <ThemeToggle />
           </div>
         </div>

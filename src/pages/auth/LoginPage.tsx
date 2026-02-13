@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
           Welcome back
         </Typography>
         <Typography variant="body2" align="center" intent="muted">
-          Sign in to your Vritti Cloud account
+          Sign in to your Vritti AI Cloud account
         </Typography>
       </div>
 

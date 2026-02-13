@@ -2,43 +2,27 @@ import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { CheckCircle2 } from 'lucide-react';
 import type React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStartOnboarding } from '../../hooks';
 
-interface SignupSuccessState {
-  email?: string;
-  signupMethod?: 'email' | 'oauth';
-  currentStep?: string;
+interface AuthSuccessState {
+  isEmail?: boolean;
 }
 
-// Returns display steps based on signup method
-function getNextSteps(signupMethod: string, currentStep?: string): string[] {
-  const steps: string[] = [];
-
-  if (signupMethod === 'oauth') {
-    if (currentStep === 'SET_PASSWORD') {
-      steps.push('Set your account password');
-    }
-  } else {
-    steps.push('Verify your email address');
-  }
-
-  steps.push('Set up mobile verification');
-  steps.push('Configure two-factor authentication');
-
-  return steps;
-}
-
-export const SignupSuccessPage: React.FC = () => {
+// Unified success page for both email signup and OAuth authentication
+export const AuthSuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  const state = (location.state as SignupSuccessState) || {};
-  const { email, signupMethod = 'email', currentStep } = state;
+  // Read email from URL query params (works for both server redirects and frontend routing)
+  const email = searchParams.get('email');
 
-  const isOAuth = signupMethod === 'oauth';
+  // Detect source: email signup (from frontend) has isEmail in state, OAuth (from server) doesn't
+  const state = (location.state as AuthSuccessState) || {};
+  const isEmail = state.isEmail ?? false;
 
-  // Calls POST /onboarding/start then navigates to onboarding router
+  // Email signup: calls POST /onboarding/start (sends email OTP) then navigates
   const startOnboardingMutation = useStartOnboarding({
     onSuccess: (response) => {
       if (response.currentStep === 'COMPLETE') {
@@ -49,11 +33,26 @@ export const SignupSuccessPage: React.FC = () => {
     },
   });
 
-  const title = isOAuth ? 'Account linked successfully!' : 'Account created successfully!';
-  const subtitle = isOAuth
-    ? 'Your account has been created using OAuth'
-    : 'Your account has been created successfully';
-  const nextSteps = getNextSteps(signupMethod, currentStep);
+  const title = 'Welcome to Vritti AI Cloud!';
+  const subtitle = isEmail ? "We've sent a verification code to your email" : "Let's finish setting up your account";
+
+  // Next steps - same for all users
+  const nextSteps = [
+    isEmail ? 'Confirm your email' : 'Choose a password',
+    'Add your phone number',
+    'Set up extra security',
+  ];
+
+  // Handlers
+  const handleStartOnboarding = () => {
+    if (isEmail) {
+      // Email: call startOnboarding() to send email OTP
+      startOnboardingMutation.mutate();
+    } else {
+      // OAuth: navigate directly to onboarding (axios will auto-recover token on first API call)
+      navigate('../onboarding', { replace: true });
+    }
+  };
 
   return (
     <div className="text-center space-y-6">
@@ -101,9 +100,9 @@ export const SignupSuccessPage: React.FC = () => {
         </ul>
       </div>
 
-      {/* Start Onboarding */}
+      {/* Start Onboarding Button */}
       <Button
-        onClick={() => startOnboardingMutation.mutate()}
+        onClick={handleStartOnboarding}
         className="w-full bg-primary text-primary-foreground"
         isLoading={startOnboardingMutation.isPending}
         loadingText="Loading..."
@@ -112,7 +111,7 @@ export const SignupSuccessPage: React.FC = () => {
       </Button>
 
       <Typography variant="caption" align="center" intent="muted" className="text-center">
-        This will guide you through securing your account
+        Just a few quick steps to secure your account
       </Typography>
     </div>
   );

@@ -286,14 +286,14 @@ Key Benefits:
     │                     │ <─────────────────│                      │
     │                     │                    │                      │
     │                     │  Redirect to:      │                      │
-    │                     │  /onboarding/oauth-success or            │
-    │                     │  /onboarding/oauth-error                 │
+    │                     │  /oauth-success or                       │
+    │                     │  /oauth-error                            │
     │                     │ <─────────────────│                      │
     │                     │                    │                      │
 
-Note: OAuth redirects have been updated from:
-  OLD: /onboarding/oauth/{provider}
-  NEW: /auth/oauth/{provider}
+Note: OAuth endpoints have been updated:
+  • Backend: /auth/oauth/{provider}
+  • Callback redirects: /oauth-success or /oauth-error
 ```
 
 ## Session Lifecycle

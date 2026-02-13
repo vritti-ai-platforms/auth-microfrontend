@@ -39,13 +39,10 @@ export const SignupPage: React.FC = () => {
         }
       }
 
-      // Navigate to success page with email and onboarding state
-      navigate('../signup-success', {
-        state: {
-          email: form.getValues('email'),
-          signupMethod: response.signupMethod,
-          currentStep: response.currentStep,
-        },
+      // Navigate to success page with email in URL and state flag
+      const email = form.getValues('email');
+      navigate(`../auth-success?email=${encodeURIComponent(email)}`, {
+        state: { isEmail: true },
       });
     },
   });
@@ -65,7 +62,7 @@ export const SignupPage: React.FC = () => {
           Create your account
         </Typography>
         <Typography variant="body2" align="center" intent="muted">
-          Get started with Vritti Cloud Platform
+          Get started with Vritti AI Cloud
         </Typography>
       </div>
 

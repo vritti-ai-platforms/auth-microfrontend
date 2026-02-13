@@ -1,4 +1,4 @@
-export { useLogin, useOAuthCallback, useSignup } from './auth';
+export { useLogin, useSignup } from './auth';
 export {
   useInitiateTotpSetup,
   usePasskeyLogin,

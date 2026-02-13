@@ -1,19 +1,12 @@
+import { Alert } from '@vritti/quantum-ui/Alert';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
+import { AlertCircle } from 'lucide-react';
 import type React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-/**
- * OAuth Error Page
- *
- * Displays errors that occur during the OAuth authentication flow.
- * Common scenarios:
- * - User cancels at OAuth provider consent screen
- * - Invalid or expired state token
- * - Email already exists with a password
- * - OAuth provider errors
- */
-export const OAuthErrorPage: React.FC = () => {
+// Displays errors that occur during the authentication flow (OAuth or email signup)
+export const AuthErrorPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -49,40 +42,24 @@ export const OAuthErrorPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6 px-4">
+    <div className="text-center space-y-6">
       {/* Error Icon */}
-      <div className="rounded-full bg-red-100 p-4">
-        <svg
-          className="w-12 h-12 text-red-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <title>Error</title>
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
-      </div>
-
-      {/* Error Message */}
-      <div className="text-center space-y-2 max-w-md">
-        <Typography variant="h3" align="center" className="text-foreground">
-          Authentication Failed
-        </Typography>
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
-          <Typography variant="body2" className="text-red-800">
-            {getErrorMessage()}
-          </Typography>
+      <div className="flex justify-center">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-destructive/15">
+          <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
       </div>
 
+      {/* Title & Error Message */}
+      <div className="text-center space-y-4">
+        <Typography variant="h4" align="center" className="text-foreground">
+          Authentication Failed
+        </Typography>
+        <Alert variant="destructive" title="Error" description={getErrorMessage()} />
+      </div>
+
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
+      <div className="flex flex-col gap-3">
         <Button type="button" onClick={handleBackToSignup} className="w-full bg-primary text-primary-foreground">
           Try Again
         </Button>
@@ -92,7 +69,7 @@ export const OAuthErrorPage: React.FC = () => {
       </div>
 
       {/* Help Text */}
-      <Typography variant="body2" intent="muted" className="text-center max-w-md">
+      <Typography variant="caption" align="center" intent="muted" className="text-center">
         If you continue to experience issues, please contact support or try signing up with email and password instead.
       </Typography>
     </div>
