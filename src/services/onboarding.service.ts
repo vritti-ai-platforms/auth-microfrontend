@@ -37,18 +37,15 @@ export function getStatus(): Promise<OnboardingStatusResponse> {
     .then((r) => r.data);
 }
 
-export interface StartOnboardingResponse {
+export interface SendEmailOtpResponse {
   success: boolean;
   message: string;
-  currentStep: string;
-  otpSentTo?: "email" | "phone" | null;
-  otpDestination?: string;
 }
 
-// Starts the onboarding process for the authenticated user
-export function startOnboarding(): Promise<StartOnboardingResponse> {
+// Sends initial email verification OTP for email signup users
+export function sendEmailOtp(): Promise<SendEmailOtpResponse> {
   return axios
-    .post<StartOnboardingResponse>("cloud-api/onboarding/start")
+    .post<SendEmailOtpResponse>("cloud-api/onboarding/email-verification/send")
     .then((r) => r.data);
 }
 

@@ -1,9 +1,10 @@
+import { toast } from '@vritti/quantum-ui';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { CheckCircle2 } from 'lucide-react';
 import type React from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useStartOnboarding } from '../../hooks';
+import { useSendEmailOtp } from '../../hooks';
 
 interface AuthSuccessState {
   isEmail?: boolean;
@@ -22,13 +23,9 @@ export const AuthSuccessPage: React.FC = () => {
   const state = (location.state as AuthSuccessState) || {};
   const isEmail = state.isEmail ?? false;
 
-  // Email signup: calls POST /onboarding/start (sends email OTP) then navigates
-  const startOnboardingMutation = useStartOnboarding({
-    onSuccess: (response) => {
-      if (response.currentStep === 'COMPLETE') {
-        window.location.href = '/';
-        return;
-      }
+  // Email signup: sends initial email OTP then navigates to onboarding
+  const sendEmailOtpMutation = useSendEmailOtp({
+    onSuccess: () => {
       navigate('../onboarding', { replace: true });
     },
   });
@@ -46,10 +43,11 @@ export const AuthSuccessPage: React.FC = () => {
   // Handlers
   const handleStartOnboarding = () => {
     if (isEmail) {
-      // Email: call startOnboarding() to send email OTP
-      startOnboardingMutation.mutate();
+      // Email: send initial OTP to user's email
+      sendEmailOtpMutation.mutate();
     } else {
       // OAuth: navigate directly to onboarding (axios will auto-recover token on first API call)
+      toast.success('Set a Password');
       navigate('../onboarding', { replace: true });
     }
   };
@@ -104,7 +102,7 @@ export const AuthSuccessPage: React.FC = () => {
       <Button
         onClick={handleStartOnboarding}
         className="w-full bg-primary text-primary-foreground"
-        isLoading={startOnboardingMutation.isPending}
+        isLoading={sendEmailOtpMutation.isPending}
         loadingText="Loading..."
       >
         Start Onboarding

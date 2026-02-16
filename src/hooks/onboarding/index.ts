@@ -1,4 +1,4 @@
 export { useResendEmailOtp } from './useResendEmailOtp';
+export { useSendEmailOtp } from './useSendEmailOtp';
 export { useSetPassword } from './useSetPassword';
-export { useStartOnboarding } from './useStartOnboarding';
 export { useVerifyEmail } from './useVerifyEmail';

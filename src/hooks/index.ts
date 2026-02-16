@@ -21,8 +21,8 @@ export {
 } from './mobile-verification';
 export {
   useResendEmailOtp,
+  useSendEmailOtp,
   useSetPassword,
-  useStartOnboarding,
   useVerifyEmail,
 } from './onboarding';
 
