@@ -5,7 +5,7 @@ import { useOnboarding } from '../../context';
 import { MFASetupFlowPage } from '../../pages/onboarding/MFASetupFlowPage';
 import { SetPasswordPage } from '../../pages/onboarding/SetPasswordPage';
 import { VerifyEmailPage } from '../../pages/onboarding/VerifyEmailPage';
-import { VerifyMobileFlowPage } from '../../pages/onboarding/VerifyMobileFlowPage';
+import { VerifyMobilePage } from '../../pages/onboarding/verify-mobile';
 
 /**
  * OnboardingRouter - Switch-based router for onboarding steps
@@ -39,7 +39,7 @@ export const OnboardingRouter: React.FC = () => {
 
     case 'PHONE_VERIFICATION':
     case 'MOBILE_VERIFICATION':
-      return <VerifyMobileFlowPage />;
+      return <VerifyMobilePage />;
 
     case 'SET_PASSWORD':
       return <SetPasswordPage />;

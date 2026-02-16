@@ -15,7 +15,7 @@ import { setPasswordSchema } from '../../schemas/auth';
 export const SetPasswordPage: React.FC = () => {
   const { refetch, signupMethod } = useOnboarding();
   const setPasswordMutation = useSetPassword({
-    onSuccess: () => refetch(),
+    onSuccess: refetch,
   });
 
   const form = useForm<SetPasswordFormData>({
@@ -49,12 +49,7 @@ export const SetPasswordPage: React.FC = () => {
         </Typography>
       </div>
 
-      <Form
-        form={form}
-        mutation={setPasswordMutation}
-        transformSubmit={(data) => data.password}
-        showRootError
-      >
+      <Form form={form} mutation={setPasswordMutation} transformSubmit={(data) => data.password} showRootError>
         <FieldGroup>
           <PasswordField
             name="password"
