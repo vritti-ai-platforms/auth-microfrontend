@@ -21,14 +21,12 @@ export {
 } from './auth.service';
 export type {
   OnboardingStatusResponse,
-  RegisterDto,
   StartOnboardingResponse,
   VerifyEmailDto,
 } from './onboarding.service';
 // Onboarding Service
 export {
   getStatus,
-  register,
   resendEmailOtp,
   startOnboarding,
   verifyEmail,

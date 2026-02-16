@@ -1,5 +1,4 @@
-export { useRegister } from './useRegister';
-export { useVerifyEmail } from './useVerifyEmail';
 export { useResendEmailOtp } from './useResendEmailOtp';
-export { useStartOnboarding } from './useStartOnboarding';
 export { useSetPassword } from './useSetPassword';
+export { useStartOnboarding } from './useStartOnboarding';
+export { useVerifyEmail } from './useVerifyEmail';

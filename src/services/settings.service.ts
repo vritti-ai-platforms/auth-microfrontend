@@ -12,8 +12,8 @@ interface AuthStatusResponse {
   user?: {
     id: string;
     email: string;
-    firstName?: string | null;
-    lastName?: string | null;
+    fullName?: string | null;
+    displayName?: string | null;
     phone?: string | null;
     phoneCountry?: string | null;
     accountStatus: string;
@@ -57,8 +57,8 @@ export function getProfile(): Promise<ProfileData> {
       return {
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        fullName: user.fullName,
+        displayName: user.displayName,
         phone: user.phone,
         phoneCountry: user.phoneCountry,
         accountStatus: mapAccountStatus(user.accountStatus),

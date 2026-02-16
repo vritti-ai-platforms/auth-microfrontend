@@ -20,8 +20,7 @@ export const SignupPage: React.FC = () => {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -73,8 +72,7 @@ export const SignupPage: React.FC = () => {
         transformSubmit={(data: SignupFormData) => ({
           email: data.email,
           password: data.password,
-          firstName: data.firstName,
-          lastName: data.lastName,
+          fullName: data.fullName,
         })}
         rootErrorAction={
           <Button size="xs" variant="default" onClick={handleLoginInstead}>
@@ -83,22 +81,13 @@ export const SignupPage: React.FC = () => {
         }
       >
         <FieldGroup>
-          {/* First Name and Last Name - Side by side */}
-          <div className="grid grid-cols-2 gap-4">
-            <TextField
-              name="firstName"
-              label="First Name"
-              placeholder="John"
-              startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
-            />
-
-            <TextField
-              name="lastName"
-              label="Last Name"
-              placeholder="Doe"
-              startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
-            />
-          </div>
+          {/* Full Name */}
+          <TextField
+            name="fullName"
+            label="Full Name"
+            placeholder="John Doe"
+            startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
+          />
 
           {/* Work Email */}
           <TextField

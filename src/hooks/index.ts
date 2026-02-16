@@ -20,7 +20,6 @@ export {
   useVerifyMobileOtp,
 } from './mobile-verification';
 export {
-  useRegister,
   useResendEmailOtp,
   useSetPassword,
   useStartOnboarding,

@@ -6,8 +6,8 @@ import { getTimezoneValues } from '../utils/timezones';
  * Validation schema for profile update form
  */
 export const profileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  fullName: z.string().min(1, 'Full name is required'),
+  displayName: z.string().optional(),
   phone: z.string().optional(),
   locale: z.string().refine((val) => getLocaleCodes().includes(val), {
     message: 'Invalid locale code',
@@ -63,8 +63,8 @@ export enum AccountStatus {
 export interface ProfileData {
   id: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
+  fullName?: string | null;
+  displayName?: string | null;
   accountStatus: AccountStatus;
   phone?: string | null;
   phoneCountry?: string | null;
@@ -79,8 +79,8 @@ export interface ProfileData {
  * Profile update DTO for API requests
  */
 export interface UpdateProfileDto {
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
+  displayName?: string;
   phone?: string;
   phoneCountry?: string;
   locale?: string;

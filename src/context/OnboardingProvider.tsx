@@ -6,15 +6,9 @@ import { OnboardingContext, type OnboardingContextType } from './OnboardingConte
 const ONBOARDING_STATUS_KEY = ['onboarding', 'status'] as const;
 
 const emptyState: Omit<OnboardingContextType, 'refetch'> = {
-  userId: '',
   email: '',
-  firstName: '',
-  lastName: '',
   currentStep: '',
   onboardingComplete: false,
-  accountStatus: '',
-  emailVerified: false,
-  phoneVerified: false,
   signupMethod: 'email',
   isLoading: false,
   error: null,

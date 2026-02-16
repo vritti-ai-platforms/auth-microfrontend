@@ -43,8 +43,8 @@ export const ProfilePage: React.FC = () => {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     values: {
-      firstName: profile?.firstName || '',
-      lastName: profile?.lastName || '',
+      fullName: profile?.fullName || '',
+      displayName: profile?.displayName || '',
       phone: profile?.phone || '',
       locale: profile?.locale || 'en',
       timezone: profile?.timezone || 'UTC',
@@ -161,8 +161,8 @@ export const ProfilePage: React.FC = () => {
           <div className="flex items-start">
             <div className="relative">
               <Avatar className="h-24 w-24 shadow-[0px_0px_0px_4px_white,0px_12px_24px_4px_rgba(10,29,54,0.08),0px_4px_6px_-0.75px_rgba(10,29,54,0.08)]">
-                <AvatarImage src={profilePictureUrl || undefined} alt={`${profile.firstName} ${profile.lastName}`} />
-                <AvatarFallback className="text-lg">{`${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`}</AvatarFallback>
+                <AvatarImage src={profilePictureUrl || undefined} alt={profile.displayName || profile.fullName || 'User'} />
+                <AvatarFallback className="text-lg">{(profile.displayName || profile.fullName || 'U').substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             </div>
             <div className="ml-[120px] flex flex-col gap-3">
@@ -245,10 +245,10 @@ export const ProfilePage: React.FC = () => {
         <CardContent>
           <Form form={form} mutation={updateProfileMutation} onSubmit={handleSubmit}>
             <FieldGroup>
-              {/* First Name and Last Name */}
+              {/* Full Name and Display Name */}
               <div className="grid grid-cols-2 gap-4">
-                <TextField name="firstName" label="First Name" placeholder="John" disabled={!isEditing} />
-                <TextField name="lastName" label="Last Name" placeholder="Doe" disabled={!isEditing} />
+                <TextField name="fullName" label="Full Name" placeholder="John Doe" disabled={!isEditing} />
+                <TextField name="displayName" label="Display Name" placeholder="John" disabled={!isEditing} />
               </div>
 
               {/* Email with Change Button */}

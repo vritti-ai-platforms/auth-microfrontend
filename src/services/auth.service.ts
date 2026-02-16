@@ -29,8 +29,7 @@ export interface MFAChallenge {
 export interface SignupDto {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
 }
 
 export interface LoginDto {
@@ -41,8 +40,8 @@ export interface LoginDto {
 export interface UserResponseDto {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
+  displayName?: string;
   emailVerified: boolean;
   phoneVerified: boolean;
 }

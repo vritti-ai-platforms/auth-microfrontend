@@ -1,34 +1,14 @@
 import { axios } from "@vritti/quantum-ui/axios";
 
-export interface RegisterDto {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
 export interface OnboardingStatusResponse {
-  userId: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
   currentStep: string;
   onboardingComplete: boolean;
-  accountStatus: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
   signupMethod: 'email' | 'oauth';
 }
 
 export interface VerifyEmailDto {
   otp: string;
-}
-
-// Registers a new user and initiates the onboarding process
-export function register(data: RegisterDto): Promise<OnboardingStatusResponse> {
-  return axios
-    .post<OnboardingStatusResponse>("cloud-api/onboarding/register", data, { public: true })
-    .then((r) => r.data);
 }
 
 // Verifies user's email address using OTP code
