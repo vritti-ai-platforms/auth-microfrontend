@@ -39,6 +39,13 @@ export function sendEmailOtp(): Promise<SendEmailOtpResponse> {
     .then((r) => r.data);
 }
 
+// Changes the user's email during onboarding and sends a new OTP
+export function changeEmail(email: string): Promise<SendEmailOtpResponse> {
+  return axios
+    .post<SendEmailOtpResponse>("cloud-api/onboarding/email-verification/change-email", { email })
+    .then((r) => r.data);
+}
+
 export interface SetPasswordResponse {
   success: boolean;
   message: string;

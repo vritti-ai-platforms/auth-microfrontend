@@ -19,6 +19,7 @@ export {
   useVerifyMobileOtp,
 } from './mobile-verification';
 export {
+  useChangeEmail,
   useSendEmailOtp,
   useSetPassword,
   useVerifyEmail,

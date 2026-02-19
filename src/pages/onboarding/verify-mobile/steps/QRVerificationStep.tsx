@@ -1,3 +1,4 @@
+import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -166,9 +167,9 @@ export const QRVerificationStep: React.FC<QRVerificationStepProps> = ({ method, 
         {/* Alternative Method */}
         <Typography variant="body2" align="center" intent="muted" className="text-center">
           Having trouble?{' '}
-          <button type="button" onClick={onBack} className="text-primary hover:text-primary/80 font-medium">
+          <Button variant="link" onClick={onBack} className="p-0 h-auto font-medium">
             Try another method
-          </button>
+          </Button>
         </Typography>
       </div>
     </div>

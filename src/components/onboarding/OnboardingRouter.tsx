@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { useOnboarding } from '../../context';
 import { MFASetupFlowPage } from '../../pages/onboarding/MFASetupFlowPage';
 import { SetPasswordPage } from '../../pages/onboarding/SetPasswordPage';
-import { VerifyEmailPage } from '../../pages/onboarding/VerifyEmailPage';
+import { VerifyEmailPage } from '../../pages/onboarding/verify-email/VerifyEmailPage';
 import { VerifyMobilePage } from '../../pages/onboarding/verify-mobile';
 
 /**

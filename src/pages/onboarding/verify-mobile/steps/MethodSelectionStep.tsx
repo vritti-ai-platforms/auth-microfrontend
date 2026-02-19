@@ -1,4 +1,5 @@
 import { Badge } from '@vritti/quantum-ui/Badge';
+import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ChevronRight, MessageSquare, Phone, QrCode } from 'lucide-react';
 import type React from 'react';
@@ -47,11 +48,11 @@ export const MethodSelectionStep: React.FC<MethodSelectionStepProps> = ({ onMeth
 
       <div className="space-y-3">
         {methods.map((method) => (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             key={method.id}
             onClick={() => onMethodSelect(method.id)}
-            className="w-full p-4 rounded-lg border-2 border-border hover:border-primary transition-all flex items-center gap-4 text-left group"
+            className="w-full p-4 rounded-lg border-2 border-border hover:border-primary transition-all flex items-center gap-4 text-left group h-auto"
           >
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-foreground">
               {method.icon}
@@ -68,7 +69,7 @@ export const MethodSelectionStep: React.FC<MethodSelectionStepProps> = ({ onMeth
               </Typography>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </button>
+          </Button>
         ))}
       </div>
     </div>

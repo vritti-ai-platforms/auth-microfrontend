@@ -59,14 +59,10 @@ export const OtpStep: React.FC<OtpStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <button
-        type="button"
-        onClick={handleBack}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
+      <Button variant="ghost" onClick={handleBack} className="inline-flex items-center gap-2 text-sm">
         <ArrowLeft className="h-4 w-4" />
         Back
-      </button>
+      </Button>
 
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">

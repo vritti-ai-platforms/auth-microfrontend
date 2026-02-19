@@ -42,15 +42,10 @@ export const AuthenticatorSetup: React.FC<AuthenticatorSetupProps> = ({
 
   return (
     <div className="space-y-6">
-      <button
-        type="button"
-        onClick={onBack}
-        disabled={verifyMutation.isPending}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
-      >
+      <Button variant="ghost" onClick={onBack} disabled={verifyMutation.isPending} className="inline-flex items-center gap-2 text-sm">
         <ArrowLeft className="h-4 w-4" />
         Back to MFA options
-      </button>
+      </Button>
 
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">
