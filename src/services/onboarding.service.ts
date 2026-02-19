@@ -14,7 +14,7 @@ export interface VerifyEmailDto {
 // Verifies user's email address using OTP code
 export function verifyEmail(otp: string): Promise<OnboardingStatusResponse> {
   return axios
-    .post<OnboardingStatusResponse>("cloud-api/onboarding/verify-email", { otp }, {
+    .post<OnboardingStatusResponse>("cloud-api/onboarding/email-verification/verify-otp", { otp }, {
       showSuccessToast: false,
     })
     .then((r) => r.data);
@@ -35,7 +35,7 @@ export interface SendEmailOtpResponse {
 // Sends initial email verification OTP for email signup users
 export function sendEmailOtp(): Promise<SendEmailOtpResponse> {
   return axios
-    .post<SendEmailOtpResponse>("cloud-api/onboarding/email-verification/send")
+    .post<SendEmailOtpResponse>("cloud-api/onboarding/email-verification/send-otp")
     .then((r) => r.data);
 }
 
