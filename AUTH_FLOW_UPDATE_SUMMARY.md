@@ -90,7 +90,8 @@ All 5 tasks have been successfully completed to update the authentication flow i
 1. `/Users/shashankraju/Documents/Vritti/vritti-auth/src/components/auth/SocialAuthButtons.tsx`
 
 ### Changes:
-- Updated all OAuth redirect URLs from `/onboarding/oauth/:provider` to `/auth/oauth/:provider`
+- Updated OAuth backend URLs from `/onboarding/oauth/:provider` to `/auth/oauth/:provider`
+- Updated OAuth callback redirects from `/onboarding/oauth-success` to `/oauth-success`
 - Unified `handleOAuthLogin()` function for all providers:
   - Google
   - Facebook
@@ -199,7 +200,7 @@ npm run build
 1. User clicks social auth button
 2. Redirects to `/auth/oauth/{provider}`
 3. Backend handles OAuth with provider
-4. Backend redirects to `/onboarding/oauth-success` or `/onboarding/oauth-error`
+4. Backend redirects to `/oauth-success` or `/oauth-error`
 
 ---
 

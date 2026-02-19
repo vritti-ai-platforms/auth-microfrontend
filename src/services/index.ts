@@ -21,15 +21,13 @@ export {
 } from './auth.service';
 export type {
   OnboardingStatusResponse,
-  RegisterDto,
-  StartOnboardingResponse,
+  SendEmailOtpResponse,
   VerifyEmailDto,
 } from './onboarding.service';
 // Onboarding Service
 export {
   getStatus,
-  register,
   resendEmailOtp,
-  startOnboarding,
+  sendEmailOtp,
   verifyEmail,
 } from './onboarding.service';

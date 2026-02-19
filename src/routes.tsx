@@ -4,13 +4,14 @@ import { AuthLayout } from './components/layouts/AuthLayout';
 import { OnboardingRouter } from './components/onboarding/OnboardingRouter';
 import { OnboardingProvider } from './context';
 import './index.css';
+import { AuthErrorPage } from './pages/auth/AuthErrorPage';
+import { AuthSuccessPage } from './pages/auth/AuthSuccessPage';
 import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
-import { SignupSuccessPage } from './pages/auth/SignupSuccessPage';
-import { OAuthErrorPage } from './pages/onboarding/OAuthErrorPage';
-import { OAuthSuccessPage } from './pages/onboarding/OAuthSuccessPage';
+import { ProfilePage } from './pages/settings/ProfilePage';
+import { SecurityPage } from './pages/settings/SecurityPage';
 
 /**
  * Auth routes configuration - exported for Module Federation consumption
@@ -34,8 +35,12 @@ export const authRoutes: RouteObject[] = [
         element: <SignupPage />,
       },
       {
-        path: 'signup-success',
-        element: <SignupSuccessPage />,
+        path: 'auth-success',
+        element: <AuthSuccessPage />,
+      },
+      {
+        path: 'auth-error',
+        element: <AuthErrorPage />,
       },
       {
         path: 'forgot-password',
@@ -44,16 +49,6 @@ export const authRoutes: RouteObject[] = [
       {
         path: 'mfa-verify',
         element: <MFAVerificationPage />,
-      },
-      // OAuth callback routes - OUTSIDE OnboardingProvider to prevent premature token fetch
-      // These routes extract token from URL params before any provider fetches data
-      {
-        path: 'onboarding/oauth-success',
-        element: <OAuthSuccessPage />,
-      },
-      {
-        path: 'onboarding/oauth-error',
-        element: <OAuthErrorPage />,
       },
       // Onboarding routes - wrapped with OnboardingProvider
       {
@@ -71,6 +66,17 @@ export const authRoutes: RouteObject[] = [
         ],
       },
     ],
+  },
+];
+
+export const accountRoutes: RouteObject[] = [
+  {
+    path: 'profile',
+    element: <ProfilePage />,
+  },
+  {
+    path: 'security',
+    element: <SecurityPage />,
   },
 ];
 

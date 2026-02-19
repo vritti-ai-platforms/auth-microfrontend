@@ -5,34 +5,15 @@ import {
 } from './useMobileVerificationSSE';
 
 export interface UseMobileVerificationRealtimeOptions {
-  /** Whether to enable real-time updates */
   enabled?: boolean;
-  /** Called when verification succeeds */
   onVerified?: () => void;
-  /** Called when verification fails */
   onFailed?: (message?: string) => void;
-  /** Called when verification expires */
   onExpired?: () => void;
 }
 
-/**
- * Hook for mobile verification status via SSE (Server-Sent Events)
- *
- * Uses SSE for real-time push notifications when verification status changes.
- * No polling - purely event-driven.
- *
- * @example
- * ```tsx
- * const { isVerified, isConnected, connectionMode } = useMobileVerificationRealtime({
- *   enabled: showQRCode,
- *   onVerified: () => advanceToNextStep(),
- *   onExpired: () => handleBackToMethods(),
- * });
- * ```
- */
-export const useMobileVerificationRealtime = (
+export function useMobileVerificationRealtime(
   options: UseMobileVerificationRealtimeOptions = {},
-) => {
+) {
   const {
     enabled = true,
     onVerified,
@@ -42,7 +23,6 @@ export const useMobileVerificationRealtime = (
 
   const [isVerified, setIsVerified] = useState(false);
 
-  // Store callbacks in refs to avoid dependency issues
   const onVerifiedRef = useCallback(() => {
     setIsVerified(true);
     onVerified?.();
@@ -59,7 +39,6 @@ export const useMobileVerificationRealtime = (
     onExpired?.();
   }, [onExpired]);
 
-  // SSE connection (no polling fallback)
   const { isConnected: sseConnected, error: sseError } = useMobileVerificationSSE({
     enabled,
     onVerified: onVerifiedRef,
@@ -67,7 +46,6 @@ export const useMobileVerificationRealtime = (
     onExpired: onExpiredRef,
   });
 
-  // Reset state when disabled
   useEffect(() => {
     if (!enabled) {
       setIsVerified(false);
@@ -82,4 +60,4 @@ export const useMobileVerificationRealtime = (
     connectionMode,
     sseError,
   };
-};
+}

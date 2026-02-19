@@ -1,2 +1,2 @@
-export { OnboardingContext, type OnboardingContextType, type OnboardingData, useOnboarding } from './OnboardingContext';
+export { OnboardingContext, type OnboardingContextType, useOnboarding } from './OnboardingContext';
 export { OnboardingProvider } from './OnboardingProvider';

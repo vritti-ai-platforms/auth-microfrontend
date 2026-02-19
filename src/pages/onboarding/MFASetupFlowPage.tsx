@@ -24,7 +24,7 @@ type FlowStep = 1 | 2 | 3 | 4;
  * AuthenticatorSetup now owns its own verify mutation.
  */
 export const MFASetupFlowPage: React.FC = () => {
-  const { refetch, signupMethod } = useOnboarding();
+  const { signupMethod } = useOnboarding();
 
   // Minimal state - only what's needed for UI flow
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
@@ -38,15 +38,15 @@ export const MFASetupFlowPage: React.FC = () => {
   const skipMutation = useSkip2FASetup();
   const passkeyMutation = usePasskeyRegistration();
 
-  // Auto-redirect on completion
+  // Full page reload on completion — triggers AuthProvider to re-fetch with upgraded CLOUD session
   useEffect(() => {
     if (currentStep === 4) {
-      const timer = setTimeout(async () => {
-        await refetch();
+      const timer = setTimeout(() => {
+        window.location.href = '/';
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [currentStep, refetch]);
+  }, [currentStep]);
 
   const handleMethodSelect = (method: MFAMethod) => {
     setSelectedMethod(method);
@@ -83,6 +83,7 @@ export const MFASetupFlowPage: React.FC = () => {
     passkeyMutation.reset();
   };
 
+  // Runs the full passkey registration flow (initiate → WebAuthn → verify)
   const handlePasskeyRegister = async () => {
     try {
       const response = await passkeyMutation.mutateAsync();
@@ -168,11 +169,7 @@ export const MFASetupFlowPage: React.FC = () => {
       )}
 
       {currentStep === 2 && selectedMethod === 'authenticator' && totpData && (
-        <AuthenticatorSetup
-          totpData={totpData}
-          onBack={handleBack}
-          onSuccess={handleTotpVerifySuccess}
-        />
+        <AuthenticatorSetup totpData={totpData} onBack={handleBack} onSuccess={handleTotpVerifySuccess} />
       )}
 
       {currentStep === 2 && selectedMethod === 'passkey' && (

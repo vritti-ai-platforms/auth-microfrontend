@@ -1,11 +1,12 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { forgotPassword, type ForgotPasswordResponse } from '../../services/auth.service';
+import type { AxiosError } from 'axios';
+import { type ForgotPasswordResponse, forgotPassword } from '../../services/auth.service';
 
-type UseForgotPasswordOptions = Omit<UseMutationOptions<ForgotPasswordResponse, Error, string>, 'mutationFn'>;
+type UseForgotPasswordOptions = Omit<UseMutationOptions<ForgotPasswordResponse, AxiosError, string>, 'mutationFn'>;
 
-export const useForgotPassword = (options?: UseForgotPasswordOptions) => {
-  return useMutation<ForgotPasswordResponse, Error, string>({
-    mutationFn: (email: string) => forgotPassword(email),
+export function useForgotPassword(options?: UseForgotPasswordOptions) {
+  return useMutation<ForgotPasswordResponse, AxiosError, string>({
+    mutationFn: forgotPassword,
     ...options,
   });
-};
+}

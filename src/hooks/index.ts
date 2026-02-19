@@ -1,44 +1,42 @@
-// Auth hooks
-export { useSignup, useLogin } from './auth';
-
-// Onboarding hooks
-export {
-  useRegister,
-  useVerifyEmail,
-  useResendEmailOtp,
-  useStartOnboarding,
-  useSetPassword,
-} from './onboarding';
-
-// Mobile verification hooks
-export {
-  useInitiateMobileVerification,
-  useMobileVerificationStatus,
-  useVerifyMobileOtp,
-  useResendMobileVerification,
-  useMobileVerificationSSE,
-  useMobileVerificationRealtime,
-} from './mobile-verification';
-
-// MFA hooks (2FA, passkey, verification)
+export { useLogin, useSignup } from './auth';
 export {
   useInitiateTotpSetup,
-  useVerifyTotpSetup,
-  useSkip2FASetup,
-  usePasskeyRegistration,
   usePasskeyLogin,
-  useVerifyTotp,
+  usePasskeyRegistration,
   useSendSmsCode,
-  useVerifySms,
+  useSkip2FASetup,
   useVerifyPasskey,
+  useVerifySms,
+  useVerifyTotp,
+  useVerifyTotpSetup,
 } from './mfa';
 
-// Password reset hooks
 export {
-  useForgotPassword,
-  useVerifyResetOtp,
-  useResetPassword,
-  usePasswordResetFlow,
+  useInitiateMobileVerification,
+  useMobileVerificationRealtime,
+  useMobileVerificationSSE,
+  useMobileVerificationStatus,
+  useResendMobileVerification,
+  useVerifyMobileOtp,
+} from './mobile-verification';
+export {
+  useResendEmailOtp,
+  useSendEmailOtp,
+  useSetPassword,
+  useVerifyEmail,
+} from './onboarding';
+
+export {
   type PasswordResetFlow,
   type Step,
+  useForgotPassword,
+  usePasswordResetFlow,
+  useResetPassword,
+  useVerifyResetOtp,
 } from './password-reset';
+export { useEmailChangeFlow } from './useEmailChangeFlow';
+export { useEmailVerification } from './useEmailVerification';
+export { usePhoneChangeFlow } from './usePhoneChangeFlow';
+export { usePhoneVerification } from './usePhoneVerification';
+export { useDeleteAccount, useProfile, useUpdateProfile } from './useProfile';
+export { useChangePassword, useRevokeSession, useSessions } from './useSecurity';

@@ -7,7 +7,6 @@ import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Lock, Mail, User } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider } from '../../components/auth/AuthDivider';
@@ -18,12 +17,10 @@ import { signupSchema } from '../../schemas/auth';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showLoginButton, setShowLoginButton] = useState(false);
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -41,28 +38,11 @@ export const SignupPage: React.FC = () => {
         }
       }
 
-      // Navigate to success page with email and onboarding state
-      navigate('../signup-success', {
-        state: {
-          email: form.getValues('email'),
-          isNewUser: response.isNewUser,
-          signupMethod: response.signupMethod,
-          currentStep: response.currentStep,
-        },
+      // Navigate to success page with email in URL and state flag
+      const email = form.getValues('email');
+      navigate(`../auth-success?email=${encodeURIComponent(email)}`, {
+        state: { isEmail: true },
       });
-    },
-    onError: (error) => {
-      // Check for "user already exists" error to show login button
-      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || '';
-      if (
-        errorMessage.toLowerCase().includes('user already exists') ||
-        errorMessage.toLowerCase().includes('email already registered') ||
-        errorMessage.toLowerCase().includes('account already exists')
-      ) {
-        setShowLoginButton(true);
-      } else {
-        setShowLoginButton(false);
-      }
     },
   });
 
@@ -81,7 +61,7 @@ export const SignupPage: React.FC = () => {
           Create your account
         </Typography>
         <Typography variant="body2" align="center" intent="muted">
-          Get started with Vritti Cloud Platform
+          Get started with Vritti AI Cloud
         </Typography>
       </div>
 
@@ -92,27 +72,22 @@ export const SignupPage: React.FC = () => {
         transformSubmit={(data: SignupFormData) => ({
           email: data.email,
           password: data.password,
-          firstName: data.firstName,
-          lastName: data.lastName,
+          fullName: data.fullName,
         })}
+        rootErrorAction={
+          <Button size="xs" variant="default" onClick={handleLoginInstead}>
+            Login
+          </Button>
+        }
       >
         <FieldGroup>
-          {/* First Name and Last Name - Side by side */}
-          <div className="grid grid-cols-2 gap-4">
-            <TextField
-              name="firstName"
-              label="First Name"
-              placeholder="John"
-              startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
-            />
-
-            <TextField
-              name="lastName"
-              label="Last Name"
-              placeholder="Doe"
-              startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
-            />
-          </div>
+          {/* Full Name */}
+          <TextField
+            name="fullName"
+            label="Full Name"
+            placeholder="John Doe"
+            startAdornment={<User className="h-3.5 w-3.5 text-muted-foreground" />}
+          />
 
           {/* Work Email */}
           <TextField
@@ -149,15 +124,6 @@ export const SignupPage: React.FC = () => {
             </Button>
           </Field>
 
-          {/* Login Instead Button - Show only if account exists */}
-          {showLoginButton && (
-            <Field>
-              <Button type="button" variant="outline" className="w-full" onClick={handleLoginInstead}>
-                Login Instead
-              </Button>
-            </Field>
-          )}
-
           {/* Terms and Conditions */}
           <Typography variant="body2" align="center" intent="muted" className="text-center">
             By creating an account, you agree to our{' '}
@@ -168,7 +134,7 @@ export const SignupPage: React.FC = () => {
             </Button>{' '}
             &{' '}
             <Button variant="link" className="p-0 h-auto font-normal">
-              <a href="https://vrittiai.com/privacy" target="_blank" rel="noopener noreferrer">
+              <a href="https://vrittiai.com/privacy-policy" target="_blank" rel="noopener noreferrer">
                 Privacy
               </a>
             </Button>

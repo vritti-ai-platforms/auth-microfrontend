@@ -1,0 +1,1 @@
+export { VerifyMobilePage } from './VerifyMobilePage';

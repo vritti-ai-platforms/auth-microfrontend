@@ -1,11 +1,11 @@
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@vritti/quantum-ui/Spinner';
 import type React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useOnboarding } from '../../context';
 import { MFASetupFlowPage } from '../../pages/onboarding/MFASetupFlowPage';
 import { SetPasswordPage } from '../../pages/onboarding/SetPasswordPage';
 import { VerifyEmailPage } from '../../pages/onboarding/VerifyEmailPage';
-import { VerifyMobileFlowPage } from '../../pages/onboarding/VerifyMobileFlowPage';
+import { VerifyMobilePage } from '../../pages/onboarding/verify-mobile';
 
 /**
  * OnboardingRouter - Switch-based router for onboarding steps
@@ -21,14 +21,15 @@ export const OnboardingRouter: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Spinner className="size-8" />
       </div>
     );
   }
 
-  // Completed → dashboard
+  // Completed → full reload to trigger AuthProvider with upgraded CLOUD session
   if (onboardingComplete || currentStep === 'COMPLETED' || currentStep === 'COMPLETE') {
-    return <Navigate to="/dashboard" replace />;
+    window.location.href = '/';
+    return null;
   }
 
   // Render based on currentStep
@@ -38,7 +39,7 @@ export const OnboardingRouter: React.FC = () => {
 
     case 'PHONE_VERIFICATION':
     case 'MOBILE_VERIFICATION':
-      return <VerifyMobileFlowPage />;
+      return <VerifyMobilePage />;
 
     case 'SET_PASSWORD':
       return <SetPasswordPage />;
