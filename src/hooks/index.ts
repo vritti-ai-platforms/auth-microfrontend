@@ -16,11 +16,9 @@ export {
   useMobileVerificationRealtime,
   useMobileVerificationSSE,
   useMobileVerificationStatus,
-  useResendMobileVerification,
   useVerifyMobileOtp,
 } from './mobile-verification';
 export {
-  useResendEmailOtp,
   useSendEmailOtp,
   useSetPassword,
   useVerifyEmail,

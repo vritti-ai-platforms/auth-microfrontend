@@ -20,16 +20,6 @@ export function verifyEmail(otp: string): Promise<OnboardingStatusResponse> {
     .then((r) => r.data);
 }
 
-// Resends the email verification OTP
-export function resendEmailOtp(): Promise<void> {
-  return axios
-    .post("cloud-api/onboarding/resend-email-otp", undefined, {
-      loadingMessage: "Sending code...",
-      successMessage: "Code sent! Check your email.",
-    })
-    .then(() => undefined);
-}
-
 // Retrieves current onboarding status for the authenticated user
 export function getStatus(): Promise<OnboardingStatusResponse> {
   return axios
@@ -206,13 +196,6 @@ export function initiateMobileVerification(data: InitiateMobileVerificationDto):
 export function getMobileVerificationStatus(): Promise<MobileVerificationStatusResponse> {
   return axios
     .get<MobileVerificationStatusResponse>("cloud-api/onboarding/mobile-verification/status")
-    .then((r) => r.data);
-}
-
-// Resends mobile verification with a new token
-export function resendMobileVerification(data: InitiateMobileVerificationDto): Promise<MobileVerificationStatusResponse> {
-  return axios
-    .post<MobileVerificationStatusResponse>("cloud-api/onboarding/mobile-verification/resend", data)
     .then((r) => r.data);
 }
 

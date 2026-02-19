@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { MultiStepProgressIndicator } from "../../components/onboarding/MultiStepProgressIndicator";
 import { useOnboarding } from "../../context";
-import { useResendEmailOtp, useVerifyEmail } from "../../hooks";
+import { useSendEmailOtp, useVerifyEmail } from "../../hooks";
 import type { OTPFormData } from "../../schemas/auth";
 import { otpSchema } from "../../schemas/auth";
 
@@ -27,7 +27,7 @@ export const VerifyEmailPage: React.FC = () => {
     },
   });
 
-  const resendOtpMutation = useResendEmailOtp({
+  const resendOtpMutation = useSendEmailOtp({
     onSuccess: () => {
       form.reset();
     },

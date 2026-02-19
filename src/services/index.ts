@@ -27,7 +27,6 @@ export type {
 // Onboarding Service
 export {
   getStatus,
-  resendEmailOtp,
   sendEmailOtp,
   verifyEmail,
 } from './onboarding.service';

@@ -5,7 +5,7 @@ import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PhoneField } from '@vritti/quantum-ui/PhoneField';
-import { SelectField } from '@vritti/quantum-ui/SelectField';
+
 import { Skeleton } from '@vritti/quantum-ui/Skeleton';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
@@ -19,8 +19,6 @@ import { PhoneVerificationDialog } from '../../components/settings/PhoneVerifica
 import { useDeleteAccount, useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import type { ProfileFormData } from '../../schemas/settings';
 import { AccountStatus, profileSchema } from '../../schemas/settings';
-import { LOCALES } from '../../utils/locales';
-import { TIMEZONES } from '../../utils/timezones';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -161,8 +159,13 @@ export const ProfilePage: React.FC = () => {
           <div className="flex items-start">
             <div className="relative">
               <Avatar className="h-24 w-24 shadow-[0px_0px_0px_4px_white,0px_12px_24px_4px_rgba(10,29,54,0.08),0px_4px_6px_-0.75px_rgba(10,29,54,0.08)]">
-                <AvatarImage src={profilePictureUrl || undefined} alt={profile.displayName || profile.fullName || 'User'} />
-                <AvatarFallback className="text-lg">{(profile.displayName || profile.fullName || 'U').substring(0, 2).toUpperCase()}</AvatarFallback>
+                <AvatarImage
+                  src={profilePictureUrl || undefined}
+                  alt={profile.displayName || profile.fullName || 'User'}
+                />
+                <AvatarFallback className="text-lg">
+                  {(profile.displayName || profile.fullName || 'U').substring(0, 2).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
             </div>
             <div className="ml-[120px] flex flex-col gap-3">
@@ -308,7 +311,7 @@ export const ProfilePage: React.FC = () => {
 
               {/* Locale and Timezone */}
               <div className="grid grid-cols-2 gap-4">
-                <SelectField
+                {/* <SelectField
                   name="locale"
                   label="Language"
                   placeholder="Select a language"
@@ -324,7 +327,7 @@ export const ProfilePage: React.FC = () => {
                     label: `${tz.label} (${tz.offset})`,
                   }))}
                   disabled={!isEditing}
-                />
+                /> */}
               </div>
 
               {/* Action Buttons */}
