@@ -8,13 +8,6 @@ export enum OnboardingStep {
   COMPLETED = "COMPLETED",
 }
 
-export enum AccountStatus {
-  PENDING = "PENDING",
-  ACTIVE = "ACTIVE",
-  SUSPENDED = "SUSPENDED",
-  DELETED = "DELETED",
-}
-
 export type SignupMethod = "email" | "oauth";
 
 export type MFAMethod = "totp" | "sms" | "passkey";
@@ -37,15 +30,6 @@ export interface LoginDto {
   password: string;
 }
 
-export interface UserResponseDto {
-  id: string;
-  email: string;
-  fullName?: string;
-  displayName?: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-}
-
 export interface SignupResponse {
   accessToken: string;
   expiresIn: number;
@@ -57,8 +41,6 @@ export interface SignupResponse {
 export interface LoginResponse {
   accessToken?: string;
   expiresIn?: number;
-  requiresOnboarding?: boolean;
-  onboardingStep?: OnboardingStep;
   requiresMfa?: boolean;
   mfaChallenge?: MFAChallenge;
 }
@@ -82,10 +64,6 @@ export function login(data: LoginDto): Promise<LoginResponse> {
     })
     .then((r) => r.data);
 }
-
-// ============================================================================
-// MFA Verification API Functions
-// ============================================================================
 
 // Verifies TOTP code for MFA authentication
 export function verifyTotp(sessionId: string, code: string): Promise<LoginResponse> {
@@ -135,10 +113,6 @@ export function verifyPasskeyMfa(sessionId: string, credential: AuthenticationRe
     .then((r) => r.data);
 }
 
-// ============================================================================
-// Passkey (WebAuthn) Authentication API Functions
-// ============================================================================
-
 export interface PublicKeyCredentialRequestOptions {
   challenge: string;
   timeout?: number;
@@ -184,25 +158,27 @@ export function verifyPasskeyLogin(sessionId: string, credential: Authentication
     .then((r) => r.data);
 }
 
-// ============================================================================
-// Password Reset API Functions
-// ============================================================================
-
-export interface ForgotPasswordResponse {
+export interface SuccessResponse {
   success: boolean;
   message: string;
 }
 
-export interface VerifyResetOtpResponse {
-  resetToken: string;
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+  accessToken?: string;
+  expiresIn?: number;
 }
 
 export interface ResetPasswordResponse {
   success: boolean;
   message: string;
+  accessToken: string;
+  expiresIn: number;
+  sessionType: 'CLOUD' | 'ONBOARDING';
 }
 
-// Requests a password reset OTP to be sent to the provided email
+// Sends password reset OTP and creates a RESET session
 export function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
   return axios
     .post<ForgotPasswordResponse>("cloud-api/auth/forgot-password", { email }, {
@@ -212,21 +188,28 @@ export function forgotPassword(email: string): Promise<ForgotPasswordResponse> {
     .then((r) => r.data);
 }
 
-// Verifies the password reset OTP and returns a reset token
-export function verifyResetOtp(email: string, otp: string): Promise<VerifyResetOtpResponse> {
+// Resends OTP using the RESET session Bearer token
+export function resendResetOtp(): Promise<SuccessResponse> {
   return axios
-    .post<VerifyResetOtpResponse>("cloud-api/auth/verify-reset-otp", { email, otp }, {
-      public: true,
+    .post<SuccessResponse>("cloud-api/auth/resend-reset-otp", {}, {
       showSuccessToast: false,
     })
     .then((r) => r.data);
 }
 
-// Resets the password using the reset token from OTP verification
-export function resetPassword(resetToken: string, newPassword: string): Promise<ResetPasswordResponse> {
+// Verifies OTP using the RESET session Bearer token
+export function verifyResetOtp(otp: string): Promise<SuccessResponse> {
   return axios
-    .post<ResetPasswordResponse>("cloud-api/auth/reset-password", { resetToken, newPassword }, {
-      public: true,
+    .post<SuccessResponse>("cloud-api/auth/verify-reset-otp", { otp }, {
+      showSuccessToast: false,
+    })
+    .then((r) => r.data);
+}
+
+// Resets password and creates a new CLOUD or ONBOARDING session
+export function resetPassword(newPassword: string): Promise<ResetPasswordResponse> {
+  return axios
+    .post<ResetPasswordResponse>("cloud-api/auth/reset-password", { newPassword }, {
       showSuccessToast: false,
     })
     .then((r) => r.data);

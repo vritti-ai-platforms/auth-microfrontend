@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-/**
- * Validation schema for OTP verification
- * Reused from auth.ts for consistency
- */
+// OTP verification form validation
 export const otpSchema = z.object({
   code: z
     .string()
@@ -13,9 +10,7 @@ export const otpSchema = z.object({
 
 export type OTPFormData = z.infer<typeof otpSchema>;
 
-/**
- * Validation schema for new email entry
- */
+// New email entry form validation
 export const newEmailSchema = z.object({
   newEmail: z
     .string()
@@ -25,9 +20,7 @@ export const newEmailSchema = z.object({
 
 export type NewEmailFormData = z.infer<typeof newEmailSchema>;
 
-/**
- * Validation schema for new phone entry
- */
+// New phone entry form validation
 export const newPhoneSchema = z.object({
   newPhone: z.string().min(10, 'Please enter a valid phone number'),
   phoneCountry: z.string(),

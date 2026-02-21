@@ -1,47 +1,33 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup } from '@vritti/quantum-ui/Form';
+import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { KeyRound } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import type { PasswordResetFlow } from '@hooks';
-import type { ResetPasswordFormData } from '@schemas/auth';
-import { resetPasswordSchema } from '@schemas/auth';
+import type { PasswordResetFlow } from '../../../../hooks';
+import type { SetPasswordFormData } from '../../../../schemas/auth';
+import { setPasswordSchema } from '../../../../schemas/auth';
 
 interface ResetPasswordStepProps {
-  resetToken: PasswordResetFlow['resetToken'];
-  submitPassword: PasswordResetFlow['submitPassword'];
+  mutation: PasswordResetFlow['resetPasswordMutation'];
 }
 
-export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ submitPassword }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ mutation }) => {
+  const form = useForm<SetPasswordFormData>({
+    resolver: zodResolver(setPasswordSchema),
     defaultValues: {
       password: '',
       confirmPassword: '',
     },
   });
 
-  const handleSubmit = async (data: ResetPasswordFormData) => {
-    setIsSubmitting(true);
-    try {
-      await submitPassword(data.password);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-center">
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-          <KeyRound className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/15">
+          <KeyRound className="h-8 w-8 text-primary" />
         </div>
       </div>
 
@@ -54,7 +40,12 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ submitPass
         </Typography>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <Form
+        form={form}
+        mutation={mutation}
+        transformSubmit={(data) => data.password}
+        showRootError
+      >
         <FieldGroup>
           <PasswordField
             name="password"
@@ -74,20 +65,13 @@ export const ResetPasswordStep: React.FC<ResetPasswordStepProps> = ({ submitPass
             <Button
               type="submit"
               className="w-full bg-primary text-primary-foreground"
-              isLoading={isSubmitting}
               loadingText="Resetting..."
             >
               Reset Password
             </Button>
           </Field>
         </FieldGroup>
-      </form>
-
-      <div className="text-center">
-        <Link to="../login" className="text-sm text-muted-foreground hover:text-foreground">
-          Back to Login
-        </Link>
-      </div>
+      </Form>
     </div>
   );
 };
