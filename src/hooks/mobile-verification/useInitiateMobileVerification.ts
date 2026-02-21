@@ -4,7 +4,7 @@ import {
   type InitiateMobileVerificationDto,
   initiateMobileVerification,
   type MobileVerificationStatusResponse,
-} from '../../services/onboarding.service';
+} from '@services/onboarding.service';
 
 type UseInitiateMobileVerificationOptions = Omit<
   UseMutationOptions<MobileVerificationStatusResponse, AxiosError, InitiateMobileVerificationDto>,

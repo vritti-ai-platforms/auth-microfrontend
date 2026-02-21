@@ -1,6 +1,6 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { type ResetPasswordResponse, resetPassword } from '../../services/auth.service';
+import { type ResetPasswordResponse, resetPassword } from '@services/auth.service';
 
 interface ResetPasswordParams {
   resetToken: string;

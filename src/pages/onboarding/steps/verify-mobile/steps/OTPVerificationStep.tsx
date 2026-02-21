@@ -7,9 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Smartphone } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useInitiateMobileVerification, useVerifyMobileOtp } from '../../../../hooks';
-import type { OTPFormData } from '../../../../schemas/auth';
-import { otpSchema } from '../../../../schemas/auth';
+import { useInitiateMobileVerification, useVerifyMobileOtp } from '@hooks';
+import type { OTPFormData } from '@schemas/auth';
+import { otpSchema } from '@schemas/auth';
 
 interface OTPVerificationStepProps {
   phoneNumber: PhoneValue;

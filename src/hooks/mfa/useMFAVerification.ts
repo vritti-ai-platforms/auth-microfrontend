@@ -10,7 +10,7 @@ import {
   verifyPasskeyMfa,
   verifySms,
   verifyTotp,
-} from '../../services/auth.service';
+} from '@services/auth.service';
 
 // ============================================================================
 // TOTP Verification Hook

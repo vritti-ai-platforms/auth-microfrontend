@@ -1,8 +1,7 @@
+import { OnboardingProvider } from '@context/onboarding';
 import type { RouteObject } from 'react-router-dom';
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AuthLayout } from './components/layouts/AuthLayout';
-import { OnboardingRouter } from './components/onboarding/OnboardingRouter';
-import { OnboardingProvider } from './context';
 import './index.css';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
 import { AuthSuccessPage } from './pages/auth/AuthSuccessPage';
@@ -10,13 +9,11 @@ import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
+import { OnboardingPage } from './pages/onboarding/OnboardingPage';
 import { ProfilePage } from './pages/settings/ProfilePage';
 import { SecurityPage } from './pages/settings/SecurityPage';
 
-/**
- * Auth routes configuration - exported for Module Federation consumption
- * This is used by the host application to merge auth routes
- */
+// Auth routes configuration - exported for Module Federation consumption
 export const authRoutes: RouteObject[] = [
   {
     path: '/',
@@ -50,20 +47,14 @@ export const authRoutes: RouteObject[] = [
         path: 'mfa-verify',
         element: <MFAVerificationPage />,
       },
-      // Onboarding routes - wrapped with OnboardingProvider
+      // Onboarding route — OnboardingProvider wraps OnboardingPage
       {
         path: 'onboarding',
         element: (
           <OnboardingProvider>
-            <Outlet />
+            <OnboardingPage />
           </OnboardingProvider>
         ),
-        children: [
-          {
-            index: true,
-            element: <OnboardingRouter />,
-          },
-        ],
       },
     ],
   },
@@ -80,8 +71,5 @@ export const accountRoutes: RouteObject[] = [
   },
 ];
 
-/**
- * Browser router instance for standalone auth app
- * Used when running vritti-auth independently
- */
+// Browser router instance for standalone auth app
 export const router = createBrowserRouter(authRoutes);

@@ -192,17 +192,10 @@ export interface MobileVerificationStatusResponse {
   whatsappNumber?: string;
 }
 
-// Initiates mobile verification for the authenticated user
+// Initiates manual SMS mobile verification for the authenticated user
 export function initiateMobileVerification(data: InitiateMobileVerificationDto): Promise<MobileVerificationStatusResponse> {
   return axios
-    .post<MobileVerificationStatusResponse>("cloud-api/onboarding/mobile-verification/initiate", data)
-    .then((r) => r.data);
-}
-
-// Gets the current mobile verification status
-export function getMobileVerificationStatus(): Promise<MobileVerificationStatusResponse> {
-  return axios
-    .get<MobileVerificationStatusResponse>("cloud-api/onboarding/mobile-verification/status")
+    .post<MobileVerificationStatusResponse>("cloud-api/onboarding/mobile-verification/initiate/manual", data)
     .then((r) => r.data);
 }
 

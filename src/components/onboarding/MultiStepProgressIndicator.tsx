@@ -1,126 +1,110 @@
 import { Progress } from '@vritti/quantum-ui/Progress';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, KeyRound, Mail, Smartphone } from 'lucide-react';
-import React from 'react';
-
-interface MultiStepProgressIndicatorProps {
-  currentStep: number; // 1-4
-  stepProgress?: Record<number, number>; // Optional: sub-step progress (0-100) for each step
-  signupMethod?: 'email' | 'oauth'; // Controls step 1 label/icon
-}
+import React, { useMemo } from 'react';
+import { useOnboarding } from '@context/onboarding';
 
 interface Step {
   id: number;
   label: string;
   icon: React.ReactNode;
+  circleClass: string;
+  labelClass: string;
+  progress: number;
+  isCompleted: boolean;
+  isConnectorCompleted: boolean;
 }
 
-export const MultiStepProgressIndicator: React.FC<MultiStepProgressIndicatorProps> = ({
-  currentStep,
-  stepProgress = {},
-  signupMethod = 'email',
-}) => {
-  // Step 1 label and icon depend on signup method
-  const step1Config = signupMethod === 'oauth'
-    ? { label: 'Set Password', icon: <KeyRound className="h-4 w-4" /> }
-    : { label: 'Verify Email', icon: <Mail className="h-4 w-4" /> };
+const ACTIVE_CIRCLE = 'bg-primary border-primary text-primary-foreground';
+const INACTIVE_CIRCLE = 'bg-secondary border-border text-muted-foreground';
+const ACTIVE_LABEL = 'text-foreground font-medium';
+const INACTIVE_LABEL = 'text-muted-foreground';
 
-  const steps: Step[] = [
-    {
-      id: 1,
-      label: step1Config.label,
-      icon: step1Config.icon,
-    },
-    {
-      id: 2,
-      label: 'Verify Mobile',
-      icon: <Smartphone className="h-4 w-4" />,
-    },
-    {
-      id: 3,
-      label: 'Enable 2FA',
-      icon: <KeyRound className="h-4 w-4" />,
-    },
-    {
-      id: 4,
-      label: 'Complete',
-      icon: <Check className="h-4 w-4" />,
-    },
-  ];
+// Maps backend onboarding step strings to progress indicator step numbers
+function deriveCurrentStep(onboardingStep: string): number {
+  switch (onboardingStep) {
+    case 'EMAIL_VERIFICATION':
+    case 'SET_PASSWORD':
+      return 1;
+    case 'PHONE_VERIFICATION':
+    case 'MOBILE_VERIFICATION':
+      return 2;
+    case 'MFA_SETUP':
+    case 'TWO_FACTOR_SETUP':
+      return 3;
+    case 'COMPLETED':
+    case 'COMPLETE':
+      return 4;
+    default:
+      return 1;
+  }
+}
 
-  const getStepStatus = (stepId: number): 'completed' | 'active' | 'inactive' => {
-    if (stepId < currentStep) return 'completed';
-    if (stepId === currentStep) return 'active';
-    return 'inactive';
-  };
+// Reads onboarding state directly — no props needed
+export const MultiStepProgressIndicator: React.FC = () => {
+  const { currentStep, signupMethod = 'email', progress = 0 } = useOnboarding();
+  // Derived from context — recomputes on every render when currentStep changes
+  const activeStep = deriveCurrentStep(currentStep);
 
-  const getStepStyles = (status: 'completed' | 'active' | 'inactive') => {
-    switch (status) {
-      case 'completed':
-        return {
-          circle: 'bg-primary border-primary text-primary-foreground',
-          label: 'text-foreground font-medium',
-        };
-      case 'active':
-        return {
-          circle: 'bg-primary border-primary text-primary-foreground',
-          label: 'text-foreground font-medium',
-        };
-      case 'inactive':
-        return {
-          circle: 'bg-secondary border-border text-muted-foreground',
-          label: 'text-muted-foreground',
-        };
-    }
-  };
+  const steps: Step[] = useMemo(() => {
+    const step1Config =
+      signupMethod === 'oauth'
+        ? { label: 'Set Password', icon: <KeyRound className="h-4 w-4" /> }
+        : { label: 'Verify Email', icon: <Mail className="h-4 w-4" /> };
 
-  const getStepProgress = (stepId: number): number => {
-    const status = getStepStatus(stepId);
-    if (status === 'completed') return 100;
-    if (status === 'active') return stepProgress[stepId] || 0;
-    return 0;
-  };
+    const base = [
+      { id: 1, label: step1Config.label, icon: step1Config.icon },
+      { id: 2, label: 'Verify Mobile', icon: <Smartphone className="h-4 w-4" /> },
+      { id: 3, label: 'Enable 2FA', icon: <KeyRound className="h-4 w-4" /> },
+      { id: 4, label: 'Complete', icon: <Check className="h-4 w-4" /> },
+    ];
+
+    return base.map(({ id, label, icon }) => {
+      const isCompleted = id < activeStep;
+      const isActive = id === activeStep;
+
+      return {
+        id,
+        label,
+        icon,
+        circleClass: isCompleted || isActive ? ACTIVE_CIRCLE : INACTIVE_CIRCLE,
+        labelClass: isCompleted || isActive ? ACTIVE_LABEL : INACTIVE_LABEL,
+        progress: isCompleted ? 100 : isActive ? progress : 0,
+        isCompleted,
+        isConnectorCompleted: isCompleted,
+      };
+    });
+  }, [activeStep, signupMethod, progress]);
 
   return (
     <div className="w-full max-w-[398px] mx-auto">
       <div className="flex items-start justify-between">
-        {steps.map((step, index) => {
-          const status = getStepStatus(step.id);
-          const styles = getStepStyles(status);
-          const isLast = index === steps.length - 1;
-          const isConnectorCompleted = step.id < currentStep;
-
-          return (
-            <React.Fragment key={step.id}>
-              {/* Step */}
-              <div className="flex flex-col items-center gap-1.5">
-                {/* Circle */}
-                <div
-                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${styles.circle}`}
-                >
-                  {status === 'completed' ? <Check className="h-4 w-4" /> : step.icon}
-                </div>
-                {/* Label */}
-                <Typography variant="body2" className={`text-[10px] whitespace-nowrap transition-all ${styles.label}`}>
-                  {step.label}
-                </Typography>
-                {/* Sub-step Progress Bar */}
-                <Progress value={getStepProgress(step.id)} className="w-16 h-1" />
+        {steps.map((step, index) => (
+          <React.Fragment key={step.id}>
+            <div className="flex flex-col items-center gap-1.5">
+              <div
+                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${step.circleClass}`}
+              >
+                {step.isCompleted ? <Check className="h-4 w-4" /> : step.icon}
               </div>
+              <Typography
+                variant="body2"
+                className={`text-[10px] whitespace-nowrap transition-all ${step.labelClass}`}
+              >
+                {step.label}
+              </Typography>
+              <Progress value={step.progress} className="w-16 h-1" />
+            </div>
 
-              {/* Connector Line */}
-              {!isLast && (
-                <div className="flex-1 h-0.5 mx-2 mt-4">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      isConnectorCompleted ? 'bg-primary' : 'bg-border'
-                    }`}
-                  />
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
+            {index < steps.length - 1 && (
+              <div className="flex-1 h-0.5 mx-2 mt-4">
+                <div
+                  className={`h-full rounded-full transition-all ${step.isConnectorCompleted ? 'bg-primary' : 'bg-border'}`}
+                />
+              </div>
+            )}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );

@@ -1,22 +1,21 @@
+import { useOnboarding } from '@context/onboarding';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSendEmailOtp, useVerifyEmail } from '@hooks';
+import type { OTPFormData } from '@schemas/auth';
+import { otpSchema } from '@schemas/auth';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, FieldLabel, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
-import { MultiStepProgressIndicator } from '../../../../components/onboarding/MultiStepProgressIndicator';
-import { useOnboarding } from '../../../../context';
-import { useSendEmailOtp, useVerifyEmail } from '../../../../hooks';
-import type { OTPFormData } from '../../../../schemas/auth';
-import { otpSchema } from '../../../../schemas/auth';
 
 interface VerifyEmailFormProps {
   onChangeClick: () => void;
 }
 
 export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({ onChangeClick }) => {
-  const { email, refetch, signupMethod } = useOnboarding();
+  const { email, refetch } = useOnboarding();
 
   const verifyEmailMutation = useVerifyEmail({
     onSuccess: async () => {
@@ -44,8 +43,6 @@ export const VerifyEmailForm: React.FC<VerifyEmailFormProps> = ({ onChangeClick 
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={1} signupMethod={signupMethod} />
-
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">
           Verify your email

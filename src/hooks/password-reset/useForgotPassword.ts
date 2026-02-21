@@ -1,6 +1,6 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { type ForgotPasswordResponse, forgotPassword } from '../../services/auth.service';
+import { type ForgotPasswordResponse, forgotPassword } from '@services/auth.service';
 
 type UseForgotPasswordOptions = Omit<UseMutationOptions<ForgotPasswordResponse, AxiosError, string>, 'mutationFn'>;
 

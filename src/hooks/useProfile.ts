@@ -6,9 +6,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import type { ProfileData, UpdateProfileDto } from '../schemas/settings';
+import type { ProfileData, UpdateProfileDto } from '@schemas/settings';
 
-import { deleteAccount, getProfile, updateProfile } from '../services/settings.service';
+import { deleteAccount, getProfile, updateProfile } from '@services/settings.service';
 
 export const PROFILE_QUERY_KEY = ['profile'] as const;
 

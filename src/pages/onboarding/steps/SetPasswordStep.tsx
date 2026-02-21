@@ -6,14 +6,13 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { Check, Lock } from 'lucide-react';
 import type React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
-import { useOnboarding } from '../../context';
-import { useSetPassword } from '../../hooks';
-import type { SetPasswordFormData } from '../../schemas/auth';
-import { setPasswordSchema } from '../../schemas/auth';
+import { useOnboarding } from '@context/onboarding';
+import { useSetPassword } from '@hooks';
+import type { SetPasswordFormData } from '@schemas/auth';
+import { setPasswordSchema } from '@schemas/auth';
 
-export const SetPasswordPage: React.FC = () => {
-  const { refetch, signupMethod } = useOnboarding();
+export const SetPasswordStep: React.FC = () => {
+  const { refetch } = useOnboarding();
   const setPasswordMutation = useSetPassword({
     onSuccess: refetch,
   });
@@ -38,8 +37,6 @@ export const SetPasswordPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={1} signupMethod={signupMethod} />
-
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">
           Create a password

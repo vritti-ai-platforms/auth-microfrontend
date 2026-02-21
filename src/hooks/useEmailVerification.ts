@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { verificationService } from '../services/verification.service';
+import { verificationService } from '@services/verification.service';
 import type {
   RequestChangeRequest,
   VerifyChangeRequest,
   VerifyIdentityRequest,
   ResendOtpRequest,
   RevertChangeRequest,
-} from '../services/verification.service';
+} from '@services/verification.service';
 
 export function useEmailVerification() {
   const queryClient = useQueryClient();

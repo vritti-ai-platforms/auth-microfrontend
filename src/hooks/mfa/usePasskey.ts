@@ -6,13 +6,13 @@ import {
   type LoginResponse,
   startPasskeyLogin,
   verifyPasskeyLogin,
-} from '../../services/auth.service';
+} from '@services/auth.service';
 import {
   type BackupCodesResponse,
   initiatePasskeySetup,
   type RegistrationResponseJSON,
   verifyPasskeySetup,
-} from '../../services/onboarding.service';
+} from '@services/onboarding.service';
 
 type UsePasskeyRegistrationOptions = Omit<UseMutationOptions<BackupCodesResponse, AxiosError, void>, 'mutationFn'>;
 

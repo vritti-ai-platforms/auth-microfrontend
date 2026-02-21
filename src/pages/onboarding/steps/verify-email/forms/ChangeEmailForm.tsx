@@ -7,9 +7,8 @@ import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { MultiStepProgressIndicator } from '../../../../components/onboarding/MultiStepProgressIndicator';
-import { useOnboarding } from '../../../../context';
-import { useChangeEmail } from '../../../../hooks';
+import { useOnboarding } from '@context/onboarding';
+import { useChangeEmail } from '@hooks';
 
 const changeEmailSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -22,7 +21,7 @@ interface ChangeEmailFormProps {
 }
 
 export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({ onBack }) => {
-  const { email, refetch, signupMethod } = useOnboarding();
+  const { email, refetch } = useOnboarding();
 
   const changeEmailMutation = useChangeEmail({
     onSuccess: async () => {
@@ -41,8 +40,6 @@ export const ChangeEmailForm: React.FC<ChangeEmailFormProps> = ({ onBack }) => {
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator currentStep={1} signupMethod={signupMethod} />
-
       <Button variant="ghost" onClick={onBack} className="inline-flex items-center gap-2 text-sm">
         <ArrowLeft className="h-4 w-4" />
         Back

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { EmailStep, OtpStep, ResetPasswordStep, SuccessStep } from './steps';
-import { usePasswordResetFlow } from '../../../hooks';
+import { usePasswordResetFlow } from '@hooks';
 
 export const ForgotPasswordPage: React.FC = () => {
   const flow = usePasswordResetFlow();

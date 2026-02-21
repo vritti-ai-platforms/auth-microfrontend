@@ -17,9 +17,9 @@ import {
   useRevokeAllOtherSessions,
   useRevokeSession,
   useSessions,
-} from '../../hooks/useSecurity';
-import type { ChangePasswordFormData } from '../../schemas/settings';
-import { changePasswordSchema } from '../../schemas/settings';
+} from '@hooks/useSecurity';
+import type { ChangePasswordFormData } from '@schemas/settings';
+import { changePasswordSchema } from '@schemas/settings';
 
 export const SecurityPage: React.FC = () => {
   const { data: sessions, isLoading: isLoadingSessions } = useSessions();

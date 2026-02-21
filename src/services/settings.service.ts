@@ -4,8 +4,8 @@ import type {
   ProfileData,
   Session,
   UpdateProfileDto,
-} from '../schemas/settings';
-import { AccountStatus } from '../schemas/settings';
+} from '@schemas/settings';
+import { AccountStatus } from '@schemas/settings';
 
 interface AuthStatusResponse {
   isAuthenticated: boolean;

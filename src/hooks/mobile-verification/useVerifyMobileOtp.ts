@@ -1,6 +1,6 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { verifyMobileOtp } from '../../services/onboarding.service';
+import { verifyMobileOtp } from '@services/onboarding.service';
 
 interface VerifyMobileOtpResponse {
   success: boolean;

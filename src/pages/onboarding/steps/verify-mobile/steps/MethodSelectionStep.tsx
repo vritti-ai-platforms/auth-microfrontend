@@ -6,11 +6,10 @@ import type React from 'react';
 
 interface MethodSelectionStepProps {
   onMethodSelect: (method: 'whatsapp' | 'sms' | 'manual') => void;
-  error?: string | null;
 }
 
 // Display 3 method cards and emit selection to parent
-export const MethodSelectionStep: React.FC<MethodSelectionStepProps> = ({ onMethodSelect, error }) => {
+export const MethodSelectionStep: React.FC<MethodSelectionStepProps> = ({ onMethodSelect }) => {
   const methods = [
     {
       id: 'whatsapp' as const,
@@ -43,8 +42,6 @@ export const MethodSelectionStep: React.FC<MethodSelectionStepProps> = ({ onMeth
           Choose verification method
         </Typography>
       </div>
-
-      {error && <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">{error}</div>}
 
       <div className="space-y-3">
         {methods.map((method) => (

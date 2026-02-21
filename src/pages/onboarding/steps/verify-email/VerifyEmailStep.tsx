@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ChangeEmailForm } from './forms/ChangeEmailForm';
 import { VerifyEmailForm } from './forms/VerifyEmailForm';
 
-export const VerifyEmailPage: React.FC = () => {
+export const VerifyEmailStep: React.FC = () => {
   const [view, setView] = useState<'verify' | 'change'>('verify');
 
   return view === 'verify'

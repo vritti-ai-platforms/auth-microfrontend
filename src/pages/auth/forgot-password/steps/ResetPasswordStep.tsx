@@ -8,9 +8,9 @@ import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import type { PasswordResetFlow } from '../../../../hooks';
-import type { ResetPasswordFormData } from '../../../../schemas/auth';
-import { resetPasswordSchema } from '../../../../schemas/auth';
+import type { PasswordResetFlow } from '@hooks';
+import type { ResetPasswordFormData } from '@schemas/auth';
+import { resetPasswordSchema } from '@schemas/auth';
 
 interface ResetPasswordStepProps {
   resetToken: PasswordResetFlow['resetToken'];

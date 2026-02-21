@@ -11,11 +11,11 @@ import {
   PasskeyVerification,
   SMSVerification,
   TOTPVerification,
-} from '../../components/auth/mfa-verification';
+} from '@components/auth/mfa-verification';
 import { STEP_ROUTES } from '../../constants/routes';
-import { useVerifyPasskey } from '../../hooks';
-import { startPasskeyVerification } from '../../services/auth.service';
-import type { LoginResponse, MFAChallenge, MFAMethod, OnboardingStep } from '../../services/auth.service';
+import { useVerifyPasskey } from '@hooks';
+import { startPasskeyVerification } from '@services/auth.service';
+import type { LoginResponse, MFAChallenge, MFAMethod, OnboardingStep } from '@services/auth.service';
 
 /**
  * MFA Verification Page

@@ -7,9 +7,9 @@ import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import type { OTPFormData } from '../../../../schemas/auth';
-import { otpSchema } from '../../../../schemas/auth';
-import type { PasswordResetFlow } from '../../../../hooks';
+import type { OTPFormData } from '@schemas/auth';
+import { otpSchema } from '@schemas/auth';
+import type { PasswordResetFlow } from '@hooks';
 import { useState } from 'react';
 
 interface OtpStepProps {

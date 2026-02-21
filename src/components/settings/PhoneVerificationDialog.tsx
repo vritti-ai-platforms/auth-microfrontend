@@ -11,8 +11,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import type { z } from 'zod';
-import { usePhoneChangeFlow } from '../../hooks/usePhoneChangeFlow';
-import { newPhoneSchema, otpSchema } from '../../schemas/verification';
+import { usePhoneChangeFlow } from '@hooks/usePhoneChangeFlow';
+import { newPhoneSchema, otpSchema } from '@schemas/verification';
 
 interface Props {
   isOpen: boolean;

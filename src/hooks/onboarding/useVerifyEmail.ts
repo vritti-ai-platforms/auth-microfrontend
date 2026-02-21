@@ -1,6 +1,6 @@
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { type OnboardingStatusResponse, verifyEmail } from '../../services/onboarding.service';
+import { type OnboardingStatusResponse, verifyEmail } from '@services/onboarding.service';
 
 type UseVerifyEmailOptions = Omit<UseMutationOptions<OnboardingStatusResponse, AxiosError, string>, 'mutationFn'>;
 

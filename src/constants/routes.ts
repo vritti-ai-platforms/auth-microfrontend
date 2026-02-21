@@ -1,4 +1,4 @@
-import { OnboardingStep } from "../services/auth.service";
+import { OnboardingStep } from '@services/auth.service';
 
 /**
  * Mapping of onboarding steps to their respective routes

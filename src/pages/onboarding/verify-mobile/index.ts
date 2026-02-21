@@ -1,1 +1,0 @@
-export { VerifyMobilePage } from './VerifyMobilePage';

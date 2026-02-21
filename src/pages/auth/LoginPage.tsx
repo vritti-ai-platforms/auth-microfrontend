@@ -10,12 +10,12 @@ import type React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthDivider } from '../../components/auth/AuthDivider';
-import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
+import { AuthDivider } from '@components/auth/AuthDivider';
+import { SocialAuthButtons } from '@components/auth/SocialAuthButtons';
 import { STEP_ROUTES } from '../../constants/routes';
-import { useLogin } from '../../hooks';
-import type { LoginFormData } from '../../schemas/auth';
-import { loginSchema } from '../../schemas/auth';
+import { useLogin } from '@hooks';
+import type { LoginFormData } from '@schemas/auth';
+import { loginSchema } from '@schemas/auth';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();

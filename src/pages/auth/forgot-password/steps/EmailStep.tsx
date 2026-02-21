@@ -7,9 +7,9 @@ import { ArrowLeft, Mail } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import type { ForgotPasswordFormData } from '../../../../schemas/auth';
-import { forgotPasswordSchema } from '../../../../schemas/auth';
-import type { PasswordResetFlow } from '../../../../hooks';
+import type { ForgotPasswordFormData } from '@schemas/auth';
+import { forgotPasswordSchema } from '@schemas/auth';
+import type { PasswordResetFlow } from '@hooks';
 
 interface EmailStepProps {
   submitEmail: PasswordResetFlow['submitEmail'];

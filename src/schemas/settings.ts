@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { getLocaleCodes } from '../utils/locales';
-import { getTimezoneValues } from '../utils/timezones';
+import { getLocaleCodes } from '@utils/locales';
+import { getTimezoneValues } from '@utils/timezones';
 
 /**
  * Validation schema for profile update form

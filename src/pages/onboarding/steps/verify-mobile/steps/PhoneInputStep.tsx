@@ -8,9 +8,9 @@ import { ArrowLeft } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { useInitiateMobileVerification } from '../../../../hooks';
-import type { PhoneFormData } from '../../../../schemas/auth';
-import { phoneSchema } from '../../../../schemas/auth';
+import { useInitiateMobileVerification } from '@hooks';
+import type { PhoneFormData } from '@schemas/auth';
+import { phoneSchema } from '@schemas/auth';
 
 interface PhoneInputStepProps {
   onSuccess: (phoneNumber: PhoneValue, phoneCountry: string) => void;

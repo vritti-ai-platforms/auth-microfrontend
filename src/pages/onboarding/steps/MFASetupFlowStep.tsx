@@ -3,29 +3,20 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { CheckCircle } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { MultiStepProgressIndicator } from '../../components/onboarding/MultiStepProgressIndicator';
 import {
   AuthenticatorSetup,
   BackupCodesDisplay,
   MFAMethodSelection,
   PasskeySetup,
-} from '../../components/onboarding/mfa';
-import { useOnboarding } from '../../context';
-import { useInitiateTotpSetup, usePasskeyRegistration, useSkip2FASetup } from '../../hooks';
-import type { TotpSetupResponse } from '../../services/onboarding.service';
+} from '@components/onboarding/mfa';
+import { useInitiateTotpSetup, usePasskeyRegistration, useSkip2FASetup } from '@hooks';
+import type { TotpSetupResponse } from '@services/onboarding.service';
 
 type MFAMethod = 'authenticator' | 'passkey';
 type FlowStep = 1 | 2 | 3 | 4;
 
-/**
- * MFA Setup Flow Page
- *
- * Handles the multi-step MFA setup process during onboarding.
- * AuthenticatorSetup now owns its own verify mutation.
- */
-export const MFASetupFlowPage: React.FC = () => {
-  const { signupMethod } = useOnboarding();
-
+// Handles multi-step MFA setup during onboarding — AuthenticatorSetup owns its own verify mutation
+export const MFASetupFlowStep: React.FC = () => {
   // Minimal state - only what's needed for UI flow
   const [currentStep, setCurrentStep] = useState<FlowStep>(1);
   const [selectedMethod, setSelectedMethod] = useState<MFAMethod | null>(null);
@@ -110,14 +101,6 @@ export const MFASetupFlowPage: React.FC = () => {
   const selectionError = initMutation.error?.message || skipMutation.error?.message || null;
   const passkeyError = passkeyMutation.error || null;
 
-  // Calculate progress for indicator
-  const calculateStepProgress = (): number => {
-    if (currentStep === 1) return 25;
-    if (currentStep === 2) return 50;
-    if (currentStep === 3) return 75;
-    return 100;
-  };
-
   // Step 4: Complete
   const renderCompleteStep = () => (
     <div className="space-y-6 text-center">
@@ -150,12 +133,6 @@ export const MFASetupFlowPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <MultiStepProgressIndicator
-        currentStep={currentStep === 4 ? 4 : 3}
-        stepProgress={currentStep < 4 ? { 3: calculateStepProgress() } : {}}
-        signupMethod={signupMethod}
-      />
-
       {currentStep === 1 && (
         <MFAMethodSelection
           selectedMethod={selectedMethod}

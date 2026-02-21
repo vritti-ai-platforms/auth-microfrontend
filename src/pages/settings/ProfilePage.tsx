@@ -14,11 +14,11 @@ import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { EmailVerificationDialog } from '../../components/settings/EmailVerificationDialog';
-import { PhoneVerificationDialog } from '../../components/settings/PhoneVerificationDialog';
-import { useDeleteAccount, useProfile, useUpdateProfile } from '../../hooks/useProfile';
-import type { ProfileFormData } from '../../schemas/settings';
-import { AccountStatus, profileSchema } from '../../schemas/settings';
+import { EmailVerificationDialog } from '@components/settings/EmailVerificationDialog';
+import { PhoneVerificationDialog } from '@components/settings/PhoneVerificationDialog';
+import { useDeleteAccount, useProfile, useUpdateProfile } from '@hooks/useProfile';
+import type { ProfileFormData } from '@schemas/settings';
+import { AccountStatus, profileSchema } from '@schemas/settings';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();

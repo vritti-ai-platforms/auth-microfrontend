@@ -2,7 +2,7 @@ import { Button } from "@vritti/quantum-ui/Button";
 import { Typography } from "@vritti/quantum-ui/Typography";
 import { KeyRound, ShieldCheck, Smartphone } from "lucide-react";
 import type React from "react";
-import type { MFAMethod } from "../../../services/auth.service";
+import type { MFAMethod } from '@services/auth.service';
 
 interface MethodSwitcherProps {
   /** Currently active MFA method */

@@ -6,10 +6,10 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
-import { useVerifyTotpSetup } from '../../../hooks';
-import type { OTPFormData } from '../../../schemas/auth';
-import { otpSchema } from '../../../schemas/auth';
-import type { BackupCodesResponse, TotpSetupResponse } from '../../../services/onboarding.service';
+import { useVerifyTotpSetup } from '@hooks';
+import type { OTPFormData } from '@schemas/auth';
+import { otpSchema } from '@schemas/auth';
+import type { BackupCodesResponse, TotpSetupResponse } from '@services/onboarding.service';
 
 interface AuthenticatorSetupProps {
   /** TOTP setup data including QR code and manual key */
