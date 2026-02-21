@@ -1,6 +1,6 @@
 import type React from 'react';
-import { EmailStep, OtpStep, ResetPasswordStep, SuccessStep } from './steps';
-import { usePasswordResetFlow } from '@hooks';
+import { usePasswordResetFlow } from '../../../hooks';
+import { EmailStep, OtpStep, ResetPasswordStep } from './steps';
 
 export const ForgotPasswordPage: React.FC = () => {
   const flow = usePasswordResetFlow();
@@ -8,26 +8,25 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {flow.step === 'email' && (
-        <EmailStep submitEmail={flow.submitEmail} />
+        <EmailStep
+          mutation={flow.forgotPasswordMutation}
+        />
       )}
 
       {flow.step === 'otp' && (
         <OtpStep
           email={flow.email}
-          submitOtp={flow.submitOtp}
-          resendOtp={flow.resendOtp}
           goBack={flow.goBack}
+          mutation={flow.verifyOtpMutation}
+          resendOtpMutation={flow.resendOtpMutation}
         />
       )}
 
       {flow.step === 'reset' && (
         <ResetPasswordStep
-          resetToken={flow.resetToken}
-          submitPassword={flow.submitPassword}
+          mutation={flow.resetPasswordMutation}
         />
       )}
-
-      {flow.step === 'success' && <SuccessStep />}
     </div>
   );
 };

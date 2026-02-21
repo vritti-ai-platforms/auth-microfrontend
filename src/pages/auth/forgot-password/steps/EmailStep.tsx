@@ -1,29 +1,25 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Field, FieldGroup } from '@vritti/quantum-ui/Form';
+import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, Mail } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import type { ForgotPasswordFormData } from '@schemas/auth';
-import { forgotPasswordSchema } from '@schemas/auth';
-import type { PasswordResetFlow } from '@hooks';
+import type { PasswordResetFlow } from '../../../../hooks';
+import type { ForgotPasswordFormData } from '../../../../schemas/auth';
+import { forgotPasswordSchema } from '../../../../schemas/auth';
 
 interface EmailStepProps {
-  submitEmail: PasswordResetFlow['submitEmail'];
+  mutation: PasswordResetFlow['forgotPasswordMutation'];
 }
 
-export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail }) => {
+export const EmailStep: React.FC<EmailStepProps> = ({ mutation }) => {
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   });
-
-  const handleSubmit = async (data: ForgotPasswordFormData) => {
-    await submitEmail(data.email);
-  };
 
   return (
     <div className="space-y-6">
@@ -41,7 +37,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail }) => {
         </Typography>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <Form form={form} mutation={mutation} transformSubmit={(data) => data.email} showRootError>
         <FieldGroup>
           <TextField
             name="email"
@@ -60,7 +56,7 @@ export const EmailStep: React.FC<EmailStepProps> = ({ submitEmail }) => {
             </Button>
           </Field>
         </FieldGroup>
-      </form>
+      </Form>
     </div>
   );
 };

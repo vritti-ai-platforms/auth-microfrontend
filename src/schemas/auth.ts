@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
-/**
- * Validation schema for login form
- */
+// Login form validation
 export const loginSchema = z.object({
   email: z.email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
@@ -10,9 +8,7 @@ export const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-/**
- * Validation schema for signup form
- */
+// Signup form validation
 export const signupSchema = z
   .object({
     fullName: z.string().min(1, 'Full name is required'),
@@ -33,18 +29,14 @@ export const signupSchema = z
 
 export type SignupFormData = z.infer<typeof signupSchema>;
 
-/**
- * Validation schema for forgot password form
- */
+// Forgot password email form validation
 export const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-/**
- * Validation schema for set password form
- */
+// Set/reset password form validation
 export const setPasswordSchema = z
   .object({
     password: z
@@ -63,30 +55,7 @@ export const setPasswordSchema = z
 
 export type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
 
-/**
- * Validation schema for reset password form
- */
-export const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
-
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-
-/**
- * Validation schema for OTP verification
- */
+// OTP verification form validation
 export const otpSchema = z.object({
   code: z
     .string()
@@ -96,9 +65,7 @@ export const otpSchema = z.object({
 
 export type OTPFormData = z.infer<typeof otpSchema>;
 
-/**
- * Validation schema for phone number
- */
+// Phone number form validation
 export const phoneSchema = z.object({
   phone: z
     .string()

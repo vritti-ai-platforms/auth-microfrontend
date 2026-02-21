@@ -11,21 +11,12 @@ import {
   PasskeyVerification,
   SMSVerification,
   TOTPVerification,
-} from '@components/auth/mfa-verification';
-import { STEP_ROUTES } from '../../constants/routes';
-import { useVerifyPasskey } from '@hooks';
-import { startPasskeyVerification } from '@services/auth.service';
-import type { LoginResponse, MFAChallenge, MFAMethod, OnboardingStep } from '@services/auth.service';
+} from '../../components/auth/mfa-verification';
+import { useVerifyPasskey } from '../../hooks';
+import { startPasskeyVerification } from '../../services/auth.service';
+import type { LoginResponse, MFAChallenge, MFAMethod } from '../../services/auth.service';
 
-/**
- * MFA Verification Page
- *
- * Single page that handles all MFA verification methods (TOTP, SMS, Passkey).
- * Receives challenge data via location.state from LoginPage.
- *
- * TOTP and SMS components now own their own mutations.
- * Passkey remains in page due to special WebAuthn flow.
- */
+// Handles all MFA verification methods (TOTP, SMS, Passkey) via location.state challenge
 export const MFAVerificationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,14 +44,8 @@ export const MFAVerificationPage: React.FC = () => {
       }
     }
 
-    // Navigate based on onboarding status
-    if (response.requiresOnboarding && response.onboardingStep) {
-      const stepRoute = STEP_ROUTES[response.onboardingStep as OnboardingStep];
-      navigate(stepRoute ? `../${stepRoute}` : '../onboarding/verify-email', { replace: true });
-    } else {
-      // Full page reload to refresh auth state and routes
-      window.location.href = '/';
-    }
+    // Full page reload to refresh auth state and routes
+    window.location.href = '/';
   };
 
   // Passkey verification mutation (kept in page due to WebAuthn flow)

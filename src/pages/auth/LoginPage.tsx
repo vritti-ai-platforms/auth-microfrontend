@@ -10,12 +10,11 @@ import type React from 'react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AuthDivider } from '@components/auth/AuthDivider';
-import { SocialAuthButtons } from '@components/auth/SocialAuthButtons';
-import { STEP_ROUTES } from '../../constants/routes';
-import { useLogin } from '@hooks';
-import type { LoginFormData } from '@schemas/auth';
-import { loginSchema } from '@schemas/auth';
+import { AuthDivider } from '../../components/auth/AuthDivider';
+import { SocialAuthButtons } from '../../components/auth/SocialAuthButtons';
+import { useLogin } from '../../hooks';
+import type { LoginFormData } from '../../schemas/auth';
+import { loginSchema } from '../../schemas/auth';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,14 +47,8 @@ export const LoginPage: React.FC = () => {
         }
       }
 
-      // Navigate based on onboarding status
-      if (response.requiresOnboarding && response.onboardingStep) {
-        const stepRoute = STEP_ROUTES[response.onboardingStep];
-        navigate(stepRoute ? `../${stepRoute}` : '../onboarding/verify-email', { replace: true });
-      } else {
-        // Full page reload to refresh auth state and routes
-        window.location.href = '/';
-      }
+      // Full page reload to refresh auth state and routes
+      window.location.href = '/';
     },
   });
 
@@ -104,7 +97,7 @@ export const LoginPage: React.FC = () => {
           </Field>
 
           <Field>
-            <Button type="submit" className="w-full bg-primary text-primary-foreground">
+            <Button type="submit" className="w-full bg-primary text-primary-foreground" loadingText="Signing in...">
               Login
             </Button>
           </Field>

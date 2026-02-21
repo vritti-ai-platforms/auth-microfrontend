@@ -13,7 +13,7 @@ import { OnboardingPage } from './pages/onboarding/OnboardingPage';
 import { ProfilePage } from './pages/settings/ProfilePage';
 import { SecurityPage } from './pages/settings/SecurityPage';
 
-// Auth routes configuration - exported for Module Federation consumption
+// Auth routes exported for Module Federation consumption by the host app
 export const authRoutes: RouteObject[] = [
   {
     path: '/',
@@ -71,5 +71,5 @@ export const accountRoutes: RouteObject[] = [
   },
 ];
 
-// Browser router instance for standalone auth app
+// Browser router for standalone mode (running vritti-auth independently)
 export const router = createBrowserRouter(authRoutes);
