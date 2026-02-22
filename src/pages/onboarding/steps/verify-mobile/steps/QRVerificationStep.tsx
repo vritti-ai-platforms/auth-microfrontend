@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 type VerificationEventMap = {
-  initiated: { verificationCode: string; instructions: string; expiresAt: string; whatsappNumber: string };
+  initiated: { verificationCode: string; instructions: string; expiresAt: string; recipientNumber?: string };
   verified: { phone: string };
   error: { message: string };
   expired: { message: string };
@@ -25,11 +25,13 @@ interface QRVerificationStepProps {
 }
 
 // Builds a WhatsApp or SMS deep-link URL from the verification code
-function buildQrUrl(method: 'whatsapp' | 'sms', verificationCode: string, whatsappNumber: string): string {
+function buildQrUrl(method: 'whatsapp' | 'sms', verificationCode: string, recipientNumber?: string): string {
   if (method === 'whatsapp') {
-    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(verificationCode)}`;
+    return `https://wa.me/${recipientNumber}?text=${encodeURIComponent(verificationCode)}`;
   }
-  return `sms:?body=${encodeURIComponent(verificationCode)}`;
+  return recipientNumber
+    ? `sms:${recipientNumber}?body=${encodeURIComponent(verificationCode)}`
+    : `sms:?body=${encodeURIComponent(verificationCode)}`;
 }
 
 // Formats a phone number string with + prefix for display
@@ -114,21 +116,21 @@ const QRVerificationInner: React.FC<QRVerificationStepProps & { onRetry: () => v
           <div className="space-y-4">
             <div className="flex justify-center">
               <div className="p-4 bg-white rounded-lg">
-                <QRCodeSVG value={buildQrUrl(method, initiatedData.verificationCode, initiatedData.whatsappNumber)} size={180} />
+                <QRCodeSVG value={buildQrUrl(method, initiatedData.verificationCode, initiatedData.recipientNumber)} size={180} />
               </div>
             </div>
 
             <div className="text-center space-y-2">
-              <Typography variant="body2" intent="muted">
+              <Typography variant="body2" align="center" intent="muted">
                 Or send this code manually:
               </Typography>
-              <Typography variant="h4" className="text-foreground font-mono">
+              <Typography variant="h4" align="center" className="text-foreground font-mono">
                 {initiatedData.verificationCode}
               </Typography>
-              {method === 'whatsapp' && (
+              {initiatedData.recipientNumber && (
                 <Typography variant="body2" align="center" intent="muted">
-                  Send to WhatsApp number{' '}
-                  <span className="font-medium text-foreground">{formatWhatsAppNumber(initiatedData.whatsappNumber)}</span>
+                  Send to {method === 'whatsapp' ? 'WhatsApp' : 'SMS'} number{' '}
+                  <span className="font-medium text-foreground">{formatWhatsAppNumber(initiatedData.recipientNumber)}</span>
                 </Typography>
               )}
             </div>
@@ -153,7 +155,9 @@ const QRVerificationInner: React.FC<QRVerificationStepProps & { onRetry: () => v
     case eventTypes.ERROR:
       return (
         <div className="text-center space-y-6">
-          <BackLink onBack={onBack} />
+          <div className="text-left">
+            <BackLink onBack={onBack} />
+          </div>
           <div className="flex justify-center">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-destructive/15">
               <AlertCircle className="h-8 w-8 text-destructive" />
@@ -177,7 +181,9 @@ const QRVerificationInner: React.FC<QRVerificationStepProps & { onRetry: () => v
     case eventTypes.EXPIRED:
       return (
         <div className="text-center space-y-6">
-          <BackLink onBack={onBack} />
+          <div className="text-left">
+            <BackLink onBack={onBack} />
+          </div>
           <div className="flex justify-center">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-warning/15">
               <TimerOff className="h-8 w-8 text-warning" />
