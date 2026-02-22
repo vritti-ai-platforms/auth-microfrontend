@@ -1,49 +1,45 @@
+import { Alert } from '@vritti/quantum-ui/Alert';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { AlertCircle, ArrowLeft, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Fingerprint } from 'lucide-react';
 import type React from 'react';
 
-interface PasskeySetupProps {
+interface PasskeySetupStepProps {
   onBack: () => void;
   onRegister: () => void;
   isPending: boolean;
   error: Error | null;
 }
 
-/**
- * Get user-friendly error message from WebAuthn errors
- */
-const getErrorMessage = (error: Error | null): string | null => {
+// Returns user-friendly message from WebAuthn errors
+function getErrorMessage(error: Error | null): string | null {
   if (!error) return null;
 
-  // Handle WebAuthn-specific errors
-  if (error.name === 'NotAllowedError') {
-    return 'Passkey registration was cancelled. Please try again.';
-  }
-  if (error.name === 'NotSupportedError') {
-    return 'Passkeys are not supported on this device or browser.';
-  }
-  if (error.name === 'SecurityError') {
-    return 'Security error. Please ensure you are on a secure connection.';
-  }
-  if (error.name === 'InvalidStateError') {
-    return 'A passkey already exists for this account on this device.';
-  }
-  if (error.name === 'AbortError') {
-    return 'The operation was cancelled. Please try again.';
-  }
+  if (error.name === 'NotAllowedError') return 'Passkey registration was cancelled. Please try again.';
+  if (error.name === 'NotSupportedError') return 'Passkeys are not supported on this device or browser.';
+  if (error.name === 'SecurityError') return 'Security error. Please ensure you are on a secure connection.';
+  if (error.name === 'InvalidStateError') return 'A passkey already exists for this account on this device.';
+  if (error.name === 'AbortError') return 'The operation was cancelled. Please try again.';
 
   return error.message || 'An unexpected error occurred.';
-};
+}
 
-export const PasskeySetup: React.FC<PasskeySetupProps> = ({
+// Passkey setup with biometric/PIN registration prompt
+export const PasskeySetupStep: React.FC<PasskeySetupStepProps> = ({
   onBack,
   onRegister,
   isPending,
   error,
 }) => {
+  const errorMessage = getErrorMessage(error);
+
   return (
     <div className="space-y-6">
+      <Button variant="ghost" onClick={onBack} disabled={isPending} className="inline-flex items-center gap-2 text-sm">
+        <ArrowLeft className="h-4 w-4" />
+        Back to MFA options
+      </Button>
+
       <div className="text-center space-y-2">
         <Typography variant="h3" align="center" className="text-foreground">
           Set up Passkey
@@ -53,14 +49,7 @@ export const PasskeySetup: React.FC<PasskeySetupProps> = ({
         </Typography>
       </div>
 
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-          <Typography variant="body2" className="text-destructive">
-            {getErrorMessage(error)}
-          </Typography>
-        </div>
-      )}
+      {errorMessage && <Alert variant="destructive" title="Error" description={errorMessage} />}
 
       <div className="flex flex-col items-center py-8">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -82,15 +71,6 @@ export const PasskeySetup: React.FC<PasskeySetupProps> = ({
         Create Passkey
       </Button>
 
-      <Button
-        variant="outline"
-        onClick={onBack}
-        className="w-full border-border text-foreground"
-        disabled={isPending}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
     </div>
   );
 };

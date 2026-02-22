@@ -44,7 +44,6 @@ export const VerifyMobileStep: React.FC = () => {
           onSuccess={(p) => {
             setPhone(p as PhoneValue);
             setProgress(75);
-            setTimeout(() => refetch(), 1500);
           }}
           onBack={() => setProgress(0)}
         />
@@ -69,7 +68,6 @@ export const VerifyMobileStep: React.FC = () => {
           phoneCountry={phoneCountry}
           onSuccess={() => {
             setProgress(75);
-            setTimeout(() => refetch(), 1500);
           }}
           onBack={() => setProgress(25)}
           onChangeNumber={() => setProgress(25)}
@@ -77,6 +75,14 @@ export const VerifyMobileStep: React.FC = () => {
       );
 
     case 'success':
-      return <SuccessStep phoneNumber={phone} onContinue={refetch} />;
+      return (
+        <SuccessStep
+          phoneNumber={phone}
+          onContinue={() => {
+            setProgress(100);
+            refetch();
+          }}
+        />
+      );
   }
 };

@@ -3,7 +3,7 @@ import { useOnboarding } from '@context/onboarding';
 import { Spinner } from '@vritti/quantum-ui/Spinner';
 import type React from 'react';
 import { Navigate } from 'react-router-dom';
-import { MFASetupFlowStep } from './steps/MFASetupFlowStep';
+import { MFASetupStep } from './steps/mfa-setup';
 import { SetPasswordStep } from './steps/SetPasswordStep';
 import { VerifyEmailStep } from './steps/verify-email/VerifyEmailStep';
 import { VerifyMobileStep } from './steps/verify-mobile';
@@ -37,7 +37,7 @@ export const OnboardingPage: React.FC = () => {
         return <SetPasswordStep />;
       case 'MFA_SETUP':
       case 'TWO_FACTOR_SETUP':
-        return <MFASetupFlowStep />;
+        return <MFASetupStep />;
       default:
         console.warn(`Unknown onboarding step: ${currentStep}`);
         return <Navigate to="../login" replace />;

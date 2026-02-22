@@ -1,14 +1,16 @@
+import { Alert } from '@vritti/quantum-ui/Alert';
 import { Button } from '@vritti/quantum-ui/Button';
 import { useSSE } from '@vritti/quantum-ui/hooks';
+import { Spinner } from '@vritti/quantum-ui/Spinner';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, TimerOff } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import type React from 'react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 type VerificationEventMap = {
-  initiated: { verificationCode: string; instructions: string; expiresAt: string; whatsappNumber?: string };
+  initiated: { verificationCode: string; instructions: string; expiresAt: string; whatsappNumber: string };
   verified: { phone: string };
   error: { message: string };
   expired: { message: string };
@@ -23,15 +25,19 @@ interface QRVerificationStepProps {
 }
 
 // Builds a WhatsApp or SMS deep-link URL from the verification code
-function buildQrUrl(method: 'whatsapp' | 'sms', verificationCode: string, whatsappNumber?: string): string {
+function buildQrUrl(method: 'whatsapp' | 'sms', verificationCode: string, whatsappNumber: string): string {
   if (method === 'whatsapp') {
-    const number = whatsappNumber || '15551560440';
-    return `https://wa.me/${number}?text=${encodeURIComponent(verificationCode)}`;
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(verificationCode)}`;
   }
   return `sms:?body=${encodeURIComponent(verificationCode)}`;
 }
 
-// Shared back link + header used by all event states
+// Formats a phone number string with + prefix for display
+function formatWhatsAppNumber(number: string): string {
+  return number.startsWith('+') ? number : `+${number}`;
+}
+
+// Shared back link used by all event states
 const BackLink: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <Link
     to="#"
@@ -46,54 +52,59 @@ const BackLink: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   </Link>
 );
 
-// SSE-driven QR verification — switch on eventType for each state
-export const QRVerificationStep: React.FC<QRVerificationStepProps> = ({ method, onSuccess, onBack }) => {
-  const { eventType, data, eventTypes } = useSSE<VerificationEventMap>({
+// Inner component that manages a single SSE session
+const QRVerificationInner: React.FC<QRVerificationStepProps & { onRetry: () => void }> = ({
+  method,
+  onSuccess,
+  onBack,
+  onRetry,
+}) => {
+  const { eventType, data, eventTypes, isConnected } = useSSE<VerificationEventMap>({
     path: `/cloud-api/onboarding/mobile-verification/events/${method}`,
     events: SSE_EVENTS,
+    autoReconnect: false,
   });
 
-  // Side effect: navigate on verification success
+  // Navigate on verification success
   useEffect(() => {
     if (eventType === eventTypes.VERIFIED) {
       onSuccess((data as VerificationEventMap['verified']).phone);
     }
   }, [eventType, data, eventTypes, onSuccess]);
 
-  const title = method === 'whatsapp' ? 'Scan with WhatsApp' : 'Scan with SMS';
+  const initiatedData = data as VerificationEventMap['initiated'];
 
-  // Derive QR URL only when initiated
-  const initiated = eventType === eventTypes.INITIATED ? (data as VerificationEventMap['initiated']) : null;
-  const qrCodeUrl = useMemo(
-    () => (initiated ? buildQrUrl(method, initiated.verificationCode, initiated.whatsappNumber) : ''),
-    [initiated, method],
-  );
+  // Show loading only before the first event arrives
+  if (!eventType) {
+    const message = !isConnected
+      ? method === 'whatsapp'
+        ? 'Connecting to WhatsApp verification...'
+        : 'Connecting to SMS verification...'
+      : method === 'whatsapp'
+        ? 'Setting up WhatsApp verification...'
+        : 'Setting up SMS verification...';
+
+    return (
+      <div className="flex flex-col flex-1 min-h-[40svh]">
+        <BackLink onBack={onBack} />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <Spinner className="size-8 text-primary" />
+          <Typography variant="body2" align="center" intent="muted">
+            {message}
+          </Typography>
+        </div>
+      </div>
+    );
+  }
 
   switch (eventType) {
-    // Waiting for SSE connection + first event
-    case null:
-      return (
-        <div className="space-y-6">
-          <BackLink onBack={onBack} />
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-            <Typography variant="body2" align="center" intent="muted">
-              {method === 'whatsapp' ? 'Setting up WhatsApp verification...' : 'Setting up SMS verification...'}
-            </Typography>
-          </div>
-        </div>
-      );
-
-    // QR code ready — show code + waiting indicator
     case eventTypes.INITIATED:
       return (
         <div className="space-y-6">
           <BackLink onBack={onBack} />
           <div className="text-center space-y-2">
             <Typography variant="h3" align="center" className="text-foreground">
-              {title}
+              Scan QR Code with Mobile
             </Typography>
             <Typography variant="body2" align="center" intent="muted">
               Scan this QR code to send the verification message
@@ -103,77 +114,101 @@ export const QRVerificationStep: React.FC<QRVerificationStepProps> = ({ method, 
           <div className="space-y-4">
             <div className="flex justify-center">
               <div className="p-4 bg-white rounded-lg">
-                <QRCodeSVG value={qrCodeUrl} size={180} />
+                <QRCodeSVG value={buildQrUrl(method, initiatedData.verificationCode, initiatedData.whatsappNumber)} size={180} />
               </div>
             </div>
 
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <Typography variant="body2" intent="muted">
                 Or send this code manually:
               </Typography>
-              <Typography variant="h4" className="text-foreground font-mono mt-1">
-                {(data as VerificationEventMap['initiated']).verificationCode}
+              <Typography variant="h4" className="text-foreground font-mono">
+                {initiatedData.verificationCode}
               </Typography>
+              {method === 'whatsapp' && (
+                <Typography variant="body2" align="center" intent="muted">
+                  Send to WhatsApp number{' '}
+                  <span className="font-medium text-foreground">{formatWhatsAppNumber(initiatedData.whatsappNumber)}</span>
+                </Typography>
+              )}
             </div>
 
-            <Typography variant="body2" className="text-foreground font-medium text-center">
-              {(data as VerificationEventMap['initiated']).instructions}
-            </Typography>
-
             <div className="flex items-center justify-center gap-2 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <Spinner className="size-4 text-primary" />
               <Typography variant="body2" intent="muted">
                 Waiting for verification...
               </Typography>
             </div>
-
-            <Typography variant="body2" align="center" intent="muted">
-              Having trouble?{' '}
-              <Button variant="link" onClick={onBack} className="p-0 h-auto font-medium">
-                Try another method
-              </Button>
-            </Typography>
           </div>
         </div>
       );
 
-    // Verified — useEffect handles onSuccess, show brief loading
     case eventTypes.VERIFIED:
       return (
         <div className="flex items-center justify-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner className="size-8 text-primary" />
         </div>
       );
 
-    // Error from backend
     case eventTypes.ERROR:
       return (
-        <div className="space-y-6">
+        <div className="text-center space-y-6">
           <BackLink onBack={onBack} />
-          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
-            {(data as VerificationEventMap['error']).message}
+          <div className="flex justify-center">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-destructive/15">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
           </div>
-          <Button variant="outline" onClick={onBack} className="w-full">
-            Try another method
+          <div className="space-y-4">
+            <Typography variant="h4" align="center" className="text-foreground">
+              Verification Failed
+            </Typography>
+            <Alert variant="destructive" title="Error" description={(data as VerificationEventMap['error']).message} />
+          </div>
+          <Button onClick={onRetry} className="w-full">
+            Try Again
           </Button>
+          <Typography variant="caption" align="center" intent="muted">
+            If you continue to experience issues, try a different verification method.
+          </Typography>
         </div>
       );
 
-    // Verification expired
     case eventTypes.EXPIRED:
       return (
-        <div className="space-y-6">
+        <div className="text-center space-y-6">
           <BackLink onBack={onBack} />
-          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">
-            Verification expired. Please go back and try again.
+          <div className="flex justify-center">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-warning/15">
+              <TimerOff className="h-8 w-8 text-warning" />
+            </div>
           </div>
-          <Button variant="outline" onClick={onBack} className="w-full">
-            Try again
+          <div className="space-y-4">
+            <Typography variant="h4" align="center" className="text-foreground">
+              Verification Expired
+            </Typography>
+            <Alert variant="warning" title="Time's up" description={(data as VerificationEventMap['expired']).message} />
+          </div>
+          <Button onClick={onRetry} className="w-full">
+            Try Again
           </Button>
+          <Typography variant="caption" align="center" intent="muted">
+            If you continue to experience issues, try a different verification method.
+          </Typography>
         </div>
       );
 
     default:
       return null;
   }
+};
+
+// Outer component that handles retry by remounting the inner component
+export const QRVerificationStep: React.FC<QRVerificationStepProps> = (props) => {
+  const [retryKey, setRetryKey] = useState(0);
+
+  // Remounts the inner component to re-establish SSE
+  const handleRetry = () => setRetryKey((k) => k + 1);
+
+  return <QRVerificationInner key={retryKey} {...props} onRetry={handleRetry} />;
 };

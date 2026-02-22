@@ -1,7 +1,3 @@
-import { startAuthentication } from '@simplewebauthn/browser';
-import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
-import type { AxiosError } from 'axios';
-
 import {
   type AuthenticationResponseJSON,
   type LoginResponse,
@@ -11,10 +7,9 @@ import {
   verifySms,
   verifyTotp,
 } from '@services/auth.service';
-
-// ============================================================================
-// TOTP Verification Hook
-// ============================================================================
+import { startAuthentication } from '@simplewebauthn/browser';
+import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
 interface VerifyTotpParams {
   sessionId: string;
@@ -29,10 +24,6 @@ export function useVerifyTotp(options?: UseVerifyTotpOptions) {
     ...options,
   });
 }
-
-// ============================================================================
-// SMS Verification Hooks
-// ============================================================================
 
 type UseSendSmsCodeOptions = Omit<UseMutationOptions<void, AxiosError, string>, 'mutationFn'>;
 
@@ -56,10 +47,6 @@ export function useVerifySms(options?: UseVerifySmsOptions) {
     ...options,
   });
 }
-
-// ============================================================================
-// Passkey Verification Hook
-// ============================================================================
 
 type UseVerifyPasskeyOptions = Omit<UseMutationOptions<LoginResponse, AxiosError, string>, 'mutationFn'>;
 

@@ -1,22 +1,25 @@
+import { Alert } from '@vritti/quantum-ui/Alert';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
-import { CheckCircle, Copy } from 'lucide-react';
+import { CheckCircle2, Copy } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useState } from 'react';
 
-interface BackupCodesDisplayProps {
+interface BackupCodesStepProps {
   backupCodes: string[];
   warning: string;
   onContinue: () => void;
 }
 
-export const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({
+// Displays backup codes with copy functionality after MFA setup
+export const BackupCodesStep: React.FC<BackupCodesStepProps> = ({
   backupCodes,
   warning,
   onContinue,
 }) => {
   const [copiedAll, setCopiedAll] = useState(false);
 
+  // Copies all backup codes to clipboard
   const handleCopyAll = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(backupCodes.join('\n'));
@@ -31,8 +34,8 @@ export const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center">
+            <CheckCircle2 className="h-8 w-8 text-success" />
           </div>
         </div>
         <Typography variant="h3" align="center" className="text-foreground">
@@ -43,11 +46,7 @@ export const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({
         </Typography>
       </div>
 
-      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-        <Typography variant="body2" className="text-amber-800 dark:text-amber-200">
-          {warning}
-        </Typography>
-      </div>
+      <Alert variant="warning" title="Important" description={warning} />
 
       <div className="grid grid-cols-2 gap-2">
         {backupCodes.map((code, index) => (
@@ -63,7 +62,7 @@ export const BackupCodesDisplay: React.FC<BackupCodesDisplayProps> = ({
       <Button variant="outline" onClick={handleCopyAll} className="w-full border-border">
         {copiedAll ? (
           <>
-            <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+            <CheckCircle2 className="mr-2 h-4 w-4 text-success" />
             Copied all codes!
           </>
         ) : (

@@ -43,6 +43,12 @@ export interface LoginResponse {
   expiresIn?: number;
   requiresMfa?: boolean;
   mfaChallenge?: MFAChallenge;
+  user?: {
+    id: string;
+    email: string;
+    fullName: string;
+    displayName: string;
+  };
 }
 
 // Registers a new user account

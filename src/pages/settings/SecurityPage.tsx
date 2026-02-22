@@ -17,7 +17,7 @@ import {
   useRevokeAllOtherSessions,
   useRevokeSession,
   useSessions,
-} from '@hooks/useSecurity';
+} from '@hooks/settings/useSecurity';
 import type { ChangePasswordFormData } from '@schemas/settings';
 import { changePasswordSchema } from '@schemas/settings';
 
@@ -182,7 +182,7 @@ export const SecurityPage: React.FC = () => {
             <div className="flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <Typography variant="body1" className="font-medium">
-                  Enable 2FA
+                  Enable MFA
                 </Typography>
                 <Badge variant="default">Coming Soon</Badge>
               </div>

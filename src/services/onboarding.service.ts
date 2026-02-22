@@ -59,11 +59,11 @@ export function setPassword(password: string): Promise<SetPasswordResponse> {
 }
 
 // ============================================================================
-// Two-Factor Authentication (2FA) API Functions
+// MFA (Multi-Factor Authentication) API Functions
 // ============================================================================
 
 export interface TotpSetupResponse {
-  qrCodeDataUrl: string;
+  keyUri: string;
   manualSetupKey: string;
   issuer: string;
   accountName: string;
@@ -87,33 +87,33 @@ export interface TwoFactorStatusResponse {
 // Initiates TOTP setup and returns QR code for authenticator apps
 export function initiateTotpSetup(): Promise<TotpSetupResponse> {
   return axios
-    .post<TotpSetupResponse>("cloud-api/onboarding/2fa/totp/setup")
+    .post<TotpSetupResponse>("cloud-api/onboarding/mfa/totp/setup")
     .then((r) => r.data);
 }
 
 // Verifies TOTP setup with a 6-digit code and returns backup codes
-export function verifyTotpSetup(token: string): Promise<BackupCodesResponse> {
+export function verifyTotpSetup(code: string): Promise<BackupCodesResponse> {
   return axios
-    .post<BackupCodesResponse>("cloud-api/onboarding/2fa/totp/verify", { token })
+    .post<BackupCodesResponse>("cloud-api/onboarding/mfa/totp/verify", { code })
     .then((r) => r.data);
 }
 
-// Skips 2FA setup and completes onboarding without MFA
-export function skip2FASetup(): Promise<{ success: boolean; message: string }> {
+// Skips MFA setup and completes onboarding without MFA
+export function skipMFASetup(): Promise<{ success: boolean; message: string }> {
   return axios
-    .post<{ success: boolean; message: string }>("cloud-api/onboarding/2fa/skip")
+    .post<{ success: boolean; message: string }>("cloud-api/onboarding/mfa/skip")
     .then((r) => r.data);
 }
 
-// Gets current 2FA status for the authenticated user
-export function get2FAStatus(): Promise<TwoFactorStatusResponse> {
+// Gets current MFA status for the authenticated user
+export function getMFAStatus(): Promise<TwoFactorStatusResponse> {
   return axios
-    .get<TwoFactorStatusResponse>("cloud-api/onboarding/2fa/status")
+    .get<TwoFactorStatusResponse>("cloud-api/onboarding/mfa/status")
     .then((r) => r.data);
 }
 
 // ============================================================================
-// Passkey (WebAuthn) 2FA API Functions
+// Passkey (WebAuthn) MFA API Functions
 // ============================================================================
 
 export interface PasskeyRegistrationOptionsResponse {
@@ -156,14 +156,14 @@ export interface RegistrationResponseJSON {
 // Initiates Passkey setup and returns WebAuthn registration options
 export function initiatePasskeySetup(): Promise<PasskeyRegistrationOptionsResponse> {
   return axios
-    .post<PasskeyRegistrationOptionsResponse>("cloud-api/onboarding/2fa/passkey/setup")
+    .post<PasskeyRegistrationOptionsResponse>("cloud-api/onboarding/mfa/passkey/setup")
     .then((r) => r.data);
 }
 
 // Verifies Passkey setup with browser credential and returns backup codes
 export function verifyPasskeySetup(credential: RegistrationResponseJSON): Promise<BackupCodesResponse> {
   return axios
-    .post<BackupCodesResponse>("cloud-api/onboarding/2fa/passkey/verify", { credential })
+    .post<BackupCodesResponse>("cloud-api/onboarding/mfa/passkey/verify", { credential })
     .then((r) => r.data);
 }
 

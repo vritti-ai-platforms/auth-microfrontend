@@ -55,7 +55,7 @@ export const MultiStepProgressIndicator: React.FC = () => {
     const base = [
       { id: 1, label: step1Config.label, icon: step1Config.icon },
       { id: 2, label: 'Verify Mobile', icon: <Smartphone className="h-4 w-4" /> },
-      { id: 3, label: 'Enable 2FA', icon: <KeyRound className="h-4 w-4" /> },
+      { id: 3, label: 'Enable MFA', icon: <KeyRound className="h-4 w-4" /> },
       { id: 4, label: 'Complete', icon: <Check className="h-4 w-4" /> },
     ];
 

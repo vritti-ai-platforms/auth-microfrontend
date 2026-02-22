@@ -10,7 +10,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
-import { useEmailChangeFlow } from '@hooks/useEmailChangeFlow';
+import { useEmailChangeFlow } from '@hooks/settings/useEmailChangeFlow';
 import { newEmailSchema, otpSchema } from '@schemas/verification';
 
 interface Props {

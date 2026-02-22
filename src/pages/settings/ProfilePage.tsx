@@ -16,7 +16,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { EmailVerificationDialog } from '@components/settings/EmailVerificationDialog';
 import { PhoneVerificationDialog } from '@components/settings/PhoneVerificationDialog';
-import { useDeleteAccount, useProfile, useUpdateProfile } from '@hooks/useProfile';
+import { useDeleteAccount, useProfile, useUpdateProfile } from '@hooks/settings/useProfile';
 import type { ProfileFormData } from '@schemas/settings';
 import { AccountStatus, profileSchema } from '@schemas/settings';
 

@@ -1,4 +1,9 @@
+import { AuthDivider } from '@components/auth/AuthDivider';
+import { SocialAuthButtons } from '@components/auth/SocialAuthButtons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSignup } from '@hooks';
+import type { SignupFormData } from '@schemas/auth';
+import { signupSchema } from '@schemas/auth';
 import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
@@ -9,11 +14,6 @@ import { Lock, Mail, User } from 'lucide-react';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthDivider } from '@components/auth/AuthDivider';
-import { SocialAuthButtons } from '@components/auth/SocialAuthButtons';
-import { useSignup } from '@hooks';
-import type { SignupFormData } from '@schemas/auth';
-import { signupSchema } from '@schemas/auth';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,6 +74,7 @@ export const SignupPage: React.FC = () => {
           password: data.password,
           fullName: data.fullName,
         })}
+        showRootError
         rootErrorAction={
           <Button size="xs" variant="default" onClick={handleLoginInstead}>
             Login

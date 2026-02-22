@@ -1,25 +1,24 @@
-export { useLogin, useSignup } from './auth';
 export {
-  useInitiateTotpSetup,
+  useLogin,
   usePasskeyLogin,
-  usePasskeyRegistration,
   useSendSmsCode,
-  useSkip2FASetup,
+  useSignup,
   useVerifyPasskey,
   useVerifySms,
   useVerifyTotp,
-  useVerifyTotpSetup,
-} from './mfa';
+} from './auth';
 
 export {
-  useInitiateMobileVerification,
-  useVerifyMobileOtp,
-} from './mobile-verification';
-export {
   useChangeEmail,
+  useInitiateMobileVerification,
+  useInitiateTotpSetup,
+  usePasskeyRegistration,
   useSendEmailOtp,
   useSetPassword,
+  useSkipMFASetup,
   useVerifyEmail,
+  useVerifyMobileOtp,
+  useVerifyTotpSetup,
 } from './onboarding';
 
 export {
@@ -30,9 +29,23 @@ export {
   useResetPassword,
   useVerifyResetOtp,
 } from './password-reset';
-export { useEmailChangeFlow } from './useEmailChangeFlow';
-export { useEmailVerification } from './useEmailVerification';
-export { usePhoneChangeFlow } from './usePhoneChangeFlow';
-export { usePhoneVerification } from './usePhoneVerification';
-export { useDeleteAccount, useProfile, useUpdateProfile } from './useProfile';
-export { useChangePassword, useRevokeSession, useSessions } from './useSecurity';
+
+export {
+  type EmailChangeFlowState,
+  type EmailChangeStep,
+  type PhoneChangeFlowState,
+  type PhoneChangeStep,
+  PROFILE_QUERY_KEY,
+  SESSIONS_QUERY_KEY,
+  useChangePassword,
+  useDeleteAccount,
+  useEmailChangeFlow,
+  useEmailVerification,
+  usePhoneChangeFlow,
+  usePhoneVerification,
+  useProfile,
+  useRevokeAllOtherSessions,
+  useRevokeSession,
+  useSessions,
+  useUpdateProfile,
+} from './settings';

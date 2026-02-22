@@ -1,3 +1,13 @@
+import {
+  MethodSwitcher,
+  PasskeyVerification,
+  SMSVerification,
+  TOTPVerification,
+} from '@components/auth/mfa-verification';
+import { useVerifyPasskey } from '@hooks';
+import type { LoginResponse, MFAChallenge, MFAMethod } from '@services/auth.service';
+import { startPasskeyVerification } from '@services/auth.service';
+import { startAuthentication } from '@simplewebauthn/browser';
 import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
@@ -5,16 +15,6 @@ import { ArrowLeft } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { startAuthentication } from '@simplewebauthn/browser';
-import {
-  MethodSwitcher,
-  PasskeyVerification,
-  SMSVerification,
-  TOTPVerification,
-} from '../../components/auth/mfa-verification';
-import { useVerifyPasskey } from '../../hooks';
-import { startPasskeyVerification } from '../../services/auth.service';
-import type { LoginResponse, MFAChallenge, MFAMethod } from '../../services/auth.service';
 
 // Handles all MFA verification methods (TOTP, SMS, Passkey) via location.state challenge
 export const MFAVerificationPage: React.FC = () => {
@@ -102,10 +102,7 @@ export const MFAVerificationPage: React.FC = () => {
       {/* Active Verification Method */}
       <div className="pt-2">
         {activeMethod === 'totp' && (
-          <TOTPVerification
-            sessionId={mfaChallenge.sessionId}
-            onSuccess={handleMFASuccess}
-          />
+          <TOTPVerification sessionId={mfaChallenge.sessionId} onSuccess={handleMFASuccess} />
         )}
 
         {activeMethod === 'sms' && (

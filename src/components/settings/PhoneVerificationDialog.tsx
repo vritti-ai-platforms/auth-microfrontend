@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import type { z } from 'zod';
-import { usePhoneChangeFlow } from '@hooks/usePhoneChangeFlow';
+import { usePhoneChangeFlow } from '@hooks/settings/usePhoneChangeFlow';
 import { newPhoneSchema, otpSchema } from '@schemas/verification';
 
 interface Props {
