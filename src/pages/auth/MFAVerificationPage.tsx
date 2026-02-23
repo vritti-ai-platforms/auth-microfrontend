@@ -4,8 +4,6 @@ import { SMSVerification } from '@components/auth/mfa-verification/SMSVerificati
 import { TOTPVerification } from '@components/auth/mfa-verification/TOTPVerification';
 import { useVerifyPasskey } from '@hooks/auth';
 import type { LoginResponse, MFAChallenge, MFAMethod } from '@services/auth.service';
-import { startPasskeyVerification } from '@services/auth.service';
-import { startAuthentication } from '@simplewebauthn/browser';
 import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
@@ -51,25 +49,10 @@ export const MFAVerificationPage: React.FC = () => {
     onSuccess: handleMFASuccess,
   });
 
-  // Handle Passkey verification
-  const handlePasskeyVerify = async () => {
+  // Handle Passkey verification — hook owns full flow: start → biometric → verify
+  const handlePasskeyVerify = () => {
     if (!mfaChallenge) return;
-
-    try {
-      // Step 1: Start passkey verification to get WebAuthn options
-      const { options, sessionId } = await startPasskeyVerification(mfaChallenge.sessionId);
-
-      // Step 2: Trigger browser's WebAuthn API
-      // @ts-expect-error - Type mismatch between our simplified types and @simplewebauthn types
-      const credential = await startAuthentication({ optionsJSON: options });
-
-      // Step 3: Verify the credential with the server
-      // @ts-expect-error - Type mismatch in clientExtensionResults
-      await passkeyMutation.mutateAsync({ sessionId, credential });
-    } catch (error) {
-      // Error is already handled by the mutation's error state
-      console.error('Passkey verification failed:', error);
-    }
+    passkeyMutation.mutate(mfaChallenge.sessionId);
   };
 
   // Don't render if no challenge (will redirect)

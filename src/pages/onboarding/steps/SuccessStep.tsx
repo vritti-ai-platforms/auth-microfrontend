@@ -6,10 +6,11 @@ import type React from 'react';
 interface SuccessStepProps {
   hasMfa: boolean;
   onContinue: () => void;
+  isPending?: boolean;
 }
 
 // MFA setup completion matching the OAuth success page pattern
-export const SuccessStep: React.FC<SuccessStepProps> = ({ hasMfa, onContinue }) => {
+export const SuccessStep: React.FC<SuccessStepProps> = ({ hasMfa, onContinue, isPending }) => {
   return (
     <div className="text-center space-y-6">
       <div className="flex justify-center">
@@ -29,7 +30,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ hasMfa, onContinue }) 
         </Typography>
       </div>
 
-      <Button onClick={onContinue} className="w-full bg-primary text-primary-foreground">
+      <Button onClick={onContinue} isLoading={isPending} disabled={isPending} className="w-full bg-primary text-primary-foreground">
         Continue
       </Button>
 

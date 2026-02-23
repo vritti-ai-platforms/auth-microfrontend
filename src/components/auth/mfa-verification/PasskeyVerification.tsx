@@ -5,7 +5,7 @@ import type React from "react";
 
 interface PasskeyVerificationProps {
   /** Callback when passkey verification is triggered */
-  onVerify: () => Promise<void>;
+  onVerify: () => void;
   /** Whether verification is in progress */
   isVerifying: boolean;
   /** Error object to display */

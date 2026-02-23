@@ -205,3 +205,15 @@ export function verifyMobileOtp(otp: string): Promise<{ success: boolean; messag
     .post<{ success: boolean; message: string }>("cloud-api/onboarding/mobile-verification/verify-otp", { otp })
     .then((r) => r.data);
 }
+
+export interface CompleteOnboardingResponse {
+  accessToken: string;
+  expiresIn: number;
+}
+
+// Upgrades session to CLOUD and rotates tokens — called on "Go to Dashboard"
+export function completeOnboarding(): Promise<CompleteOnboardingResponse> {
+  return axios
+    .post<CompleteOnboardingResponse>('cloud-api/onboarding/complete')
+    .then((r) => r.data);
+}

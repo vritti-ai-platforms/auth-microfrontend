@@ -1,6 +1,8 @@
 import { MultiStepProgressIndicator } from '@components/onboarding/MultiStepProgressIndicator';
 import { useOnboarding } from '@context/onboarding';
+import { scheduleTokenRefresh, setToken } from '@vritti/quantum-ui/axios';
 import { Spinner } from '@vritti/quantum-ui/Spinner';
+import { useCompleteOnboarding } from '@hooks/onboarding';
 import type React from 'react';
 import { Navigate } from 'react-router-dom';
 import { MFASetupStep } from './steps/mfa-setup';
@@ -12,6 +14,14 @@ import { VerifyMobileStep } from './steps/verify-mobile';
 // Renders the progress bar and the active onboarding step based on backend state
 export const OnboardingPage: React.FC = () => {
   const { currentStep, isLoading } = useOnboarding();
+
+  const completeOnboardingMutation = useCompleteOnboarding({
+    onSuccess: ({ accessToken, expiresIn }) => {
+      setToken(accessToken);
+      scheduleTokenRefresh(expiresIn);
+      window.location.href = '/';
+    },
+  });
 
   if (isLoading) {
     return (
@@ -28,7 +38,8 @@ export const OnboardingPage: React.FC = () => {
         return (
           <SuccessStep
             hasMfa={false}
-            onContinue={() => { window.location.href = '/'; }}
+            onContinue={() => completeOnboardingMutation.mutate()}
+            isPending={completeOnboardingMutation.isPending}
           />
         );
       case 'EMAIL_VERIFICATION':
