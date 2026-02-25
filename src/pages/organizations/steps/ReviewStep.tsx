@@ -1,4 +1,4 @@
-import { useCreateOrganization } from '@hooks/organizations';
+import type { useCreateOrganization } from '@hooks/organizations';
 import type { CreateOrgFormData, IndustryOption, OrgPlan } from '@schemas/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Checkbox } from '@vritti/quantum-ui/Checkbox';

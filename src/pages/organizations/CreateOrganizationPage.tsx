@@ -41,7 +41,7 @@ export const CreateOrganizationPage: React.FC = () => {
   const selectedPlan = form.watch('plan') ?? OrgPlan.free;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between px-6 pt-6 pb-0">
         <div>
