@@ -10,7 +10,9 @@ import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
+import { HomePage } from './pages/home/HomePage';
 import { OnboardingPage } from './pages/onboarding/OnboardingPage';
+import { CreateOrganizationPage } from './pages/organizations/CreateOrganizationPage';
 import { ProfilePage } from './pages/settings/ProfilePage';
 import { SecurityPage } from './pages/settings/SecurityPage';
 
@@ -68,7 +70,15 @@ export const authenticatedRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/account/profile" replace />,
+        element: <Navigate to="/home" replace />,
+      },
+      {
+        path: 'home',
+        element: <HomePage />,
+      },
+      {
+        path: 'organizations/new',
+        element: <CreateOrganizationPage />,
       },
       {
         path: 'account/profile',
