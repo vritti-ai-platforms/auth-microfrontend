@@ -33,13 +33,6 @@ export interface OrgListItem {
   createdAt: string;
 }
 
-// Industry option returned by GET /cloud-api/industries
-export interface IndustryOption {
-  id: number;
-  name: string;
-  slug: string;
-}
-
 // Zod schema for create org form
 export const createOrganizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required'),
@@ -47,13 +40,18 @@ export const createOrganizationSchema = z.object({
     .string()
     .min(1, 'URL is required')
     .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
-  size: z.nativeEnum(OrgSize, { message: 'Please select a size' }),
-  plan: z.nativeEnum(OrgPlan).default(OrgPlan.free),
+  size: z.enum(Object.values(OrgSize) as [OrgSize, ...OrgSize[]], { message: 'Please select a size' }),
+  plan: z.enum(Object.values(OrgPlan) as [OrgPlan, ...OrgPlan[]]),
   industryId: z.number().optional(),
+  industryName: z.string().optional(),
 });
 
 // Use output type so plan is always OrgPlan (never undefined) after .default()
 export type CreateOrgFormData = z.output<typeof createOrganizationSchema>;
+
+export interface SubdomainAvailability {
+  available: boolean;
+}
 
 // What gets sent to the API
 export interface CreateOrgDto {

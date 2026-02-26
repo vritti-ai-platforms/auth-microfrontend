@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useIndustries } from '@hooks/industries';
 import { useCreateOrganization } from '@hooks/organizations';
 import type { CreateOrgFormData } from '@schemas/organizations';
 import { createOrganizationSchema, OrgPlan } from '@schemas/organizations';
@@ -9,7 +8,7 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { Building2, ClipboardList, CreditCard } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
-import { type Resolver, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { BasicInfoStep } from './steps/BasicInfoStep';
 import { ChoosePlanStep } from './steps/ChoosePlanStep';
@@ -27,8 +26,7 @@ export const CreateOrganizationPage: React.FC = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const form = useForm<CreateOrgFormData>({
-    // Cast required: zodResolver infers input type (plan?: OrgPlan) but form uses output type (plan: OrgPlan)
-    resolver: zodResolver(createOrganizationSchema) as Resolver<CreateOrgFormData>,
+    resolver: zodResolver(createOrganizationSchema),
     defaultValues: { plan: OrgPlan.free },
   });
 
@@ -36,7 +34,6 @@ export const CreateOrganizationPage: React.FC = () => {
     onSuccess: () => navigate('/home'),
   });
 
-  const { data: industries } = useIndustries();
 
   const selectedPlan = form.watch('plan') ?? OrgPlan.free;
 
@@ -65,7 +62,6 @@ export const CreateOrganizationPage: React.FC = () => {
         {step === 1 && (
           <BasicInfoStep
             form={form}
-            industries={industries}
             onContinue={() => setStep(2)}
           />
         )}
@@ -83,7 +79,6 @@ export const CreateOrganizationPage: React.FC = () => {
         {step === 3 && (
           <ReviewStep
             form={form}
-            industries={industries}
             selectedPlan={selectedPlan}
             agreedToTerms={agreedToTerms}
             onAgreedToTermsChange={(c) => setAgreedToTerms(c)}

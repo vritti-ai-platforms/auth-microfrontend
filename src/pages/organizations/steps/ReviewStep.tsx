@@ -1,5 +1,5 @@
 import type { useCreateOrganization } from '@hooks/organizations';
-import type { CreateOrgFormData, IndustryOption, OrgPlan } from '@schemas/organizations';
+import type { CreateOrgFormData, OrgPlan } from '@schemas/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Checkbox } from '@vritti/quantum-ui/Checkbox';
 import { Form } from '@vritti/quantum-ui/Form';
@@ -10,7 +10,6 @@ import type { UseFormReturn } from 'react-hook-form';
 
 interface ReviewStepProps {
   form: UseFormReturn<CreateOrgFormData>;
-  industries: IndustryOption[] | undefined;
   selectedPlan: OrgPlan;
   agreedToTerms: boolean;
   onAgreedToTermsChange: (checked: boolean) => void;
@@ -22,7 +21,6 @@ interface ReviewStepProps {
 
 export const ReviewStep: React.FC<ReviewStepProps> = ({
   form,
-  industries,
   selectedPlan,
   agreedToTerms,
   onAgreedToTermsChange,
@@ -45,10 +43,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           { label: 'Name', value: form.getValues('name') },
           { label: 'URL', value: `${form.getValues('subdomain')}.vrittiai.com` },
           { label: 'Size', value: `${form.getValues('size')} employees` },
-          {
-            label: 'Industry',
-            value: industries?.find((i) => i.id === form.getValues('industryId'))?.name ?? '—',
-          },
+          { label: 'Industry', value: form.getValues('industryName') ?? '—' },
         ].map(({ label, value }) => (
           <div key={label} className="flex justify-between text-sm">
             <span className="text-muted-foreground">{label}</span>
