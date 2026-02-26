@@ -21,11 +21,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ form, onContinue }
   const logo = form.watch('logo');
 
   return (
-    <Form
-      form={form}
-      mutation={checkSubdomainMutation}
-      transformSubmit={(data) => data.subdomain}
-    >
+    <Form form={form} mutation={checkSubdomainMutation} transformSubmit={(data) => data.subdomain}>
       <FieldGroup>
         <TextField name="name" label="Organization Name" placeholder="e.g., HealthFirst Clinics" />
         <TextField
