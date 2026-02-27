@@ -8,6 +8,7 @@
     "check": "biome check --write .",
     "dev": "tsc --noEmit && rsbuild dev --host local.vrittiai.com",
     "dev:ssl": "tsc --noEmit && USE_HTTPS=true rsbuild dev --host local.vrittiai.com",
+    "dev:ssl:w": "tsc --noEmit && cross-env USE_HTTPS=true rsbuild dev --host local.vrittiai.com",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "preview": "rsbuild preview"
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
+    "cross-env": "^10.1.0",
     "@rsbuild/core": "^1.7.2",
     "@rsbuild/plugin-node-polyfill": "^1.4.3",
     "@rsbuild/plugin-react": "^1.4.3",

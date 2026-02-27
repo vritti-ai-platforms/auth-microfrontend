@@ -5,6 +5,7 @@ import { AppLayout } from './components/layouts/AppLayout';
 import { AuthLayout } from './components/layouts/AuthLayout';
 import { OrgLayout } from './components/layouts/OrgLayout';
 import './index.css';
+import { CloudProvidersPage } from './pages/admin/cloud-providers/CloudProvidersPage';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
 import { AuthSuccessPage } from './pages/auth/AuthSuccessPage';
 import { ForgotPasswordPage } from './pages/auth/forgot-password';
@@ -79,6 +80,10 @@ export const adminRoutes: RouteObject[] = [
       {
         path: 'home',
         element: <>Hello</>,
+      },
+      {
+        path: 'cloud-providers',
+        element: <CloudProvidersPage />,
       },
     ],
   },
