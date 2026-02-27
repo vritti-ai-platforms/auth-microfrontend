@@ -93,7 +93,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
           formData.append('orgIdentifier', data.subdomain);
           formData.append('size', data.size);
           formData.append('plan', data.plan);
-          if (data.industryId != null) formData.append('industryId', String(data.industryId));
+          if (data.industryId != null) formData.append('industryId', data.industryId);
           if (data.logo) formData.append('file', data.logo);
           return formData;
         }}

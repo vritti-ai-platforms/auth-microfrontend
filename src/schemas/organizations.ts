@@ -25,7 +25,7 @@ export interface OrgListItem {
   name: string;
   subdomain: string;
   orgIdentifier: string;
-  industryId: number | null;
+  industryId: string;
   size: OrgSize;
   mediaId: string | null;
   plan: OrgPlan;
@@ -51,7 +51,7 @@ export const createOrganizationSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
   size: z.enum(Object.values(OrgSize) as [OrgSize, ...OrgSize[]], { message: 'Please select a size' }),
   plan: z.enum(Object.values(OrgPlan) as [OrgPlan, ...OrgPlan[]]),
-  industryId: z.number().optional(),
+  industryId: z.string({ message: 'Please select an industry' }),
   industryName: z.string().optional(),
   logo: z.instanceof(File).refine((f) => f.size <= 10 * 1024 * 1024, 'File must be under 10MB').optional(),
 });
