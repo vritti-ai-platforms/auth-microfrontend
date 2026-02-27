@@ -3,6 +3,7 @@ import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layouts/AppLayout';
 import { AuthLayout } from './components/layouts/AuthLayout';
+import { OrgLayout } from './components/layouts/OrgLayout';
 import './index.css';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
 import { AuthSuccessPage } from './pages/auth/AuthSuccessPage';
@@ -12,6 +13,8 @@ import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { HomePage } from './pages/cloud/home/HomePage';
 import { InvitationsPage } from './pages/cloud/invitations/InvitationsPage';
+import { OverviewPage } from './pages/cloud/organization/OverviewPage';
+import { PlaceholderPage } from './pages/cloud/organization/PlaceholderPage';
 import { CreateOrganizationPage } from './pages/cloud/organizations/CreateOrganizationPage';
 import { OrganizationsPage } from './pages/cloud/organizations/OrganizationsPage';
 import { ProfilePage } from './pages/cloud/settings/ProfilePage';
@@ -114,6 +117,44 @@ export const cloudRoutes: RouteObject[] = [
       {
         path: 'account/security',
         element: <SecurityPage />,
+      },
+    ],
+  },
+  {
+    path: '/organization/:orgId',
+    element: <OrgLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="overview" replace />,
+      },
+      {
+        path: 'overview',
+        element: <OverviewPage />,
+      },
+      {
+        path: 'users',
+        element: <PlaceholderPage />,
+      },
+      {
+        path: 'roles',
+        element: <PlaceholderPage />,
+      },
+      {
+        path: 'business-units',
+        element: <PlaceholderPage />,
+      },
+      {
+        path: 'applications',
+        element: <PlaceholderPage />,
+      },
+      {
+        path: 'billing',
+        element: <PlaceholderPage />,
+      },
+      {
+        path: 'settings',
+        element: <PlaceholderPage />,
       },
     ],
   },

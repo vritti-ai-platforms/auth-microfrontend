@@ -16,6 +16,7 @@ export default defineConfig({
     alias: {
       react: require.resolve('react'),
       'react-dom': require.resolve('react-dom'),
+      'react-router-dom': require.resolve('react-router-dom'),
       '@tanstack/react-query': require.resolve('@tanstack/react-query'),
     },
   },

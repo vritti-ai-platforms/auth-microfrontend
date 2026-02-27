@@ -6,11 +6,14 @@ import { Skeleton } from '@vritti/quantum-ui/Skeleton';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { AppWindow, ArrowRight, Building2, Users } from 'lucide-react';
 import type React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { OrgListItem } from '@/schemas/cloud/organizations';
 import { OrgMemberRole } from '@/schemas/cloud/organizations';
 
 // Renders a single organization membership card
 export const OrgCard: React.FC<{ org: OrgListItem }> = ({ org }) => {
+  const navigate = useNavigate();
+
   // Get 2-letter initials from org name
   const initials = org.name
     .split(' ')
@@ -101,8 +104,12 @@ export const OrgCard: React.FC<{ org: OrgListItem }> = ({ org }) => {
 
       {/* View Dashboard link */}
       <div>
-        <Button variant="link" className="p-0 h-auto text-primary text-sm gap-1">
-          View Dashboard <ArrowRight className="h-3.5 w-3.5" />
+        <Button
+          variant="link"
+          className="p-0 h-auto text-primary text-sm gap-1"
+          onClick={() => navigate(`/organization/${org.id}/overview`)}
+        >
+          View <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </Card>
