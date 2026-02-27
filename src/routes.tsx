@@ -92,10 +92,6 @@ export const cloudRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/home" replace />,
-      },
-      {
-        path: 'home',
         element: <HomePage />,
       },
       {
