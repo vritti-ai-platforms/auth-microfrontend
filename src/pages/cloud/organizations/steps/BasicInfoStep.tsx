@@ -1,6 +1,3 @@
-import { useCheckSubdomain } from '@hooks/organizations';
-import type { CreateOrgFormData } from '@schemas/organizations';
-import { OrgSize } from '@schemas/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { IndustrySelect } from '@vritti/quantum-ui/IndustrySelect';
@@ -10,6 +7,9 @@ import { UploadFile } from '@vritti/quantum-ui/UploadFile';
 import { ArrowRight } from 'lucide-react';
 import type React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import { useCheckSubdomain } from '@/hooks/cloud/organizations';
+import type { CreateOrgFormData } from '@/schemas/cloud/organizations';
+import { OrgSize } from '@/schemas/cloud/organizations';
 
 interface BasicInfoStepProps {
   form: UseFormReturn<CreateOrgFormData>;

@@ -1,12 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  useChangePassword,
-  useRevokeAllOtherSessions,
-  useRevokeSession,
-  useSessions,
-} from '@hooks/settings/useSecurity';
-import type { ChangePasswordFormData } from '@schemas/settings';
-import { changePasswordSchema } from '@schemas/settings';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
@@ -20,6 +12,14 @@ import { AlertTriangle, CheckCircle, Info, Lock, LogOut, Monitor } from 'lucide-
 import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+  useChangePassword,
+  useRevokeAllOtherSessions,
+  useRevokeSession,
+  useSessions,
+} from '@/hooks/cloud/settings/useSecurity';
+import type { ChangePasswordFormData } from '@/schemas/cloud/settings';
+import { changePasswordSchema } from '@/schemas/cloud/settings';
 
 export const SecurityPage: React.FC = () => {
   const { data: sessions, isLoading: isLoadingSessions } = useSessions();

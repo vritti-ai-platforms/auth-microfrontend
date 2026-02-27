@@ -10,16 +10,16 @@ import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { LoginPage } from './pages/auth/LoginPage';
 import { MFAVerificationPage } from './pages/auth/MFAVerificationPage';
 import { SignupPage } from './pages/auth/SignupPage';
-import { HomePage } from './pages/home/HomePage';
+import { HomePage } from './pages/cloud/home/HomePage';
+import { InvitationsPage } from './pages/cloud/invitations/InvitationsPage';
+import { CreateOrganizationPage } from './pages/cloud/organizations/CreateOrganizationPage';
+import { OrganizationsPage } from './pages/cloud/organizations/OrganizationsPage';
+import { ProfilePage } from './pages/cloud/settings/ProfilePage';
+import { SecurityPage } from './pages/cloud/settings/SecurityPage';
 import { OnboardingPage } from './pages/onboarding/OnboardingPage';
-import { InvitationsPage } from './pages/invitations/InvitationsPage';
-import { CreateOrganizationPage } from './pages/organizations/CreateOrganizationPage';
-import { OrganizationsPage } from './pages/organizations/OrganizationsPage';
-import { ProfilePage } from './pages/settings/ProfilePage';
-import { SecurityPage } from './pages/settings/SecurityPage';
 
 // Routes shown when the user is not authenticated
-export const publicRoutes: RouteObject[] = [
+export const cloudRoutes: RouteObject[] = [
   {
     path: '/',
     element: <AuthLayout />,
@@ -59,6 +59,23 @@ export const publicRoutes: RouteObject[] = [
             <OnboardingPage />
           </OnboardingProvider>
         ),
+      },
+    ],
+  },
+];
+
+export const adminRoutes: RouteObject[] = [
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="home" replace />,
+      },
+      {
+        path: 'home',
+        element: <>Hello</>,
       },
     ],
   },

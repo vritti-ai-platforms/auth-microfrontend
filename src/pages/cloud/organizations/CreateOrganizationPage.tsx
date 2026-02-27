@@ -1,7 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCreateOrganization } from '@hooks/organizations';
-import type { CreateOrgFormData } from '@schemas/organizations';
-import { createOrganizationSchema, OrgPlan } from '@schemas/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { type StepDef, StepProgressIndicator } from '@vritti/quantum-ui/StepProgressIndicator';
 import { Typography } from '@vritti/quantum-ui/Typography';
@@ -10,6 +7,9 @@ import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useCreateOrganization } from '@/hooks/cloud/organizations';
+import type { CreateOrgFormData } from '@/schemas/cloud/organizations';
+import { createOrganizationSchema, OrgPlan } from '@/schemas/cloud/organizations';
 import { BasicInfoStep } from './steps/BasicInfoStep';
 import { ChoosePlanStep } from './steps/ChoosePlanStep';
 import { ReviewStep } from './steps/ReviewStep';

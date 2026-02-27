@@ -1,7 +1,7 @@
-import type { SubdomainAvailability } from '@schemas/organizations';
-import { checkSubdomain } from '@services/organizations.service';
 import { type UseMutationOptions, useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
+import type { SubdomainAvailability } from '@/schemas/cloud/organizations';
+import { checkSubdomain } from '@/services/cloud/organizations.service';
 
 type UseCheckSubdomainOptions = Omit<UseMutationOptions<SubdomainAvailability, AxiosError, string>, 'mutationFn'>;
 

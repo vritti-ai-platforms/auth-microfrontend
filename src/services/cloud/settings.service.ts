@@ -1,11 +1,6 @@
 import { axios } from '@vritti/quantum-ui/axios';
-import type {
-  ChangePasswordDto,
-  ProfileData,
-  Session,
-  UpdateProfileDto,
-} from '@schemas/settings';
-import { AccountStatus } from '@schemas/settings';
+import type { ChangePasswordDto, ProfileData, Session, UpdateProfileDto } from '@/schemas/cloud/settings';
+import { AccountStatus } from '@/schemas/cloud/settings';
 
 interface AuthStatusResponse {
   isAuthenticated: boolean;
@@ -47,28 +42,26 @@ function mapAccountStatus(backendStatus: string): AccountStatus {
 
 // Gets the current user profile
 export function getProfile(): Promise<ProfileData> {
-  return axios
-    .get<AuthStatusResponse>('cloud-api/auth/status', { showSuccessToast: false })
-    .then((r) => {
-      if (!r.data.isAuthenticated || !r.data.user) {
-        throw new Error('User is not authenticated');
-      }
-      const user = r.data.user;
-      return {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        displayName: user.displayName,
-        phone: user.phone,
-        phoneCountry: user.phoneCountry,
-        accountStatus: mapAccountStatus(user.accountStatus),
-        locale: user.locale,
-        timezone: user.timezone,
-        createdAt: user.createdAt,
-        lastLoginAt: user.lastLoginAt,
-        profilePictureUrl: user.profilePictureUrl,
-      };
-    });
+  return axios.get<AuthStatusResponse>('cloud-api/auth/status', { showSuccessToast: false }).then((r) => {
+    if (!r.data.isAuthenticated || !r.data.user) {
+      throw new Error('User is not authenticated');
+    }
+    const user = r.data.user;
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      displayName: user.displayName,
+      phone: user.phone,
+      phoneCountry: user.phoneCountry,
+      accountStatus: mapAccountStatus(user.accountStatus),
+      locale: user.locale,
+      timezone: user.timezone,
+      createdAt: user.createdAt,
+      lastLoginAt: user.lastLoginAt,
+      profilePictureUrl: user.profilePictureUrl,
+    };
+  });
 }
 
 // Updates the user profile
@@ -93,9 +86,7 @@ export function changePassword(data: ChangePasswordDto): Promise<void> {
 
 // Gets the list of active sessions
 export function getSessions(): Promise<Session[]> {
-  return axios
-    .get<Session[]>('cloud-api/auth/sessions', { showSuccessToast: false })
-    .then((r) => r.data);
+  return axios.get<Session[]>('cloud-api/auth/sessions', { showSuccessToast: false }).then((r) => r.data);
 }
 
 // Revokes a specific session

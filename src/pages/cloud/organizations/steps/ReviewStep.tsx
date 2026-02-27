@@ -1,5 +1,3 @@
-import type { useCreateOrganization } from '@hooks/organizations';
-import type { CreateOrgFormData, OrgPlan } from '@schemas/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Checkbox } from '@vritti/quantum-ui/Checkbox';
 import { FilePreview } from '@vritti/quantum-ui/FilePreview';
@@ -8,6 +6,8 @@ import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowLeft, Check } from 'lucide-react';
 import type React from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import type { useCreateOrganization } from '@/hooks/cloud/organizations';
+import type { CreateOrgFormData, OrgPlan } from '@/schemas/cloud/organizations';
 
 interface ReviewStepProps {
   form: UseFormReturn<CreateOrgFormData>;

@@ -1,7 +1,7 @@
-import type { OrgListItem } from '@schemas/organizations';
-import { createOrganization } from '@services/organizations.service';
 import { type UseMutationOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
+import type { OrgListItem } from '@/schemas/cloud/organizations';
+import { createOrganization } from '@/services/cloud/organizations.service';
 import { MY_ORGS_QUERY_KEY } from './useMyOrgs';
 
 type UseCreateOrgOptions = Omit<UseMutationOptions<OrgListItem, AxiosError, FormData>, 'mutationFn'>;

@@ -1,5 +1,5 @@
-import type { OrgListItem, PaginatedResponse, SubdomainAvailability } from '@schemas/organizations';
 import { axios } from '@vritti/quantum-ui/axios';
+import type { OrgListItem, PaginatedResponse, SubdomainAvailability } from '@/schemas/cloud/organizations';
 
 // Fetches paginated organizations the current user belongs to
 export function getMyOrgs(params?: { offset?: number; limit?: number }): Promise<PaginatedResponse<OrgListItem>> {

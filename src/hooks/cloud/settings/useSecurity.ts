@@ -6,9 +6,8 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import type { ChangePasswordDto, Session } from '@schemas/settings';
-
-import { changePassword, getSessions, revokeAllOtherSessions, revokeSession } from '@services/settings.service';
+import type { ChangePasswordDto, Session } from '@/schemas/cloud/settings';
+import { changePassword, getSessions, revokeAllOtherSessions, revokeSession } from '@/services/cloud/settings.service';
 
 export const SESSIONS_QUERY_KEY = ['sessions'] as const;
 

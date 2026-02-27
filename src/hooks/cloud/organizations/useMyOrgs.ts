@@ -1,7 +1,7 @@
-import type { OrgListItem, PaginatedResponse } from '@schemas/organizations';
-import { getMyOrgs } from '@services/organizations.service';
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
+import type { OrgListItem, PaginatedResponse } from '@/schemas/cloud/organizations';
+import { getMyOrgs } from '@/services/cloud/organizations.service';
 
 export const MY_ORGS_QUERY_KEY = (params?: { offset?: number; limit?: number }) =>
   ['organizations', 'me', params ?? {}] as const;

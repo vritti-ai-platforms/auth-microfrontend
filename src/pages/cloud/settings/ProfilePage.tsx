@@ -5,7 +5,6 @@ import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { PhoneField } from '@vritti/quantum-ui/PhoneField';
-
 import { Skeleton } from '@vritti/quantum-ui/Skeleton';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
@@ -14,11 +13,11 @@ import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { EmailVerificationDialog } from '@components/settings/EmailVerificationDialog';
-import { PhoneVerificationDialog } from '@components/settings/PhoneVerificationDialog';
-import { useDeleteAccount, useProfile, useUpdateProfile } from '@hooks/settings/useProfile';
-import type { ProfileFormData } from '@schemas/settings';
-import { AccountStatus, profileSchema } from '@schemas/settings';
+import { EmailVerificationDialog } from '@/components/cloud/settings/EmailVerificationDialog';
+import { PhoneVerificationDialog } from '@/components/cloud/settings/PhoneVerificationDialog';
+import { useDeleteAccount, useProfile, useUpdateProfile } from '@/hooks/cloud/settings/useProfile';
+import type { ProfileFormData } from '@/schemas/cloud/settings';
+import { AccountStatus, profileSchema } from '@/schemas/cloud/settings';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();

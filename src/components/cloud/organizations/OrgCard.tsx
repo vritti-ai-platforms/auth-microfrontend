@@ -1,5 +1,3 @@
-import type { OrgListItem } from '@schemas/organizations';
-import { OrgMemberRole } from '@schemas/organizations';
 import { Avatar, AvatarFallback } from '@vritti/quantum-ui/Avatar';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
@@ -8,6 +6,8 @@ import { Skeleton } from '@vritti/quantum-ui/Skeleton';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { AppWindow, ArrowRight, Building2, Users } from 'lucide-react';
 import type React from 'react';
+import type { OrgListItem } from '@/schemas/cloud/organizations';
+import { OrgMemberRole } from '@/schemas/cloud/organizations';
 
 // Renders a single organization membership card
 export const OrgCard: React.FC<{ org: OrgListItem }> = ({ org }) => {

@@ -1,10 +1,10 @@
-import { OrgCard, OrgCardSkeleton } from '@components/organizations/OrgCard';
-import { useMyOrgs } from '@hooks/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowRight, Building2, MailOpen, Plus } from 'lucide-react';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { OrgCard, OrgCardSkeleton } from '@/components/cloud/organizations/OrgCard';
+import { useMyOrgs } from '@/hooks/cloud/organizations';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +51,13 @@ export const HomePage: React.FC = () => {
 
         {/* Link to full list when there are more orgs than shown */}
         {data?.hasMore && (
-          <Button variant="link" size="sm" className="px-0" endAdornment={<ArrowRight />} onClick={() => navigate('/organizations')}>
+          <Button
+            variant="link"
+            size="sm"
+            className="px-0"
+            endAdornment={<ArrowRight />}
+            onClick={() => navigate('/organizations')}
+          >
             View all {data.total} organizations
           </Button>
         )}

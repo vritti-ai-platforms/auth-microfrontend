@@ -1,41 +1,38 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { newEmailSchema, otpSchema } from '@schemas/verification';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
-import { PhoneField } from '@vritti/quantum-ui/PhoneField';
+import { TextField } from '@vritti/quantum-ui/TextField';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { AlertCircle, CheckCircle, Clock, Info } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-
 import type { z } from 'zod';
-import { usePhoneChangeFlow } from '@hooks/settings/usePhoneChangeFlow';
-import { newPhoneSchema, otpSchema } from '@schemas/verification';
+import { useEmailChangeFlow } from '@/hooks/cloud/settings/useEmailChangeFlow';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  currentPhone: string;
-  currentCountry: string;
+  currentEmail: string;
 }
 
-export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, currentPhone, currentCountry }) => {
+export const EmailVerificationDialog: React.FC<Props> = ({ isOpen, onClose, currentEmail }) => {
   const {
     state,
     resendTimer,
     startFlow,
     identityMutation,
-    changePhoneMutation,
-    verifyPhoneMutation,
+    changeEmailMutation,
+    verifyEmailMutation,
     handleResendOtp,
     goBack,
     reset,
-  } = usePhoneChangeFlow(currentPhone, currentCountry);
+  } = useEmailChangeFlow(currentEmail);
 
   const [redirectTimer, setRedirectTimer] = useState(3);
-  const [phoneCountry, setPhoneCountry] = useState(currentCountry);
 
   // Auto-start flow when dialog opens
   useEffect(() => {
@@ -63,10 +60,10 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
     defaultValues: { code: '' },
   });
 
-  // Step 2: New Phone Form
-  const phoneForm = useForm<z.infer<typeof newPhoneSchema>>({
-    resolver: zodResolver(newPhoneSchema),
-    defaultValues: { newPhone: '', phoneCountry: currentCountry },
+  // Step 2: New Email Form
+  const emailForm = useForm<z.infer<typeof newEmailSchema>>({
+    resolver: zodResolver(newEmailSchema),
+    defaultValues: { newEmail: '' },
   });
 
   // Step 3: Verification Form
@@ -80,7 +77,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
   // Calculate progress percentage
   const progress = {
     identity: 25,
-    newPhone: 50,
+    newEmail: 50,
     verify: 75,
     success: 100,
   }[state.step];
@@ -91,15 +88,15 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
         <CardHeader>
           <CardTitle>
             {state.step === 'identity' && 'Confirm Your Identity'}
-            {state.step === 'newPhone' && 'Enter New Phone Number'}
-            {state.step === 'verify' && 'Verify New Phone Number'}
-            {state.step === 'success' && 'Phone Number Updated Successfully'}
+            {state.step === 'newEmail' && 'Enter New Email Address'}
+            {state.step === 'verify' && 'Verify New Email Address'}
+            {state.step === 'success' && 'Email Address Updated Successfully'}
           </CardTitle>
           {state.step !== 'success' && (
             <CardDescription>
               {state.step === 'identity' && 'We need to verify your identity before making changes'}
-              {state.step === 'newPhone' && 'Enter the new phone number you want to use'}
-              {state.step === 'verify' && 'Enter the verification code sent to your new phone'}
+              {state.step === 'newEmail' && 'Enter the new email address you want to use'}
+              {state.step === 'verify' && 'Enter the verification code sent to your new email'}
             </CardDescription>
           )}
         </CardHeader>
@@ -131,19 +128,19 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    For your security, please verify your identity before changing your phone number
+                    For your security, please verify your identity before changing your email address
                   </Typography>
                 </div>
 
                 <div className="space-y-2">
-                  <Typography variant="body2">Current Phone</Typography>
+                  <Typography variant="body2">Current Email</Typography>
                   <Typography variant="body1" className="font-semibold">
-                    {currentPhone}
+                    {currentEmail}
                   </Typography>
                 </div>
 
                 <div className="space-y-4">
-                  <Typography variant="body2">Enter the verification code sent to your phone</Typography>
+                  <Typography variant="body2">Enter the verification code sent to your email</Typography>
                   <Field className="flex justify-center">
                     <OTPField
                       name="code"
@@ -178,33 +175,20 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
             </Form>
           )}
 
-          {/* Step 2: New Phone */}
-          {state.step === 'newPhone' && (
-            <Form
-              form={phoneForm}
-              mutation={changePhoneMutation}
-              transformSubmit={(data) => ({ ...data, phoneCountry })}
-              showRootError
-            >
+          {/* Step 2: New Email */}
+          {state.step === 'newEmail' && (
+            <Form form={emailForm} mutation={changeEmailMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    Your current phone will remain active until you verify the new one
+                    Your current email will remain active until you verify the new one
                   </Typography>
                 </div>
 
-                <PhoneField label="Current Phone" disabled />
+                <TextField label="Current Email" value={currentEmail} disabled readOnly />
 
-                <PhoneField
-                  name="newPhone"
-                  label="New Phone Number"
-                  onChange={(value) => {
-                    if (typeof value === 'object' && value !== null && 'country' in value) {
-                      setPhoneCountry((value as { country?: string }).country || 'IN');
-                    }
-                  }}
-                />
+                <TextField name="newEmail" label="New Email" placeholder="newemail@example.com" />
 
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -223,14 +207,14 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
             </Form>
           )}
 
-          {/* Step 3: Verify New Phone */}
+          {/* Step 3: Verify New Email */}
           {state.step === 'verify' && (
-            <Form form={verifyForm} mutation={verifyPhoneMutation} showRootError>
+            <Form form={verifyForm} mutation={verifyEmailMutation} showRootError>
               <FieldGroup>
                 <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                   <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <Typography variant="body2" className="text-primary">
-                    Please enter the 6-digit code sent to <span className="font-semibold">{state.newPhone}</span>
+                    Please enter the 6-digit code sent to <span className="font-semibold">{state.newEmail}</span>
                   </Typography>
                 </div>
 
@@ -240,7 +224,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
                       name="code"
                       onChange={(value) => {
                         if (value.length === 6) {
-                          verifyForm.handleSubmit((data) => verifyPhoneMutation.mutateAsync(data))();
+                          verifyForm.handleSubmit((data) => verifyEmailMutation.mutateAsync(data))();
                         }
                       }}
                     />
@@ -258,7 +242,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
                     </Button>
                   </div>
                   <Typography variant="body2" intent="muted" className="text-xs text-center">
-                    Didn't receive it? Check your messages
+                    Didn't receive it? Check your spam folder
                   </Typography>
                 </div>
 
@@ -282,16 +266,16 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
               </div>
 
               <div className="space-y-2">
-                <Typography variant="body1">Your phone number has been successfully changed to</Typography>
+                <Typography variant="body1">Your email has been successfully changed to</Typography>
                 <Typography variant="body1" className="font-semibold">
-                  {state.newPhone}
+                  {state.newEmail}
                 </Typography>
               </div>
 
               <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-2">
                 <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                 <Typography variant="body2" className="text-primary text-left">
-                  For your security, we sent a notification to your previous phone ({currentPhone}) with a revert link
+                  For your security, we sent a notification to your previous email ({currentEmail}) with a revert link
                   valid for 72 hours
                 </Typography>
               </div>

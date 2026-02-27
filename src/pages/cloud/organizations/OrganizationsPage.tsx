@@ -1,10 +1,10 @@
-import { OrgCard, OrgCardSkeleton } from '@components/organizations/OrgCard';
-import { useMyOrgs } from '@hooks/organizations';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { Building2, Plus } from 'lucide-react';
 import type React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { OrgCard, OrgCardSkeleton } from '@/components/cloud/organizations/OrgCard';
+import { useMyOrgs } from '@/hooks/cloud/organizations';
 
 // Full org list page — no truncation limit
 export const OrganizationsPage: React.FC = () => {
