@@ -2,7 +2,7 @@ import { Button } from '@vritti/quantum-ui/Button';
 import { Select } from '@vritti/quantum-ui/Select';
 import { Separator } from '@vritti/quantum-ui/Separator';
 import { buildSlug } from '@vritti/quantum-ui/utils/slug';
-import { Building2, ChevronsUpDown, Plus } from 'lucide-react';
+import { Building2, Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CompanySwitcherProps {
@@ -17,7 +17,7 @@ export const CompanySwitcher = ({ currentOrgId, currentOrgName }: CompanySwitche
   return (
     <Select
       optionsEndpoint="cloud-api/organizations/select"
-      fieldKeys={{ valueKey: 'id', labelKey: 'name', groupIdKey: 'planId' }}
+      fieldKeys={{ valueKey: 'id', labelKey: 'name', descriptionKey: 'code' }}
       value={currentOrgId}
       searchable
       searchPlaceholder="Find company..."
@@ -36,6 +36,21 @@ export const CompanySwitcher = ({ currentOrgId, currentOrgName }: CompanySwitche
           </span>
         </Button>
       )}
+      renderOption={({ option, selected, onSelect }) => (
+        <Button
+          variant="ghost"
+          className="w-full justify-start h-auto gap-2 px-3 py-1.5 text-sm font-normal"
+          onClick={onSelect}
+        >
+          <span className="flex-1 text-left truncate">{option.label}</span>
+          {option.description && (
+            <span className="shrink-0 rounded-full border border-border px-1.5 py-px text-[10px] font-medium uppercase tracking-wider">
+              {option.description}
+            </span>
+          )}
+          {selected && <Check className="size-4 shrink-0" />}
+        </Button>
+      )}
       footer={
         <>
           <Separator />
@@ -45,7 +60,7 @@ export const CompanySwitcher = ({ currentOrgId, currentOrgName }: CompanySwitche
               className="w-full justify-start h-auto px-2 py-1.5 text-sm font-normal"
               onClick={() => navigate('/organizations')}
             >
-              All Companies
+              All Organizations
             </Button>
           </div>
           <Separator />
@@ -55,7 +70,7 @@ export const CompanySwitcher = ({ currentOrgId, currentOrgName }: CompanySwitche
               className="w-full justify-start h-auto gap-2 px-2 py-1.5 text-sm font-normal"
               onClick={() => navigate('/new-organization')}
             >
-              <Plus className="size-4" /> New Company
+              <Plus className="size-4" /> New Organization
             </Button>
           </div>
         </>
