@@ -18,7 +18,9 @@ export const AdminLayout = () => {
       <Sidebar groups={navGroups} topOffset={14} />
       <SidebarInset className="pt-14">
         <main className="flex-1 overflow-auto p-4 sm:p-6">
-          <Outlet />
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>
