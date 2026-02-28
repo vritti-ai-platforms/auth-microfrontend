@@ -1,22 +1,13 @@
-import { Sidebar, SidebarInset, SidebarProvider } from '@vritti/quantum-ui/Sidebar';
-import type { SidebarNavGroup } from '@vritti/quantum-ui/Sidebar';
-import {
-  Building2,
-  CreditCard,
-  Eye,
-  Layers,
-  Settings,
-  Shield,
-  Users,
-} from 'lucide-react';
+import { Sidebar, SidebarInset, type SidebarNavGroup, SidebarProvider } from '@vritti/quantum-ui/Sidebar';
+import { Building2, CreditCard, Eye, Layers, Settings, Shield, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { TopBar } from './TopBar';
 
 // Builds sidebar nav groups with org-scoped paths
-function useOrgNavGroups(orgSlug: string): SidebarNavGroup[] {
+function useOrgNavGroups(orgSlug?: string): SidebarNavGroup[] {
   return useMemo(() => {
-    const base = `/${orgSlug}`;
+    const base = orgSlug ? `/${orgSlug}` : '';
     return [
       {
         label: 'Organization',
@@ -54,7 +45,7 @@ function useOrgNavGroups(orgSlug: string): SidebarNavGroup[] {
 // Layout with sidebar for organization-scoped pages
 export const OrgLayout = () => {
   const { orgSlug } = useParams<{ orgSlug: string }>();
-  const navGroups = useOrgNavGroups(orgSlug!);
+  const navGroups = useOrgNavGroups(orgSlug);
 
   return (
     <SidebarProvider>
