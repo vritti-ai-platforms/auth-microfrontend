@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCloudProviders, useCreateCloudProvider, useDeleteCloudProvider } from '@hooks/admin/cloud-providers';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import {
   DialogClose,
   DialogContent,
@@ -63,16 +64,16 @@ export const CloudProvidersPage = () => {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-foreground text-base font-medium">Cloud Providers</h2>
-          <p className="text-muted-foreground text-sm">Manage cloud infrastructure providers</p>
-        </div>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="size-4" />
-          Add Provider
-        </Button>
-      </div>
+      <PageHeader
+        title="Cloud Providers"
+        description="Manage cloud infrastructure providers"
+        actions={
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Plus className="size-4" />
+            Add Provider
+          </Button>
+        }
+      />
 
       {/* Add Provider dialog */}
       <DialogRoot open={dialogOpen} onOpenChange={setDialogOpen}>

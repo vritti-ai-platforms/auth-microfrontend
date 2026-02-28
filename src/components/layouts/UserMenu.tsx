@@ -29,11 +29,11 @@ export const UserMenu = () => {
     .slice(0, 2);
 
   const handleProfileClick = () => {
-    navigate('/account/profile');
+    navigate('/profile');
   };
 
   const handleSecurityClick = () => {
-    navigate('/account/security');
+    navigate('/security');
   };
 
   const handleSignOut = () => {

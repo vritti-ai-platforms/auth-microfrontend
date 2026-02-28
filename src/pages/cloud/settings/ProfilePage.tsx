@@ -4,6 +4,7 @@ import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { PhoneField } from '@vritti/quantum-ui/PhoneField';
 import { Skeleton } from '@vritti/quantum-ui/Skeleton';
 import { TextField } from '@vritti/quantum-ui/TextField';
@@ -139,14 +140,7 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="space-y-2">
-        <Typography variant="h3" className="text-foreground">
-          Profile Settings
-        </Typography>
-        <Typography variant="body2" intent="muted">
-          Manage your personal information and account details
-        </Typography>
-      </div>
+      <PageHeader title="Profile Settings" description="Manage your personal information and account details" />
 
       {/* Profile Picture Card */}
       <Card>

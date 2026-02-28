@@ -1,4 +1,4 @@
-import { Typography } from '@vritti/quantum-ui/Typography';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { useLocation } from 'react-router-dom';
 
 // Formats a path segment into a readable title (e.g. "business-units" → "Business Units")
@@ -17,8 +17,7 @@ export const PlaceholderPage = () => {
 
   return (
     <div className="space-y-6">
-      <Typography variant="h3">{title}</Typography>
-      <Typography variant="body1" intent="muted">{title} page coming soon.</Typography>
+      <PageHeader title={title} description={`${title} page coming soon.`} />
     </div>
   );
 };
