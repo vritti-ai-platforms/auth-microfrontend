@@ -23,15 +23,20 @@ import { ProfilePage } from './pages/cloud/settings/ProfilePage';
 import { SecurityPage } from './pages/cloud/settings/SecurityPage';
 import { OnboardingPage } from './pages/onboarding/OnboardingPage';
 
-// Shared account routes available in both admin and cloud layouts
+// Shared account routes — rendered under AppLayout (no sidebar) for both admin and cloud
 const accountRoutes: RouteObject[] = [
   {
-    path: 'profile',
-    element: <ProfilePage />,
-  },
-  {
-    path: 'security',
-    element: <SecurityPage />,
+    element: <AppLayout />,
+    children: [
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: 'security',
+        element: <SecurityPage />,
+      },
+    ],
   },
 ];
 
@@ -94,9 +99,9 @@ export const adminRoutes: RouteObject[] = [
         path: 'cloud-providers',
         element: <CloudProvidersPage />,
       },
-      ...accountRoutes,
     ],
   },
+  ...accountRoutes,
 ];
 
 // Routes shown when the user is authenticated
@@ -121,9 +126,9 @@ export const cloudRoutes: RouteObject[] = [
         path: 'invitations',
         element: <InvitationsPage />,
       },
-      ...accountRoutes,
     ],
   },
+  ...accountRoutes,
   {
     path: '/:orgSlug',
     element: <OrgLayout />,
