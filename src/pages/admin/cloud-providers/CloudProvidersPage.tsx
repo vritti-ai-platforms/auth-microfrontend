@@ -1,58 +1,65 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useCloudProviders, useCreateCloudProvider, useDeleteCloudProvider } from '@hooks/admin/cloud-providers';
+import { useCloudProviders, useDeleteCloudProvider } from '@hooks/admin/cloud-providers';
+import { CLOUD_PROVIDERS_QUERY_KEY } from '@hooks/admin/cloud-providers/useCloudProviders';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
-import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-} from '@vritti/quantum-ui/Dialog';
+  type ColumnDef,
+  DataTable,
+  type DataTableViewsConfig,
+  useDataTable,
+  useDataTableStore,
+  type SearchState,
+} from '@vritti/quantum-ui/DataTable';
+import { Dialog } from '@vritti/quantum-ui/Dialog';
 import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuRoot,
   DropdownMenuTrigger,
 } from '@vritti/quantum-ui/DropdownMenu';
-import { Form } from '@vritti/quantum-ui/Form';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
-import { TextField } from '@vritti/quantum-ui/TextField';
+import { ValueFilter } from '@vritti/quantum-ui/ValueFilter';
 import { Cloud, MoreVertical, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import {
-  type CloudProvider,
-  type CreateCloudProviderData,
-  createCloudProviderSchema,
-} from '@/schemas/admin/cloud-providers';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import type { FilterCondition } from '@vritti/quantum-ui/table-filter';
+import type { CloudProvider } from '@/schemas/admin/cloud-providers';
+import { AddCloudProviderForm } from './forms/AddCloudProviderForm';
+
+const TABLE_SLUG = 'cloud-providers';
+// Stable empty fallback — avoids a new [] on every getSnapshot call when the table isn't yet initialised
+const NO_FILTERS: FilterCondition[] = [];
 
 export const CloudProvidersPage = () => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  // Local search state — passed directly to the search component via enableSearch
+  const [search, setSearch] = useState<SearchState>(null);
 
-  const { data: providers = [], isLoading } = useCloudProviders();
+  // Debounced search — only updates 300ms after typing stops, drives the backend query.
+  // startTransition lets React defer the re-render so the setTimeout handler returns quickly.
+  const [, startTransition] = useTransition();
+  const [debouncedSearch, setDebouncedSearch] = useState<SearchState>(null);
+  useEffect(() => {
+    const timer = setTimeout(() => startTransition(() => setDebouncedSearch(search)), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Read pending filters from store for filter node values
+  const pendingFilters = useDataTableStore((s) => s.tables[TABLE_SLUG]?.pendingFilters ?? NO_FILTERS);
+
+  const queryClient = useQueryClient();
+  const { data: response, isLoading } = useCloudProviders(debouncedSearch);
+  const providers = response?.data ?? [];
+
+  // One-time init: load server state into store on first successful response
+  const hasInit = useRef(false);
+  useEffect(() => {
+    if (response?.state && !hasInit.current) {
+      hasInit.current = true;
+      useDataTableStore.getState().loadViewState(TABLE_SLUG, response.state, null);
+    }
+  }, [response?.state]);
+
   const deleteMutation = useDeleteCloudProvider();
-
-  const form = useForm<CreateCloudProviderData>({
-    resolver: zodResolver(createCloudProviderSchema),
-    defaultValues: { name: '', code: '' },
-  });
-
-  const createMutation = useCreateCloudProvider({
-    onSuccess: () => {
-      setDialogOpen(false);
-      form.reset();
-    },
-  });
-
-  // Hide dialog and reset state on cancel
-  const handleCancel = () => {
-    setDialogOpen(false);
-    form.reset();
-  };
 
   const columns = useMemo<ColumnDef<CloudProvider, unknown>[]>(
     () => [
@@ -106,12 +113,22 @@ export const CloudProvidersPage = () => {
     [deleteMutation],
   );
 
+  // Invalidate the cloud providers GET query after any state change
+  const handleStateApplied = () => queryClient.invalidateQueries({ queryKey: CLOUD_PROVIDERS_QUERY_KEY });
+
+  const viewsConfig: DataTableViewsConfig = {
+    tableSlug: TABLE_SLUG,
+    defaultLabel: 'All Providers',
+    onStateApplied: handleStateApplied,
+  };
+
   const table = useDataTable({
     data: providers,
     columns,
-    slug: 'cloud-providers',
+    slug: TABLE_SLUG,
     label: 'provider',
     enableRowSelection: false,
+    viewsConfig,
   });
 
   return (
@@ -119,45 +136,65 @@ export const CloudProvidersPage = () => {
       {/* Header */}
       <PageHeader title="Cloud Providers" description="Manage cloud infrastructure providers" />
 
-      {/* Add Provider dialog */}
-      <DialogRoot open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Cloud Provider</DialogTitle>
-            <DialogDescription>Enter a name and a short code for the new cloud provider.</DialogDescription>
-          </DialogHeader>
-          <Form form={form} mutation={createMutation} showRootError>
-            <TextField name="name" label="Provider Name" placeholder="e.g. Amazon Web Services" />
-            <TextField
-              name="code"
-              label="Code"
-              placeholder="e.g. AWS"
-              description="Short identifier used across the platform"
-            />
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type="submit" loadingText="Adding...">
-                Add Provider
-              </Button>
-            </DialogFooter>
-          </Form>
-        </DialogContent>
-      </DialogRoot>
-
       {/* Table */}
       <DataTable
         table={table}
         isLoading={isLoading}
-        enableSearch={{ placeholder: 'Search providers...' }}
+        viewsConfig={viewsConfig}
+        enableSearch={{ value: search, onChange: setSearch }}
+        filters={[
+          {
+            slug: 'name',
+            label: 'Name',
+            node: (
+              <ValueFilter
+                label="Name"
+                fieldKey="name"
+                fieldType="string"
+                value={pendingFilters.find((f) => f.field === 'name')}
+                onChange={(v) => useDataTableStore.getState().updatePendingFilter(TABLE_SLUG, 'name', v)}
+              />
+            ),
+          },
+          {
+            slug: 'code',
+            label: 'Code',
+            node: (
+              <ValueFilter
+                label="Code"
+                fieldKey="code"
+                fieldType="string"
+                value={pendingFilters.find((f) => f.field === 'code')}
+                onChange={(v) => useDataTableStore.getState().updatePendingFilter(TABLE_SLUG, 'code', v)}
+              />
+            ),
+          },
+          {
+            slug: 'regionCount',
+            label: 'Regions',
+            node: (
+              <ValueFilter
+                label="Regions"
+                fieldKey="regionCount"
+                fieldType="number"
+                value={pendingFilters.find((f) => f.field === 'regionCount')}
+                onChange={(v) => useDataTableStore.getState().updatePendingFilter(TABLE_SLUG, 'regionCount', v)}
+              />
+            ),
+          },
+        ]}
         toolbarActions={{
           actions: (
-            <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={() => setDialogOpen(true)}>
-              Add Provider
-            </Button>
+            <Dialog
+              title="Add Cloud Provider"
+              description="Enter a name and a short code for the new cloud provider."
+              anchor={(open) => (
+                <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={open}>
+                  Add Provider
+                </Button>
+              )}
+              content={(close) => <AddCloudProviderForm onSuccess={close} onCancel={close} />}
+            />
           ),
         }}
         emptyStateConfig={{
@@ -165,10 +202,17 @@ export const CloudProvidersPage = () => {
           title: 'No providers found',
           description: 'Add your first cloud provider to get started.',
           action: (
-            <Button size="sm" onClick={() => setDialogOpen(true)}>
-              <Plus className="size-4" />
-              Add Provider
-            </Button>
+            <Dialog
+              title="Add Cloud Provider"
+              description="Enter a name and a short code for the new cloud provider."
+              anchor={(open) => (
+                <Button size="sm" onClick={open}>
+                  <Plus className="size-4" />
+                  Add Provider
+                </Button>
+              )}
+              content={(close) => <AddCloudProviderForm onSuccess={close} onCancel={close} />}
+            />
           ),
         }}
       />

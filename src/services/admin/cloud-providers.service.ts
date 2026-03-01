@@ -1,9 +1,21 @@
 import { axios } from '@vritti/quantum-ui/axios';
+import type { TableViewState } from '@vritti/quantum-ui/table-filter';
 import type { CloudProvider, CreateCloudProviderData } from '@/schemas/admin/cloud-providers';
 
-// Fetches all cloud providers
-export function getCloudProviders(): Promise<CloudProvider[]> {
-  return axios.get<CloudProvider[]>('admin-api/cloud-providers').then((r) => r.data);
+export interface CloudProvidersResponse {
+  data: CloudProvider[];
+  state: TableViewState;
+}
+
+// Fetches all cloud providers with server-stored filter/sort state
+export function getCloudProviders(
+  search?: { columnId: string; value: string },
+): Promise<CloudProvidersResponse> {
+  return axios
+    .get<CloudProvidersResponse>('admin-api/cloud-providers', {
+      params: search ? { searchColumn: search.columnId, searchValue: search.value } : undefined,
+    })
+    .then((r) => r.data);
 }
 
 // Creates a new cloud provider

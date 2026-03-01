@@ -1,17 +1,17 @@
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import type { CloudProvider } from '@/schemas/admin/cloud-providers';
-import { getCloudProviders } from '../../../services/admin/cloud-providers.service';
+import { type CloudProvidersResponse, getCloudProviders } from '../../../services/admin/cloud-providers.service';
 
 export const CLOUD_PROVIDERS_QUERY_KEY = ['admin', 'cloud-providers'] as const;
 
-// Fetches all cloud providers
+// Fetches all cloud providers, optionally filtered by a backend search param
 export function useCloudProviders(
-  options?: Omit<UseQueryOptions<CloudProvider[], AxiosError>, 'queryKey' | 'queryFn'>,
+  search?: { columnId: string; value: string } | null,
+  options?: Omit<UseQueryOptions<CloudProvidersResponse, AxiosError>, 'queryKey' | 'queryFn'>,
 ) {
-  return useQuery<CloudProvider[], AxiosError>({
-    queryKey: CLOUD_PROVIDERS_QUERY_KEY,
-    queryFn: getCloudProviders,
+  return useQuery<CloudProvidersResponse, AxiosError>({
+    queryKey: [...CLOUD_PROVIDERS_QUERY_KEY, search ?? null],
+    queryFn: () => getCloudProviders(search ?? undefined),
     ...options,
   });
 }
