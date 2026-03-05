@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@vritti/quantum-ui/Button';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { type StepDef, StepProgressIndicator } from '@vritti/quantum-ui/StepProgressIndicator';
-import { Typography } from '@vritti/quantum-ui/Typography';
 import { Building2, ClipboardList, CreditCard } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
@@ -39,16 +39,16 @@ export const CreateOrganizationPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between px-6 pt-6 pb-0">
-        <div>
-          <Typography variant="h4">Create a new organization</Typography>
-          <Typography variant="body2" intent="muted">
-            Set up your organization workspace in a few steps
-          </Typography>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-          Cancel
-        </Button>
+      <div className="px-6 pt-6 pb-0">
+        <PageHeader
+          title="Create a new organization"
+          description="Set up your organization workspace in a few steps"
+          actions={
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+              Cancel
+            </Button>
+          }
+        />
       </div>
 
       {/* Step indicator */}

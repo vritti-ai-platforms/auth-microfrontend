@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { newPhoneSchema, otpSchema } from '@schemas/verification';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
+import { Dialog } from '@vritti/quantum-ui/Dialog';
 import { Field, FieldGroup, Form } from '@vritti/quantum-ui/Form';
 import { OTPField } from '@vritti/quantum-ui/OTPField';
 import { PhoneField } from '@vritti/quantum-ui/PhoneField';
@@ -74,8 +74,6 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
     defaultValues: { code: '' },
   });
 
-  if (!isOpen) return null;
-
   // Calculate progress percentage
   const progress = {
     identity: 25,
@@ -84,25 +82,30 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
     success: 100,
   }[state.step];
 
+  const stepTitle = {
+    identity: 'Confirm Your Identity',
+    newPhone: 'Enter New Phone Number',
+    verify: 'Verify New Phone Number',
+    success: 'Phone Number Updated Successfully',
+  }[state.step];
+
+  const stepDescription =
+    state.step !== 'success'
+      ? {
+          identity: 'We need to verify your identity before making changes',
+          newPhone: 'Enter the new phone number you want to use',
+          verify: 'Enter the verification code sent to your new phone',
+        }[state.step]
+      : undefined;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader>
-          <CardTitle>
-            {state.step === 'identity' && 'Confirm Your Identity'}
-            {state.step === 'newPhone' && 'Enter New Phone Number'}
-            {state.step === 'verify' && 'Verify New Phone Number'}
-            {state.step === 'success' && 'Phone Number Updated Successfully'}
-          </CardTitle>
-          {state.step !== 'success' && (
-            <CardDescription>
-              {state.step === 'identity' && 'We need to verify your identity before making changes'}
-              {state.step === 'newPhone' && 'Enter the new phone number you want to use'}
-              {state.step === 'verify' && 'Enter the verification code sent to your new phone'}
-            </CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => { if (!open) onClose(); }}
+      title={stepTitle}
+      description={stepDescription}
+    >
+      <div className="space-y-6">
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -305,8 +308,7 @@ export const PhoneVerificationDialog: React.FC<Props> = ({ isOpen, onClose, curr
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+      </div>
+    </Dialog>
   );
 };

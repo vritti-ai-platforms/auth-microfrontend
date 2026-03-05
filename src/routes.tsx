@@ -1,10 +1,12 @@
 import { OnboardingProvider } from '@context/onboarding';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+import { AdminLayout } from './components/layouts/AdminLayout';
 import { AppLayout } from './components/layouts/AppLayout';
 import { AuthLayout } from './components/layouts/AuthLayout';
 import { OrgLayout } from './components/layouts/OrgLayout';
 import './index.css';
+import { CloudProvidersPage } from './pages/admin/cloud-providers/CloudProvidersPage';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
 import { AuthSuccessPage } from './pages/auth/AuthSuccessPage';
 import { ForgotPasswordPage } from './pages/auth/forgot-password';
@@ -20,6 +22,23 @@ import { OrganizationsPage } from './pages/cloud/organizations/OrganizationsPage
 import { ProfilePage } from './pages/cloud/settings/ProfilePage';
 import { SecurityPage } from './pages/cloud/settings/SecurityPage';
 import { OnboardingPage } from './pages/onboarding/OnboardingPage';
+
+// Shared account routes — rendered under AppLayout (no sidebar) for both admin and cloud
+const accountRoutes: RouteObject[] = [
+  {
+    element: <AppLayout />,
+    children: [
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: 'security',
+        element: <SecurityPage />,
+      },
+    ],
+  },
+];
 
 // Routes shown when the user is not authenticated
 export const publicRoutes: RouteObject[] = [
@@ -70,18 +89,19 @@ export const publicRoutes: RouteObject[] = [
 export const adminRoutes: RouteObject[] = [
   {
     path: '/',
-    element: <AppLayout />,
+    element: <AdminLayout />,
     children: [
       {
         index: true,
-        element: <Navigate to="home" replace />,
+        element: <Navigate to="cloud-providers" replace />,
       },
       {
-        path: 'home',
-        element: <>Hello</>,
+        path: 'cloud-providers',
+        element: <CloudProvidersPage />,
       },
     ],
   },
+  ...accountRoutes,
 ];
 
 // Routes shown when the user is authenticated
@@ -106,16 +126,9 @@ export const cloudRoutes: RouteObject[] = [
         path: 'invitations',
         element: <InvitationsPage />,
       },
-      {
-        path: 'account/profile',
-        element: <ProfilePage />,
-      },
-      {
-        path: 'account/security',
-        element: <SecurityPage />,
-      },
     ],
   },
+  ...accountRoutes,
   {
     path: '/:orgSlug',
     element: <OrgLayout />,

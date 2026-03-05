@@ -3,6 +3,7 @@ import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
 import { FieldGroup, Form } from '@vritti/quantum-ui/Form';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
 import { Separator } from '@vritti/quantum-ui/Separator';
 import { Skeleton } from '@vritti/quantum-ui/Skeleton';
@@ -91,14 +92,7 @@ export const SecurityPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="space-y-2">
-        <Typography variant="h3" className="text-foreground">
-          Security Settings
-        </Typography>
-        <Typography variant="body2" intent="muted">
-          Manage your password, authentication methods, and active sessions
-        </Typography>
-      </div>
+      <PageHeader title="Security Settings" description="Manage your password, authentication methods, and active sessions" />
 
       {/* Change Password Card */}
       <Card>

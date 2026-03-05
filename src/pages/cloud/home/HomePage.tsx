@@ -1,4 +1,5 @@
 import { Button } from '@vritti/quantum-ui/Button';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { Typography } from '@vritti/quantum-ui/Typography';
 import { ArrowRight, Building2, MailOpen, Plus } from 'lucide-react';
 import type React from 'react';
@@ -17,17 +18,15 @@ export const HomePage: React.FC = () => {
       {/* Organizations section */}
       <div className="space-y-4">
         {/* Section header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <Typography variant="h3">My Organizations</Typography>
-            <Typography variant="body2" intent="muted">
-              Manage your organizations and their configurations
-            </Typography>
-          </div>
-          <Button startAdornment={<Plus />} onClick={() => navigate('/new-organization')}>
-            New Organization
-          </Button>
-        </div>
+        <PageHeader
+          title="My Organizations"
+          description="Manage your organizations and their configurations"
+          actions={
+            <Button startAdornment={<Plus />} onClick={() => navigate('/new-organization')}>
+              New Organization
+            </Button>
+          }
+        />
 
         {/* Cards grid — max 3 */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -66,17 +65,15 @@ export const HomePage: React.FC = () => {
       {/* Invitations section stub */}
       <div className="border-t border-border pt-6 space-y-4">
         {/* Section header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <Typography variant="h3">Pending Invitations</Typography>
-            <Typography variant="body2" intent="muted">
-              Invitation requests to join organizations
-            </Typography>
-          </div>
-          <Button variant="ghost" size="sm" endAdornment={<ArrowRight />} onClick={() => navigate('/invitations')}>
-            View All
-          </Button>
-        </div>
+        <PageHeader
+          title="Pending Invitations"
+          description="Invitation requests to join organizations"
+          actions={
+            <Button variant="ghost" size="sm" endAdornment={<ArrowRight />} onClick={() => navigate('/invitations')}>
+              View All
+            </Button>
+          }
+        />
 
         {/* Empty state */}
         <div className="py-10 text-center">

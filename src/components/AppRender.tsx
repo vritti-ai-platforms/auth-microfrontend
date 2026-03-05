@@ -13,9 +13,9 @@ const getRoutes = (isAuthenticated: boolean) => {
   if (!isAuthenticated) return publicRoutes;
   switch (subdomain) {
     case 'cloud':
-      return cloudRoutes;
-    case 'admin':
       return adminRoutes;
+    case 'admin':
+      return cloudRoutes;
     default:
       return cloudRoutes;
   }
