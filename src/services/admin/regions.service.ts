@@ -1,9 +1,9 @@
 import { axios } from '@vritti/quantum-ui/axios';
-import type { CreateRegionData, Region, RegionCloudProvider, UpdateRegionData } from '@/schemas/admin/regions';
+import type { CreateRegionData, Region, RegionCloudProvider, RegionsResponse, UpdateRegionData } from '@/schemas/admin/regions';
 
-// Fetches all regions
-export function getRegions(): Promise<Region[]> {
-  return axios.get<Region[]>('admin-api/regions').then((r) => r.data);
+// Fetches all regions — server applies filter/sort state
+export function getRegions(): Promise<RegionsResponse> {
+  return axios.get<RegionsResponse>('admin-api/regions').then((r) => r.data);
 }
 
 // Fetches a single region by ID
@@ -12,8 +12,8 @@ export function getRegion(id: string): Promise<Region> {
 }
 
 // Creates a new region
-export function createRegion(data: CreateRegionData): Promise<Region> {
-  return axios.post<Region>('admin-api/regions', data).then((r) => r.data);
+export function createRegion(data: CreateRegionData): Promise<{ success: boolean; message: string }> {
+  return axios.post<{ success: boolean; message: string }>('admin-api/regions', data).then((r) => r.data);
 }
 
 // Updates an existing region by ID

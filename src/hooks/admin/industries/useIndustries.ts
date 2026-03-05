@@ -1,6 +1,7 @@
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-import { type IndustriesResponse, getIndustries } from '../../../services/admin/industries.service';
+import type { IndustriesResponse } from '@/schemas/admin/industries';
+import { getIndustries } from '../../../services/admin/industries.service';
 
 export const INDUSTRIES_QUERY_KEY = ['admin', 'industries'] as const;
 

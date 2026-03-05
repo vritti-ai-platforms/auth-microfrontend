@@ -7,8 +7,8 @@ export function getIndustries(): Promise<IndustriesResponse> {
 }
 
 // Creates a new industry
-export function createIndustry(data: CreateIndustryData): Promise<Industry> {
-  return axios.post<Industry>('admin-api/industries', data).then((r) => r.data);
+export function createIndustry(data: CreateIndustryData): Promise<{ success: boolean; message: string }> {
+  return axios.post<{ success: boolean; message: string }>('admin-api/industries', data).then((r) => r.data);
 }
 
 // Deletes an industry by ID

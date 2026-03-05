@@ -33,15 +33,15 @@ export const AddRegionForm: React.FC<AddRegionFormProps> = ({ onSuccess, onCance
 
   return (
     <Form form={form} mutation={createMutation} showRootError>
-      <TextField name="name" label="Region Name" placeholder="e.g. US East" />
+      <TextField name="name" label="Region Name" placeholder="e.g. Hyderabad Metro" />
       <TextField
         name="code"
         label="Code"
-        placeholder="e.g. us-east-1"
+        placeholder="e.g. hyd-metro"
         description="Short identifier used across the platform"
       />
-      <TextField name="state" label="State" placeholder="e.g. Virginia" />
-      <TextField name="city" label="City" placeholder="e.g. Ashburn" />
+      <TextField name="state" label="State" placeholder="e.g. Telangana" />
+      <TextField name="city" label="City" placeholder="e.g. Hyderabad" />
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={handleCancel}>
           Cancel

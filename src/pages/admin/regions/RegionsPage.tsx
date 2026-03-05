@@ -1,86 +1,96 @@
-import { useRegions } from '@hooks/admin/regions';
+import { useDeleteRegion, useRegions } from '@hooks/admin/regions';
+import { REGIONS_QUERY_KEY } from '@hooks/admin/regions/useRegions';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
 import { DropdownMenu } from '@vritti/quantum-ui/DropdownMenu';
-import { useDialog } from '@vritti/quantum-ui/hooks';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
-import { buildSlug } from '@vritti/quantum-ui/utils/slug';
-import { Eye, Globe, MoreVertical, Pencil, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ValueFilter } from '@vritti/quantum-ui/ValueFilter';
+import { MapPin, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import type { Region } from '@/schemas/admin/regions';
 import { AddRegionForm } from './forms/AddRegionForm';
-import { EditRegionForm } from './forms/EditRegionForm';
 
 const TABLE_SLUG = 'regions';
 
 export const RegionsPage = () => {
-  const navigate = useNavigate();
-  const { data: regions = [], isLoading } = useRegions();
-  const addDialog = useDialog();
+  const queryClient = useQueryClient();
+  const { data: response, isLoading } = useRegions();
+  const regions = response?.data ?? [];
+
+  const deleteMutation = useDeleteRegion();
 
   const { table } = useDataTable({
     data: regions,
-    columns: getColumns({
-      onView: (region) => navigate(`/regions/${buildSlug(region.name, region.id)}`),
-    }),
+    columns: getColumns(deleteMutation.mutate),
     slug: TABLE_SLUG,
     label: 'region',
+    serverState: response,
     enableRowSelection: false,
     enableSorting: true,
     enableMultiSort: false,
+    onStateApplied: () => queryClient.invalidateQueries({ queryKey: REGIONS_QUERY_KEY }),
   });
 
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <PageHeader title="Regions" description="Manage geographic deployment regions" />
+      <PageHeader title="Regions" description="Manage deployment regions" />
 
       {/* Table */}
       <DataTable
         table={table}
         isLoading={isLoading}
+        onStateApplied={() => queryClient.invalidateQueries({ queryKey: REGIONS_QUERY_KEY })}
+        filters={[
+          <ValueFilter key="name" name="name" label="Name" fieldType="string" />,
+          <ValueFilter key="code" name="code" label="Code" fieldType="string" />,
+          <ValueFilter key="state" name="state" label="State" fieldType="string" />,
+          <ValueFilter key="city" name="city" label="City" fieldType="string" />,
+        ]}
         toolbarActions={{
           actions: (
-            <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={addDialog.open}>
-              Add Region
-            </Button>
+            <Dialog
+              title="Add Region"
+              description="Enter the details for the new region."
+              anchor={(open) => (
+                <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={open}>
+                  Add Region
+                </Button>
+              )}
+              content={(close) => <AddRegionForm onSuccess={close} onCancel={close} />}
+            />
           ),
         }}
         emptyStateConfig={{
-          icon: Globe,
+          icon: MapPin,
           title: 'No regions found',
-          description: 'Add your first region to get started.',
+          description: 'Add your first deployment region to get started.',
           action: (
-            <Button size="sm" onClick={addDialog.open}>
-              <Plus className="size-4" />
-              Add Region
-            </Button>
+            <Dialog
+              title="Add Region"
+              description="Enter the details for the new region."
+              anchor={(open) => (
+                <Button size="sm" onClick={open}>
+                  <Plus className="size-4" />
+                  Add Region
+                </Button>
+              )}
+              content={(close) => <AddRegionForm onSuccess={close} onCancel={close} />}
+            />
           ),
         }}
-      />
-
-      <Dialog
-        open={addDialog.isOpen}
-        onOpenChange={(v) => { if (!v) addDialog.close(); }}
-        title="Add Region"
-        description="Enter the details for the new deployment region."
-        content={(close) => <AddRegionForm onSuccess={close} onCancel={close} />}
       />
     </div>
   );
 };
 
-interface ColumnActions {
-  onView: (region: Region) => void;
-}
-
-function getColumns({ onView }: ColumnActions): ColumnDef<Region, unknown>[] {
+function getColumns(onDelete: (id: string) => void): ColumnDef<Region, unknown>[] {
   return [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: 'Region',
     },
     {
       accessorKey: 'code',
@@ -102,9 +112,6 @@ function getColumns({ onView }: ColumnActions): ColumnDef<Region, unknown>[] {
     {
       accessorKey: 'providerCount',
       header: 'Providers',
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.providerCount}</Badge>
-      ),
     },
     {
       id: 'actions',
@@ -122,23 +129,11 @@ function getColumns({ onView }: ColumnActions): ColumnDef<Region, unknown>[] {
           items={[
             {
               type: 'item',
-              id: 'view',
-              label: 'View',
-              icon: Eye,
-              onClick: () => onView(row.original),
-            },
-            {
-              type: 'dialog' as const,
-              id: 'edit',
-              label: 'Edit',
-              icon: Pencil,
-              dialog: {
-                title: 'Edit Region',
-                description: 'Update the details for this region.',
-                content: (close) => (
-                  <EditRegionForm region={row.original} onSuccess={close} onCancel={close} />
-                ),
-              },
+              id: 'delete',
+              label: 'Delete',
+              icon: Trash2,
+              variant: 'destructive',
+              onClick: () => onDelete(row.original.id),
             },
           ]}
         />
