@@ -1,5 +1,5 @@
 import { axios } from '@vritti/quantum-ui/axios';
-import type { CreateIndustryData, Industry, IndustriesResponse } from '@/schemas/admin/industries';
+import type { CreateIndustryData, IndustriesResponse } from '@/schemas/admin/industries';
 
 // Fetches all industries — server applies filter/sort state
 export function getIndustries(): Promise<IndustriesResponse> {
