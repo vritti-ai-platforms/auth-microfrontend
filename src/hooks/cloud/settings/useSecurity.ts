@@ -33,11 +33,11 @@ export function useRevokeSession(options?: Omit<UseMutationOptions<void, AxiosEr
 
   return useMutation<void, AxiosError, string>({
     mutationFn: revokeSession,
+    ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }
 
@@ -46,10 +46,10 @@ export function useRevokeAllOtherSessions(options?: Omit<UseMutationOptions<void
 
   return useMutation<void, AxiosError, void>({
     mutationFn: revokeAllOtherSessions,
+    ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: SESSIONS_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }

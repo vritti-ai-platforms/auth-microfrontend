@@ -16,11 +16,11 @@ export function useUpdateRegion(options?: UseUpdateRegionOptions) {
   const queryClient = useQueryClient();
   return useMutation<Region, AxiosError, UpdateRegionVariables>({
     mutationFn: ({ id, data }) => updateRegion(id, data),
+    ...options,
     onSuccess: (updatedRegion, variables, ...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'regions', variables.id] });
       queryClient.invalidateQueries({ queryKey: REGIONS_QUERY_KEY });
       options?.onSuccess?.(updatedRegion, variables, ...args);
     },
-    ...options,
   });
 }

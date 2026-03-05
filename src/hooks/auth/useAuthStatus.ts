@@ -10,6 +10,7 @@ export function useAuthStatus(options?: UseAuthStatusOptions) {
     queryFn: getAuthStatus,
     staleTime: Infinity,
     retry: false,
+    throwOnError: false,
     ...options,
   });
 }

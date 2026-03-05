@@ -41,6 +41,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     queryFn: getStatus,
     staleTime: 5 * 60 * 1000,
     retry: false,
+    throwOnError: false,
   });
 
   const [progress, setProgress] = useState(0);

@@ -1,3 +1,4 @@
+import { QueryErrorBoundary } from '@vritti/quantum-ui/ErrorBoundary';
 import { Sidebar, SidebarInset, type SidebarNavGroup, SidebarProvider } from '@vritti/quantum-ui/Sidebar';
 import { Building2, CreditCard, Eye, Layers, Settings, Shield, Users } from 'lucide-react';
 import { useMemo } from 'react';
@@ -54,7 +55,9 @@ export const OrgLayout = () => {
       <SidebarInset className="pt-14">
         <main className="flex-1 overflow-auto p-4 sm:p-6">
           <div className="max-w-7xl mx-auto">
-            <Outlet />
+            <QueryErrorBoundary>
+              <Outlet />
+            </QueryErrorBoundary>
           </div>
         </main>
       </SidebarInset>

@@ -17,10 +17,10 @@ export function useRemoveCloudProvider(options?: UseRemoveCloudProviderOptions) 
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, RemoveCloudProviderVariables>({
     mutationFn: ({ regionId, providerId }) => removeCloudProvider(regionId, providerId),
+    ...options,
     onSuccess: (data, variables, ...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'regions', variables.regionId, 'cloud-providers'] });
       options?.onSuccess?.(data, variables, ...args);
     },
-    ...options,
   });
 }

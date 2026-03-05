@@ -10,10 +10,10 @@ export function useDeleteCloudProvider(options?: UseDeleteCloudProviderOptions) 
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, string>({
     mutationFn: deleteCloudProvider,
+    ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: CLOUD_PROVIDERS_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }

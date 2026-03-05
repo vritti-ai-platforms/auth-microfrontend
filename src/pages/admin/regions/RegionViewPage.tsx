@@ -63,16 +63,7 @@ export const RegionViewPage = () => {
     );
   }
 
-  if (!region) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2">
-        <p className="text-muted-foreground">Region not found.</p>
-        <Button variant="outline" onClick={() => navigate('/regions')}>
-          Back to Regions
-        </Button>
-      </div>
-    );
-  }
+  if (!region) return null;
 
   return (
     <div className="flex flex-col gap-6">

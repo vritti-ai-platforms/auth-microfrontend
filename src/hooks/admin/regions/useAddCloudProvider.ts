@@ -14,10 +14,10 @@ export function useAddCloudProvider(options?: UseAddCloudProviderOptions) {
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, AddCloudProviderVariables>({
     mutationFn: ({ regionId, providerId }) => addCloudProvider(regionId, providerId),
+    ...options,
     onSuccess: (data, variables, ...args) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'regions', variables.regionId, 'cloud-providers'] });
       options?.onSuccess?.(data, variables, ...args);
     },
-    ...options,
   });
 }

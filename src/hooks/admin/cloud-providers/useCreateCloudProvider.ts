@@ -14,10 +14,10 @@ export function useCreateCloudProvider(options?: UseCreateCloudProviderOptions) 
   const queryClient = useQueryClient();
   return useMutation<CloudProvider, AxiosError, CreateCloudProviderData>({
     mutationFn: createCloudProvider,
+    ...options,
     onSuccess: (newProvider, ...args) => {
       queryClient.invalidateQueries({ queryKey: CLOUD_PROVIDERS_QUERY_KEY });
       options?.onSuccess?.(newProvider, ...args);
     },
-    ...options,
   });
 }

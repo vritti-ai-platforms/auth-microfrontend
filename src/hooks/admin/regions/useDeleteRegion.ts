@@ -10,10 +10,10 @@ export function useDeleteRegion(options?: UseDeleteRegionOptions) {
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, string>({
     mutationFn: deleteRegion,
+    ...options,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: REGIONS_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }
