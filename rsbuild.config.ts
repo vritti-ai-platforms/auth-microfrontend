@@ -5,8 +5,8 @@ import { pluginReact } from '@rsbuild/plugin-react';
 // Environment configuration
 const useHttps = process.env.USE_HTTPS === 'true';
 const protocol = useHttps ? 'https' : 'http';
-const host = 'cloud.local.vrittiai.com';
-const defaultApiHost = `${protocol}://${host}:3000`;
+const devHost = process.env.DEV_HOST ?? 'cloud.local.vrittiai.com';
+const defaultApiHost = `${protocol}://local.vrittiai.com:3000`;
 
 export default defineConfig({
   output: {
@@ -25,10 +25,11 @@ export default defineConfig({
   },
   server: {
     port: 3012,
+    host: devHost,
     ...(useHttps && {
       https: {
-        key: readFileSync('./certs/local.vrittiai.com+4-key.pem'),
-        cert: readFileSync('./certs/local.vrittiai.com+4.pem'),
+        key: readFileSync('./certs/_wildcard.local.vrittiai.com+4-key.pem'),
+        cert: readFileSync('./certs/_wildcard.local.vrittiai.com+4.pem'),
       },
     }),
     proxy: {
@@ -36,6 +37,10 @@ export default defineConfig({
         target: process.env.PUBLIC_API_URL || defaultApiHost,
         changeOrigin: true,
         secure: false,
+        onProxyReq: (proxyReq, req) => {
+          const host = (req.headers['host'] ?? '').split(':')[0];
+          if (host) proxyReq.setHeader('x-forwarded-host', host);
+        },
         pathRewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
