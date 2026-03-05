@@ -13,11 +13,11 @@ type UseCreateRegionOptions = Omit<
 export function useCreateRegion(options?: UseCreateRegionOptions) {
   const queryClient = useQueryClient();
   return useMutation<{ success: boolean; message: string }, AxiosError, CreateRegionData>({
+    ...options,
     mutationFn: createRegion,
     onSuccess: (result, ...args) => {
       queryClient.invalidateQueries({ queryKey: REGIONS_QUERY_KEY });
       options?.onSuccess?.(result, ...args);
     },
-    ...options,
   });
 }

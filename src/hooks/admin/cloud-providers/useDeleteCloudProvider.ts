@@ -9,11 +9,11 @@ type UseDeleteCloudProviderOptions = Omit<UseMutationOptions<void, AxiosError, s
 export function useDeleteCloudProvider(options?: UseDeleteCloudProviderOptions) {
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, string>({
+    ...options,
     mutationFn: deleteCloudProvider,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: CLOUD_PROVIDERS_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }

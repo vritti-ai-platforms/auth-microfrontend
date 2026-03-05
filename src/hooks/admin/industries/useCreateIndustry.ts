@@ -13,11 +13,11 @@ type UseCreateIndustryOptions = Omit<
 export function useCreateIndustry(options?: UseCreateIndustryOptions) {
   const queryClient = useQueryClient();
   return useMutation<{ success: boolean; message: string }, AxiosError, CreateIndustryData>({
+    ...options,
     mutationFn: createIndustry,
     onSuccess: (result, ...args) => {
       queryClient.invalidateQueries({ queryKey: INDUSTRIES_QUERY_KEY });
       options?.onSuccess?.(result, ...args);
     },
-    ...options,
   });
 }

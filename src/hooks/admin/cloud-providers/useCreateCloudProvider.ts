@@ -13,11 +13,11 @@ type UseCreateCloudProviderOptions = Omit<
 export function useCreateCloudProvider(options?: UseCreateCloudProviderOptions) {
   const queryClient = useQueryClient();
   return useMutation<{ success: boolean; message: string }, AxiosError, CreateCloudProviderData>({
+    ...options,
     mutationFn: createCloudProvider,
     onSuccess: (result, ...args) => {
       queryClient.invalidateQueries({ queryKey: CLOUD_PROVIDERS_QUERY_KEY });
       options?.onSuccess?.(result, ...args);
     },
-    ...options,
   });
 }

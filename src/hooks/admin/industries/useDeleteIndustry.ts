@@ -9,11 +9,11 @@ type UseDeleteIndustryOptions = Omit<UseMutationOptions<void, AxiosError, string
 export function useDeleteIndustry(options?: UseDeleteIndustryOptions) {
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, string>({
+    ...options,
     mutationFn: deleteIndustry,
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: INDUSTRIES_QUERY_KEY });
       options?.onSuccess?.(...args);
     },
-    ...options,
   });
 }
