@@ -5,17 +5,12 @@ import type { CloudProvider, CreateCloudProviderData } from '@/schemas/admin/clo
 export interface CloudProvidersResponse {
   data: CloudProvider[];
   state: TableViewState;
+  activeViewId: string | null;
 }
 
-// Fetches all cloud providers with server-stored filter/sort state
-export function getCloudProviders(
-  search?: { columnId: string; value: string },
-): Promise<CloudProvidersResponse> {
-  return axios
-    .get<CloudProvidersResponse>('admin-api/cloud-providers', {
-      params: search ? { searchColumn: search.columnId, searchValue: search.value } : undefined,
-    })
-    .then((r) => r.data);
+// Fetches all cloud providers — server applies filter/sort state from Redis
+export function getCloudProviders(): Promise<CloudProvidersResponse> {
+  return axios.get<CloudProvidersResponse>('admin-api/cloud-providers').then((r) => r.data);
 }
 
 // Creates a new cloud provider

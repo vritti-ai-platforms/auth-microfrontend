@@ -4,14 +4,13 @@ import { type CloudProvidersResponse, getCloudProviders } from '../../../service
 
 export const CLOUD_PROVIDERS_QUERY_KEY = ['admin', 'cloud-providers'] as const;
 
-// Fetches all cloud providers, optionally filtered by a backend search param
+// Fetches all cloud providers — server applies filter/sort state from Redis
 export function useCloudProviders(
-  search?: { columnId: string; value: string } | null,
   options?: Omit<UseQueryOptions<CloudProvidersResponse, AxiosError>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery<CloudProvidersResponse, AxiosError>({
-    queryKey: [...CLOUD_PROVIDERS_QUERY_KEY, search ?? null],
-    queryFn: () => getCloudProviders(search ?? undefined),
+    queryKey: CLOUD_PROVIDERS_QUERY_KEY,
+    queryFn: getCloudProviders,
     ...options,
   });
 }
