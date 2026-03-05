@@ -7,6 +7,7 @@ import { AuthLayout } from './components/layouts/AuthLayout';
 import { OrgLayout } from './components/layouts/OrgLayout';
 import './index.css';
 import { CloudProvidersPage } from './pages/admin/cloud-providers/CloudProvidersPage';
+import { IndustriesPage } from './pages/admin/industries/IndustriesPage';
 import { RegionsPage } from './pages/admin/regions/RegionsPage';
 import { RegionViewPage } from './pages/admin/regions/RegionViewPage';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
@@ -100,6 +101,10 @@ export const adminRoutes: RouteObject[] = [
       {
         path: 'cloud-providers',
         element: <CloudProvidersPage />,
+      },
+      {
+        path: 'industries',
+        element: <IndustriesPage />,
       },
       {
         path: 'regions',

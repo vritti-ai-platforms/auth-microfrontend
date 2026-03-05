@@ -1,5 +1,5 @@
 import { Sidebar, SidebarInset, type SidebarNavGroup, SidebarProvider } from '@vritti/quantum-ui/Sidebar';
-import { Cloud, Globe } from 'lucide-react';
+import { Building2, Cloud, Globe } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 import { TopBar } from './TopBar';
 
@@ -8,6 +8,8 @@ const navGroups: SidebarNavGroup[] = [
     label: 'Admin',
     items: [
       { title: 'Cloud Providers', icon: Cloud, path: '/cloud-providers' },
+      { title: 'Industries', icon: Building2, path: '/industries' },
+      ,
       { title: 'Regions', icon: Globe, path: '/regions' },
     ],
   },
