@@ -5,7 +5,11 @@ export interface Price {
   planId: string;
   industryId: string;
   regionId: string;
+  regionName: string;
+  regionCode: string;
   providerId: string;
+  providerName: string;
+  providerCode: string;
   price: string;
   currency: string;
   createdAt: string;
