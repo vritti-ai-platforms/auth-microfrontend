@@ -5,6 +5,7 @@ export interface Plan {
   name: string;
   code: string;
   priceCount: number;
+  canDelete: boolean;
   createdAt: string;
   updatedAt: string | null;
 }

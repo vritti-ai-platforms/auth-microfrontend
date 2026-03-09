@@ -1,29 +1,29 @@
-import { useDeletePlan, usePlans } from '@hooks/admin/plans';
+import { PLANS_QUERY_KEY, usePlans } from '@hooks/admin/plans';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { DropdownMenu } from '@vritti/quantum-ui/DropdownMenu';
+import { useDialog } from '@vritti/quantum-ui/hooks';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
-import { buildSlug } from '@vritti/quantum-ui/utils/slug';
 import { ValueFilter } from '@vritti/quantum-ui/ValueFilter';
-import { CreditCard, Eye, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { buildSlug } from '@vritti/quantum-ui/utils/slug';
+import { CreditCard, Eye, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Plan } from '@/schemas/admin/plans';
 import { AddPlanForm } from './forms/AddPlanForm';
-import { EditPlanForm } from './forms/EditPlanForm';
 
 const TABLE_SLUG = 'plans';
 
 export const PlansPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: response, isLoading } = usePlans();
-  const deleteMutation = useDeletePlan();
+  const addDialog = useDialog();
 
   const { table } = useDataTable({
     columns: getColumns({
       onView: (p) => navigate(`/plans/${buildSlug(p.name, p.id)}`),
-      onDelete: deleteMutation.mutate,
     }),
     slug: TABLE_SLUG,
     label: 'plan',
@@ -31,6 +31,7 @@ export const PlansPage = () => {
     enableRowSelection: false,
     enableSorting: true,
     enableMultiSort: false,
+    onStatePush: () => queryClient.invalidateQueries({ queryKey: PLANS_QUERY_KEY }),
   });
 
   return (
@@ -42,22 +43,23 @@ export const PlansPage = () => {
       <DataTable
         table={table}
         isLoading={isLoading}
+        searchConfig={{
+          columns: [
+            { id: 'name', label: 'Name' },
+            { id: 'code', label: 'Code' },
+          ],
+          searchAll: true,
+        }}
         filters={[
           <ValueFilter key="name" name="name" label="Name" fieldType="string" />,
           <ValueFilter key="code" name="code" label="Code" fieldType="string" />,
         ]}
+        onStatePush={() => queryClient.invalidateQueries({ queryKey: PLANS_QUERY_KEY })}
         toolbarActions={{
           actions: (
-            <Dialog
-              title="Add Plan"
-              description="Enter the details for the new subscription plan."
-              anchor={(open) => (
-                <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={open}>
-                  Add Plan
-                </Button>
-              )}
-              content={(close) => <AddPlanForm onSuccess={close} onCancel={close} />}
-            />
+            <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={addDialog.open}>
+              Add Plan
+            </Button>
           ),
         }}
         emptyStateConfig={{
@@ -65,19 +67,21 @@ export const PlansPage = () => {
           title: 'No plans found',
           description: 'Add your first subscription plan to get started.',
           action: (
-            <Dialog
-              title="Add Plan"
-              description="Enter the details for the new subscription plan."
-              anchor={(open) => (
-                <Button size="sm" onClick={open}>
-                  <Plus className="size-4" />
-                  Add Plan
-                </Button>
-              )}
-              content={(close) => <AddPlanForm onSuccess={close} onCancel={close} />}
-            />
+            <Button startAdornment={<Plus className="size-4" />} size="sm" onClick={addDialog.open}>
+              Add Plan
+            </Button>
           ),
         }}
+      />
+
+      <Dialog
+        open={addDialog.isOpen}
+        onOpenChange={(v) => {
+          if (!v) addDialog.close();
+        }}
+        title="Add Plan"
+        description="Enter the details for the new subscription plan."
+        content={(close) => <AddPlanForm onSuccess={close} onCancel={close} />}
       />
     </div>
   );
@@ -85,10 +89,9 @@ export const PlansPage = () => {
 
 interface ColumnActions {
   onView: (plan: Plan) => void;
-  onDelete: (id: string) => void;
 }
 
-function getColumns({ onView, onDelete }: ColumnActions): ColumnDef<Plan, unknown>[] {
+function getColumns({ onView }: ColumnActions): ColumnDef<Plan, unknown>[] {
   return [
     {
       accessorKey: 'name',
@@ -112,44 +115,9 @@ function getColumns({ onView, onDelete }: ColumnActions): ColumnDef<Plan, unknow
       id: 'actions',
       header: '',
       cell: ({ row }) => (
-        <DropdownMenu
-          trigger={{
-            children: (
-              <Button variant="ghost" size="icon" className="size-7">
-                <MoreVertical className="size-4" />
-              </Button>
-            ),
-          }}
-          align="end"
-          items={[
-            {
-              type: 'item' as const,
-              id: 'view',
-              label: 'View',
-              icon: Eye,
-              onClick: () => onView(row.original),
-            },
-            {
-              type: 'dialog' as const,
-              id: 'edit',
-              label: 'Edit',
-              icon: Pencil,
-              dialog: {
-                title: 'Edit Plan',
-                description: 'Update the details for this subscription plan.',
-                content: (close) => <EditPlanForm plan={row.original} onSuccess={close} onCancel={close} />,
-              },
-            },
-            {
-              type: 'item' as const,
-              id: 'delete',
-              label: 'Delete',
-              icon: Trash2,
-              variant: 'destructive',
-              onClick: () => onDelete(row.original.id),
-            },
-          ]}
-        />
+        <Button variant="ghost" size="icon" className="size-7" onClick={() => onView(row.original)}>
+          <Eye className="size-4" />
+        </Button>
       ),
       enableSorting: false,
       enableHiding: false,

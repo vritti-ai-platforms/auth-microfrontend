@@ -1,79 +1,143 @@
-import { usePlans } from '@hooks/admin/plans';
+import { useDeletePlan, usePlan } from '@hooks/admin/plans';
 import { useDeletePrice, usePricesByPlan } from '@hooks/admin/prices';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent } from '@vritti/quantum-ui/Card';
+import { DangerZone } from '@vritti/quantum-ui/DangerZone';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { useSlugParams } from '@vritti/quantum-ui/hooks';
+import { useConfirm, useDialog, useSlugParams } from '@vritti/quantum-ui/hooks';
+import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { Spinner } from '@vritti/quantum-ui/Spinner';
 import { BadgeDollarSign, Cloud, Globe, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Price } from '@/schemas/admin/prices';
 import { AddPriceForm } from './forms/AddPriceForm';
+import { EditPlanForm } from './forms/EditPlanForm';
 import { EditPriceForm } from './forms/EditPriceForm';
 
 export const PlanViewPage = () => {
-  const { id: planId } = useSlugParams();
+  const { id } = useSlugParams();
+  const navigate = useNavigate();
 
-  const { data: plansResponse } = usePlans();
-  const { data: prices = [], isLoading } = usePricesByPlan(planId ?? '');
+  const editDialog = useDialog();
+  const confirm = useConfirm();
 
-  const plan = plansResponse?.result.find((p) => p.id === planId);
+  const { data: plan, isLoading: planLoading } = usePlan(id);
+  const { data: prices = [], isLoading: pricesLoading } = usePricesByPlan(id ?? '');
 
-  if (!planId) return null;
+  const deleteMutation = useDeletePlan({
+    onSuccess: () => navigate('/plans'),
+  });
+
+  // Prompt confirmation then delete
+  const handleDelete = async () => {
+    if (!id) return;
+    const confirmed = await confirm({
+      title: `Delete ${plan?.name}?`,
+      description: `${plan?.name} and all its associated data will be permanently removed. This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+    if (confirmed) deleteMutation.mutate(id);
+  };
+
+  if (planLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Spinner className="size-8 text-primary" />
+      </div>
+    );
+  }
+
+  if (!plan) return null;
 
   const regionCount = new Set(prices.map((p) => p.regionId)).size;
   const providerCount = new Set(prices.map((p) => p.providerId)).size;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Plan header */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center size-12 rounded-xl bg-primary/10">
-          <BadgeDollarSign className="size-6 text-primary" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <h2 className="font-semibold text-lg">{plan?.name ?? 'Plan'}</h2>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono">
-              {plan?.code ?? ''}
-            </Badge>
-            <span className="text-muted-foreground font-mono text-xs">{plan?.code?.toLowerCase() ?? ''}</span>
-          </div>
-        </div>
-      </div>
+      {/* Header */}
+      <PageHeader
+        title={plan.name}
+        description={'Manage prices of this plan'}
+        actions={
+          <Button variant="outline" size="sm" onClick={editDialog.open}>
+            Edit
+          </Button>
+        }
+      />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4 w-fit">
+      <div className="grid grid-cols-3 gap-4">
         <Card>
-          <CardContent className="pt-2 pb-2">
-            <p className="text-2xl font-bold">{prices.length}</p>
-            <p className="text-sm text-muted-foreground">Pricing Entries</p>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <BadgeDollarSign className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Pricing Entries</p>
+              <p className="text-2xl font-semibold">{prices.length}</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-2 pb-2 ">
-            <p className="text-2xl font-bold">{regionCount}</p>
-            <p className="text-sm text-muted-foreground">Regions Covered</p>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Globe className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Regions Covered</p>
+              <p className="text-2xl font-semibold">{regionCount}</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-2 pb-2">
-            <p className="text-2xl font-bold">{providerCount}</p>
-            <p className="text-sm text-muted-foreground">Providers</p>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Cloud className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Providers</p>
+              <p className="text-2xl font-semibold">{providerCount}</p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Pricing section */}
-      <PricingTable planId={planId} prices={prices} isLoading={isLoading} />
+      <PricingTable planId={id} prices={prices} isLoading={pricesLoading} />
+
+      <DangerZone
+        title="Delete this plan"
+        description="This action cannot be undone. All associated data will be permanently removed."
+        buttonText="Delete Plan"
+        onClick={handleDelete}
+        disabled={!plan.canDelete}
+        warning={
+          !plan.canDelete
+            ? `This plan has ${plan.priceCount} price(s) or other associated data. Remove all associated data before deleting.`
+            : undefined
+        }
+      />
+
+      {/* Edit dialog */}
+      <Dialog
+        open={editDialog.isOpen}
+        onOpenChange={(v) => {
+          if (!v) editDialog.close();
+        }}
+        title="Edit Plan"
+        description="Update the details for this subscription plan."
+        content={(close) => <EditPlanForm plan={plan} onSuccess={close} onCancel={close} />}
+      />
     </div>
   );
 };
 
 interface PricingTableProps {
-  planId: string;
+  planId: string | undefined;
   prices: Price[];
   isLoading: boolean;
 }
@@ -121,7 +185,7 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
       {
         id: 'actions',
         header: '',
-        cell: ({ row }) => <PriceActions price={row.original} planId={planId} />,
+        cell: ({ row }) => <PriceActions price={row.original} planId={planId ?? ''} />,
         enableSorting: false,
         enableHiding: false,
       },
@@ -141,6 +205,7 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
   return (
     <DataTable
       table={table}
+      minHeight="400px"
       isLoading={isLoading}
       toolbarActions={{
         actions: (
@@ -152,7 +217,7 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
                 Add Price
               </Button>
             )}
-            content={(close) => <AddPriceForm planId={planId} onSuccess={close} onCancel={close} />}
+            content={(close) => <AddPriceForm planId={planId ?? ''} onSuccess={close} onCancel={close} />}
           />
         ),
       }}

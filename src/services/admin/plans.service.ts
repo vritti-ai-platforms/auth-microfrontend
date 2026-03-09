@@ -11,6 +11,11 @@ export function getPlans(): Promise<PlansResponse> {
   return axios.get<PlansResponse>('admin-api/plans').then((r) => r.data);
 }
 
+// Fetches a single plan by ID
+export function getPlan(id: string): Promise<Plan> {
+  return axios.get<Plan>(`admin-api/plans/${id}`).then((r) => r.data);
+}
+
 // Creates a new plan
 export function createPlan(data: CreatePlanData): Promise<Plan> {
   return axios.post<Plan>('admin-api/plans', data).then((r) => r.data);
