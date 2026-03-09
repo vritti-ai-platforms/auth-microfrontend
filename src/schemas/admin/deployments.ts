@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type DeploymentStatus = 'active' | 'stopped' | 'Provisioning';
+export type DeploymentStatus = 'active' | 'stopped' | 'provisioning';
 export type DeploymentType = 'shared' | 'dedicated';
 
 export interface Deployment {
@@ -34,7 +34,7 @@ export const createDeploymentSchema = z.object({
   regionId: z.string().uuid('Please select a region'),
   cloudProviderId: z.string().uuid('Please select a cloud provider'),
   type: z.enum(['shared', 'dedicated'], { message: 'Please select a type' }),
-  status: z.enum(['active', 'stopped', 'Provisioning']).optional(),
+  status: z.enum(['active', 'stopped', 'provisioning']).optional(),
 });
 
 export const updateDeploymentSchema = z.object({
@@ -43,8 +43,22 @@ export const updateDeploymentSchema = z.object({
   regionId: z.string().uuid().optional(),
   cloudProviderId: z.string().uuid().optional(),
   type: z.enum(['shared', 'dedicated']).optional(),
-  status: z.enum(['active', 'stopped', 'Provisioning']).optional(),
+  status: z.enum(['active', 'stopped', 'provisioning']).optional(),
 });
+
+export interface DeploymentPlanIndustryPrice {
+  industryId: string;
+  industryName: string;
+  price: string | null;
+  currency: string | null;
+}
+
+export interface DeploymentPlanPrice {
+  planId: string;
+  planName: string;
+  planCode: string;
+  industries: DeploymentPlanIndustryPrice[];
+}
 
 export const assignPlanSchema = z.object({
   planId: z.string().uuid('Please select a plan'),

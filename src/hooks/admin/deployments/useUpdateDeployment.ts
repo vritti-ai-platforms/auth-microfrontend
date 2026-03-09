@@ -5,13 +5,13 @@ import { updateDeployment } from '@/services/admin/deployments.service';
 import { deploymentQueryKey } from './useDeployment';
 import { DEPLOYMENTS_QUERY_KEY } from './useDeployments';
 
-type Vars = { id: string; data: UpdateDeploymentData };
-type UseUpdateDeploymentOptions = Omit<UseMutationOptions<Deployment, AxiosError, Vars>, 'mutationFn'>;
+type UpdateDeploymentVars = { id: string; data: UpdateDeploymentData };
+type UseUpdateDeploymentOptions = Omit<UseMutationOptions<Deployment, AxiosError, UpdateDeploymentVars>, 'mutationFn'>;
 
 // Updates a deployment and invalidates relevant queries
 export function useUpdateDeployment(options?: UseUpdateDeploymentOptions) {
   const queryClient = useQueryClient();
-  return useMutation<Deployment, AxiosError, Vars>({
+  return useMutation<Deployment, AxiosError, UpdateDeploymentVars>({
     ...options,
     mutationFn: updateDeployment,
     onSuccess: (result, vars, ...args) => {

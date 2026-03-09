@@ -43,7 +43,7 @@ export const AddDeploymentForm: React.FC<AddDeploymentFormProps> = ({ onSuccess,
         name="regionId"
         label="Region"
         placeholder="Select region"
-        onChange={() => form.setValue('cloudProviderId', '')}
+        onOptionSelect={() => form.setValue('cloudProviderId', '')}
       />
       <CloudProviderSelector name="cloudProviderId" label="Cloud Provider" placeholder="Select provider" />
       <Select

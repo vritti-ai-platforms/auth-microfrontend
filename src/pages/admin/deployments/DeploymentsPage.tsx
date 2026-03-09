@@ -146,44 +146,42 @@ function getColumns({ onView, onDelete }: ColumnActions): ColumnDef<Deployment, 
       id: 'actions',
       header: '',
       cell: ({ row }) => (
-        <DropdownMenu
-          trigger={{
-            children: (
-              <Button variant="ghost" size="icon" className="size-7">
-                <MoreVertical className="size-4" />
-              </Button>
-            ),
-          }}
-          align="end"
-          items={[
-            {
-              type: 'item' as const,
-              id: 'view',
-              label: 'View',
-              icon: Eye,
-              onClick: () => onView(row.original),
-            },
-            {
-              type: 'dialog' as const,
-              id: 'edit',
-              label: 'Edit',
-              icon: Pencil,
-              dialog: {
-                title: 'Edit Deployment',
-                description: 'Update deployment configuration.',
-                content: (close) => <EditDeploymentForm deployment={row.original} onSuccess={close} onCancel={close} />,
+        <div className="flex items-center justify-end gap-1">
+          <Button variant="ghost" size="icon" className="size-7" onClick={() => onView(row.original)}>
+            <Eye className="size-4" />
+          </Button>
+          <DropdownMenu
+            trigger={{
+              children: (
+                <Button variant="ghost" size="icon" className="size-7">
+                  <MoreVertical className="size-4" />
+                </Button>
+              ),
+            }}
+            align="end"
+            items={[
+              {
+                type: 'dialog' as const,
+                id: 'edit',
+                label: 'Edit',
+                icon: Pencil,
+                dialog: {
+                  title: 'Edit Deployment',
+                  description: 'Update deployment configuration.',
+                  content: (close) => <EditDeploymentForm deployment={row.original} onSuccess={close} onCancel={close} />,
+                },
               },
-            },
-            {
-              type: 'item' as const,
-              id: 'delete',
-              label: 'Delete',
-              icon: Trash2,
-              variant: 'destructive',
-              onClick: () => onDelete(row.original.id),
-            },
-          ]}
-        />
+              {
+                type: 'item' as const,
+                id: 'delete',
+                label: 'Delete',
+                icon: Trash2,
+                variant: 'destructive',
+                onClick: () => onDelete(row.original.id),
+              },
+            ]}
+          />
+        </div>
       ),
       enableSorting: false,
       enableHiding: false,

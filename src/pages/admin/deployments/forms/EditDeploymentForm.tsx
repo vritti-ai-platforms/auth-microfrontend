@@ -42,7 +42,7 @@ export const EditDeploymentForm: React.FC<EditDeploymentFormProps> = ({ deployme
         name="regionId"
         label="Region"
         placeholder="Select region"
-        onChange={() => form.setValue('cloudProviderId', '')}
+        onOptionSelect={() => form.setValue('cloudProviderId', '')}
       />
       <CloudProviderSelector name="cloudProviderId" label="Cloud Provider" placeholder="Select provider" />
       <Select
@@ -59,7 +59,7 @@ export const EditDeploymentForm: React.FC<EditDeploymentFormProps> = ({ deployme
         options={[
           { value: 'active', label: 'Active' },
           { value: 'stopped', label: 'Stopped' },
-          { value: 'Provisioning', label: 'Provisioning' },
+          { value: 'provisioning', label: 'Provisioning' },
         ]}
       />
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">

@@ -2,6 +2,7 @@ import { type UseMutationOptions, useMutation, useQueryClient } from '@tanstack/
 import type { AxiosError } from 'axios';
 import type { AssignPlanData } from '@/schemas/admin/deployments';
 import { assignDeploymentPlan } from '@/services/admin/deployments.service';
+import { deploymentPlanPricesQueryKey } from './useDeploymentPlanPrices';
 import { deploymentPlansQueryKey } from './useDeploymentPlans';
 
 type Vars = { id: string; data: AssignPlanData };
@@ -15,6 +16,7 @@ export function useAssignDeploymentPlan(options?: UseAssignOptions) {
     mutationFn: assignDeploymentPlan,
     onSuccess: (result, vars, ...args) => {
       queryClient.invalidateQueries({ queryKey: deploymentPlansQueryKey(vars.id) });
+      queryClient.invalidateQueries({ queryKey: deploymentPlanPricesQueryKey(vars.id) });
       options?.onSuccess?.(result, vars, ...args);
     },
   });

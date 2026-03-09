@@ -1,19 +1,23 @@
 import {
+  useAssignDeploymentPlan,
   useDeleteDeployment,
   useDeployment,
+  useDeploymentPlanPrices,
   useDeploymentPlans,
   useRemoveDeploymentPlan,
 } from '@hooks/admin/deployments';
+import { cn, Empty } from '@vritti/quantum-ui';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
+import { DangerZone } from '@vritti/quantum-ui/DangerZone';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { useDialog, useSlugParams } from '@vritti/quantum-ui/hooks';
+import { useConfirm, useDialog, useSlugParams } from '@vritti/quantum-ui/hooks';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { Spinner } from '@vritti/quantum-ui/Spinner';
-import { AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { AssignPlanForm } from './forms/AssignPlanForm';
+import type { DeploymentPlanIndustryPrice, DeploymentPlanPrice } from '@/schemas/admin/deployments';
 import { EditDeploymentForm } from './forms/EditDeploymentForm';
 
 export const DeploymentViewPage = () => {
@@ -21,25 +25,41 @@ export const DeploymentViewPage = () => {
   const navigate = useNavigate();
 
   const editDialog = useDialog();
-  const deleteDialog = useDialog();
+  const confirm = useConfirm();
 
   const { data: deployment, isLoading } = useDeployment(id ?? '');
-  const { data: assignedPlans = [], isLoading: plansLoading } = useDeploymentPlans(id ?? '');
+  const { data: planPrices = [], isLoading: plansLoading } = useDeploymentPlanPrices(id ?? '');
+  const { data: assignedPlans = [] } = useDeploymentPlans(id ?? '');
+
+  const assignMutation = useAssignDeploymentPlan();
+  const removeMutation = useRemoveDeploymentPlan();
 
   const deleteMutation = useDeleteDeployment({
     onSuccess: () => navigate('/deployments'),
   });
 
-  const removePlanMutation = useRemoveDeploymentPlan();
+  // O(1) lookup of assigned plan+industry combos
+  const assignedSet = new Set(assignedPlans.map((p) => `${p.planId}:${p.industryId}`));
 
-  const handleDeleteConfirm = () => {
-    if (!id) return;
-    deleteMutation.mutate(id);
+  const handleChipToggle = (planId: string, industryId: string) => {
+    const isAssigned = assignedSet.has(`${planId}:${industryId}`);
+    if (isAssigned) {
+      removeMutation.mutate({ id: id ?? '', data: { planId, industryId } });
+    } else {
+      assignMutation.mutate({ id: id ?? '', data: { planId, industryId } });
+    }
   };
 
-  const handleRemovePlan = (planId: string, industryId: string) => {
+  // Prompt confirmation then delete
+  const handleDelete = async () => {
     if (!id) return;
-    removePlanMutation.mutate({ id, data: { planId, industryId } });
+    const confirmed = await confirm({
+      title: `Delete ${deployment?.name}?`,
+      description: 'This action cannot be undone. All associated plan assignments will be removed.',
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+    if (confirmed) deleteMutation.mutate(id);
   };
 
   if (isLoading) {
@@ -56,7 +76,7 @@ export const DeploymentViewPage = () => {
     <div className="flex flex-col gap-6">
       <PageHeader
         title={deployment.name}
-        description={`${deployment.regionName ?? deployment.regionId} — ${deployment.cloudProviderName ?? deployment.cloudProviderId}`}
+        description={deployment.type}
         actions={
           <Button variant="outline" size="sm" onClick={editDialog.open}>
             Edit
@@ -64,101 +84,50 @@ export const DeploymentViewPage = () => {
         }
       />
 
-      {/* Status badges */}
-      <div className="flex items-center gap-2">
-        {deployment.status === 'active' ? (
-          <Badge className="bg-success/15 text-success border-success/30 capitalize">{deployment.status}</Badge>
-        ) : deployment.status === 'stopped' ? (
-          <Badge variant="destructive" className="capitalize">
-            {deployment.status}
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="capitalize">
-            {deployment.status}
-          </Badge>
+      {/* Plans & Prices section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">Plans &amp; Prices</h2>
+          {planPrices.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {planPrices.length} plan{planPrices.length !== 1 ? 's' : ''} available
+            </span>
+          )}
+        </div>
+
+        {plansLoading && (
+          <div className="flex items-center justify-center py-8">
+            <Spinner className="size-5 text-primary" />
+          </div>
         )}
-        <Badge variant="outline" className="capitalize">
-          {deployment.type}
-        </Badge>
+
+        {!plansLoading && planPrices.length === 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <Tag className="size-8 text-muted-foreground mb-3" />
+              <p className="text-sm font-medium text-foreground">No plans available</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                No pricing configured for this region and cloud provider.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!plansLoading && planPrices.length > 0 && (
+          <div className="flex flex-col gap-4">
+            {planPrices.map((plan: DeploymentPlanPrice) => (
+              <PlanCard key={plan.planId} plan={plan} assignedSet={assignedSet} onToggle={handleChipToggle} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Assigned Plans card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Assigned Plans</CardTitle>
-          <Dialog
-            title="Assign Plan"
-            description="Assign a plan and industry combination to this deployment."
-            anchor={(open) => (
-              <Button size="sm" variant="outline" startAdornment={<Plus className="size-4" />} onClick={open}>
-                Assign Plan
-              </Button>
-            )}
-            content={(close) => <AssignPlanForm deploymentId={id ?? ''} onSuccess={close} onCancel={close} />}
-          />
-        </CardHeader>
-        <CardContent>
-          {plansLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Spinner className="size-6 text-primary" />
-            </div>
-          ) : assignedPlans.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No plans assigned to this deployment yet.</p>
-          ) : (
-            <div className="flex flex-col divide-y divide-border">
-              {assignedPlans.map((item) => {
-                const isRemoving =
-                  removePlanMutation.isPending &&
-                  removePlanMutation.variables?.data.planId === item.planId &&
-                  removePlanMutation.variables?.data.industryId === item.industryId;
-
-                return (
-                  <div key={`${item.planId}-${item.industryId}`} className="flex items-center justify-between py-3">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium">{item.planName}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {item.industryName} — <span className="font-mono">{item.planCode}</span>
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 text-destructive hover:text-destructive"
-                      disabled={isRemoving}
-                      onClick={() => handleRemovePlan(item.planId, item.industryId)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive flex items-center gap-2">
-            <AlertTriangle className="size-4" />
-            Danger Zone
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">Delete this deployment</p>
-              <p className="text-sm text-muted-foreground">
-                This action cannot be undone. All associated plan assignments will be removed.
-              </p>
-            </div>
-            <Button variant="destructive" size="sm" onClick={deleteDialog.open}>
-              Delete Deployment
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <DangerZone
+        title="Delete this deployment"
+        description="This action cannot be undone. All associated plan assignments will be removed."
+        buttonText="Delete Deployment"
+        onClick={handleDelete}
+      />
 
       {/* Edit dialog */}
       <Dialog
@@ -170,31 +139,57 @@ export const DeploymentViewPage = () => {
         description="Update the details for this deployment."
         content={(close) => <EditDeploymentForm deployment={deployment} onSuccess={close} onCancel={close} />}
       />
-
-      {/* Delete confirmation dialog */}
-      <Dialog
-        open={deleteDialog.isOpen}
-        onOpenChange={(v) => {
-          if (!v) deleteDialog.close();
-        }}
-        title="Delete Deployment"
-        description={`Are you sure you want to delete "${deployment.name}"? This action cannot be undone.`}
-        footer={
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <Button type="button" variant="outline" onClick={deleteDialog.close}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete Deployment'}
-            </Button>
-          </div>
-        }
-      />
     </div>
   );
 };
+
+interface PlanCardProps {
+  plan: DeploymentPlanPrice;
+  assignedSet: Set<string>;
+  onToggle: (planId: string, industryId: string) => void;
+}
+
+const PlanCard = ({ plan, assignedSet, onToggle }: PlanCardProps) => (
+  <Card className="flex flex-col">
+    <CardHeader className="pb-3">
+      <div className="flex items-start justify-between gap-2">
+        <CardTitle className="text-base leading-tight">{plan.planName}</CardTitle>
+        <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+          {plan.planCode}
+        </Badge>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {plan.industries.length} industr{plan.industries.length !== 1 ? 'ies' : 'y'}
+      </p>
+    </CardHeader>
+    <CardContent className="pt-0">
+      <div className="flex flex-wrap gap-2">
+        {plan.industries.map((industry: DeploymentPlanIndustryPrice) => {
+          const isAssigned = assignedSet.has(`${plan.planId}:${industry.industryId}`);
+          return (
+            <button
+              key={industry.industryId}
+              type="button"
+              onClick={() => onToggle(plan.planId, industry.industryId)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer',
+                isAssigned
+                  ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
+                  : 'border-border bg-muted/30 text-foreground hover:bg-muted hover:border-primary/40',
+              )}
+            >
+              <span>{industry.industryName}</span>
+              {industry.price ? (
+                <span className={cn('font-semibold', isAssigned ? 'text-primary-foreground/80' : 'text-primary')}>
+                  · {industry.currency} {industry.price}
+                </span>
+              ) : (
+                <span className={isAssigned ? 'text-primary-foreground/60' : 'text-muted-foreground'}>· No price</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </CardContent>
+  </Card>
+);
