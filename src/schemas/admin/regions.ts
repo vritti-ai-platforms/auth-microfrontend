@@ -4,8 +4,10 @@ import { z } from 'zod';
 export interface RegionProvider {
   id: string;
   name: string;
+  code: string;
   logoUrl: string | null;
   logoDarkUrl: string | null;
+  isAssigned: boolean;
 }
 
 export interface Region {
@@ -17,6 +19,9 @@ export interface Region {
   city: string;
   isActive: boolean;
   providerCount: number;
+  deploymentCount: number;
+  priceCount: number;
+  canDelete: boolean;
   providers: RegionProvider[];
   createdAt: string;
   updatedAt: string | null;

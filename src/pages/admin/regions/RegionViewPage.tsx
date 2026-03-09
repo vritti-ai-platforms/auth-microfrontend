@@ -1,19 +1,18 @@
-import { useCloudProviders } from '@hooks/admin/cloud-providers';
 import {
   useAddCloudProvider,
   useDeleteRegion,
   useRegion,
-  useRegionCloudProviders,
   useRemoveCloudProvider,
 } from '@hooks/admin/regions';
 import { Button } from '@vritti/quantum-ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@vritti/quantum-ui/Card';
+import { DangerZone } from '@vritti/quantum-ui/DangerZone';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { useDialog, useSlugParams } from '@vritti/quantum-ui/hooks';
+import { useConfirm, useDialog, useSlugParams } from '@vritti/quantum-ui/hooks';
+import { Empty } from '@vritti/quantum-ui/Empty';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { Spinner } from '@vritti/quantum-ui/Spinner';
-import { Switch } from '@vritti/quantum-ui/Switch';
-import { AlertTriangle } from 'lucide-react';
+import { DollarSign, Layers, Link2, Link2Off, Server, ServerOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { EditRegionForm } from './forms/EditRegionForm';
 
@@ -22,12 +21,9 @@ export const RegionViewPage = () => {
   const navigate = useNavigate();
 
   const editDialog = useDialog();
-  const deleteDialog = useDialog();
+  const confirm = useConfirm();
 
   const { data: region, isLoading: regionLoading } = useRegion(id ?? '');
-  const { data: assignedProviders = [], isLoading: assignedLoading } = useRegionCloudProviders(id ?? '');
-  const { data: allProvidersResponse, isLoading: allProvidersLoading } = useCloudProviders();
-  const allProviders = allProvidersResponse?.result ?? [];
 
   const deleteMutation = useDeleteRegion({
     onSuccess: () => navigate('/regions'),
@@ -36,8 +32,8 @@ export const RegionViewPage = () => {
   const addProviderMutation = useAddCloudProvider();
   const removeProviderMutation = useRemoveCloudProvider();
 
-  // Build a set of assigned provider IDs for quick lookup
-  const assignedIds = new Set(assignedProviders.map((p) => p.id));
+  // Providers are now embedded in the region response with isAssigned flag
+  const allProviders = region?.providers ?? [];
 
   // Toggle a cloud provider on or off for this region
   const handleProviderToggle = (providerId: string, enabled: boolean) => {
@@ -49,10 +45,16 @@ export const RegionViewPage = () => {
     }
   };
 
-  // Confirm deletion
-  const handleDeleteConfirm = () => {
+  // Prompt confirmation then delete
+  const handleDelete = async () => {
     if (!id) return;
-    deleteMutation.mutate(id);
+    const confirmed = await confirm({
+      title: `Delete ${region?.name}?`,
+      description: `${region?.name} and all its associated data will be permanently removed. This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+    if (confirmed) deleteMutation.mutate(id);
   };
 
   if (regionLoading) {
@@ -70,7 +72,7 @@ export const RegionViewPage = () => {
       {/* Header */}
       <PageHeader
         title={region.name}
-        description={`${region.city}, ${region.state} — ${region.code}`}
+        description={`${region.city}, ${region.state}, ${region.country} — ${region.code}`}
         actions={
           <Button variant="outline" size="sm" onClick={editDialog.open}>
             Edit
@@ -78,38 +80,90 @@ export const RegionViewPage = () => {
         }
       />
 
+      {/* Stat cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Server className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Providers</p>
+              <p className="text-2xl font-semibold">{region.providerCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Layers className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Deployments</p>
+              <p className="text-2xl font-semibold">{region.deploymentCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <DollarSign className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Prices</p>
+              <p className="text-2xl font-semibold">{region.priceCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Cloud Providers card */}
       <Card>
         <CardHeader>
           <CardTitle>Cloud Providers</CardTitle>
+          <CardDescription>Toggle which cloud providers are available in this region.</CardDescription>
         </CardHeader>
-        <CardContent>
-          {assignedLoading || allProvidersLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Spinner className="size-6 text-primary" />
-            </div>
-          ) : allProviders.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No cloud providers available.</p>
+        <CardContent className="min-h-48">
+          {allProviders.length === 0 ? (
+            <Empty
+              icon={<ServerOff />}
+              title="No cloud providers"
+              description="No cloud providers have been configured yet. Add a provider to assign it to this region."
+              action={<Button size="sm" onClick={() => navigate('/cloud-providers')}>Add Provider</Button>}
+            />
           ) : (
-            <div className="flex flex-col divide-y divide-border">
+            <div className="flex flex-col divide-y divide-border border border-border rounded-lg">
               {allProviders.map((provider) => {
-                const isAssigned = assignedIds.has(provider.id);
                 const isPending =
                   (addProviderMutation.isPending && addProviderMutation.variables?.providerId === provider.id) ||
                   (removeProviderMutation.isPending && removeProviderMutation.variables?.providerId === provider.id);
 
                 return (
-                  <div key={provider.id} className="flex items-center justify-between py-3">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium">{provider.name}</span>
-                      <span className="text-xs text-muted-foreground font-mono">{provider.code}</span>
+                  <div key={provider.id} className={`flex items-center justify-between py-3 px-4 ${provider.isAssigned ? 'border-l-2 border-l-primary' : 'border-l-2 border-l-transparent'}`}>
+                    <div className="flex items-center gap-3">
+                      {provider.logoUrl ? (
+                        <img src={provider.logoUrl} alt={provider.name} className="size-8 object-contain" />
+                      ) : (
+                        <div className="size-8 rounded-md bg-muted flex items-center justify-center">
+                          <Server className="size-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-medium">{provider.name}</span>
+                        <span className="text-xs text-muted-foreground font-mono">{provider.code}</span>
+                      </div>
                     </div>
-                    <Switch
-                      checked={isAssigned}
-                      disabled={isPending}
-                      onCheckedChange={(checked) => handleProviderToggle(provider.id, checked)}
-                      aria-label={`${isAssigned ? 'Remove' : 'Add'} ${provider.name}`}
-                    />
+                    <Button
+                      variant={provider.isAssigned ? 'outline' : 'secondary'}
+                      size="sm"
+                      isLoading={isPending}
+                      loadingText={provider.isAssigned ? 'Removing' : 'Adding'}
+                      startAdornment={provider.isAssigned ? <Link2Off className="size-4" /> : <Link2 className="size-4" />}
+                      onClick={() => handleProviderToggle(provider.id, !provider.isAssigned)}
+                      aria-label={`${provider.isAssigned ? 'Remove' : 'Add'} ${provider.name}`}
+                    >
+                      {provider.isAssigned ? 'Remove' : 'Add'}
+                    </Button>
                   </div>
                 );
               })}
@@ -118,28 +172,18 @@ export const RegionViewPage = () => {
         </CardContent>
       </Card>
 
-      {/* Danger Zone card */}
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="text-destructive flex items-center gap-2">
-            <AlertTriangle className="size-4" />
-            Danger Zone
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">Delete this region</p>
-              <p className="text-sm text-muted-foreground">
-                This action cannot be undone. All associated data will be permanently removed.
-              </p>
-            </div>
-            <Button variant="destructive" size="sm" onClick={deleteDialog.open}>
-              Delete Region
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <DangerZone
+        title="Delete this region"
+        description="This action cannot be undone. All associated data will be permanently removed."
+        buttonText="Delete Region"
+        onClick={handleDelete}
+        disabled={!region.canDelete}
+        warning={
+          !region.canDelete
+            ? `This region has ${region.deploymentCount} deployment(s) and ${region.priceCount} price(s) associated with it. Remove all deployments and prices before deleting.`
+            : undefined
+        }
+      />
 
       {/* Edit dialog */}
       <Dialog
@@ -150,31 +194,6 @@ export const RegionViewPage = () => {
         title="Edit Region"
         description="Update the details for this region."
         content={(close) => <EditRegionForm region={region} onSuccess={close} onCancel={close} />}
-      />
-
-      {/* Delete confirmation dialog */}
-      <Dialog
-        open={deleteDialog.isOpen}
-        onOpenChange={(v) => {
-          if (!v) deleteDialog.close();
-        }}
-        title="Delete Region"
-        description={`Are you sure you want to delete "${region.name}"? This action cannot be undone.`}
-        footer={
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-            <Button type="button" variant="outline" onClick={deleteDialog.close}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete Region'}
-            </Button>
-          </div>
-        }
       />
     </div>
   );

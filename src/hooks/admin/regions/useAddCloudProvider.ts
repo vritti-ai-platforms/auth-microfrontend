@@ -9,14 +9,14 @@ interface AddCloudProviderVariables {
 
 type UseAddCloudProviderOptions = Omit<UseMutationOptions<void, AxiosError, AddCloudProviderVariables>, 'mutationFn'>;
 
-// Assigns a cloud provider to a region and invalidates the region's provider list
+// Assigns a cloud provider to a region and invalidates the region detail query
 export function useAddCloudProvider(options?: UseAddCloudProviderOptions) {
   const queryClient = useQueryClient();
   return useMutation<void, AxiosError, AddCloudProviderVariables>({
     mutationFn: ({ regionId, providerId }) => addCloudProvider(regionId, providerId),
     ...options,
     onSuccess: (data, variables, ...args) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'regions', variables.regionId, 'cloud-providers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'regions', variables.regionId] });
       options?.onSuccess?.(data, variables, ...args);
     },
   });

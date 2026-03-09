@@ -4,17 +4,15 @@ import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { DropdownMenu } from '@vritti/quantum-ui/DropdownMenu';
 import { useDialog, useTheme } from '@vritti/quantum-ui/hooks';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { SelectFilter } from '@vritti/quantum-ui/Select';
 import { CloudProviderFilter } from '@vritti/quantum-ui/selects/CloudProviderFilter';
 import { buildSlug } from '@vritti/quantum-ui/utils/slug';
-import { CheckCircle2, Eye, Globe, MoreVertical, Pencil, Plus, XCircle } from 'lucide-react';
+import { CheckCircle2, Eye, Globe, Plus, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Region, RegionProvider } from '@/schemas/admin/regions';
 import { AddRegionForm } from './forms/AddRegionForm';
-import { EditRegionForm } from './forms/EditRegionForm';
 
 const TABLE_SLUG = 'regions';
 
@@ -178,36 +176,9 @@ function getColumns({ onView }: ColumnActions): ColumnDef<Region, unknown>[] {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
-        <DropdownMenu
-          trigger={{
-            children: (
-              <Button variant="ghost" size="icon" className="size-7">
-                <MoreVertical className="size-4" />
-              </Button>
-            ),
-          }}
-          align="end"
-          items={[
-            {
-              type: 'item',
-              id: 'view',
-              label: 'View',
-              icon: Eye,
-              onClick: () => onView(row.original),
-            },
-            {
-              type: 'dialog' as const,
-              id: 'edit',
-              label: 'Edit',
-              icon: Pencil,
-              dialog: {
-                title: 'Edit Region',
-                description: 'Update the details for this region.',
-                content: (close) => <EditRegionForm region={row.original} onSuccess={close} onCancel={close} />,
-              },
-            },
-          ]}
-        />
+        <Button variant="ghost" size="icon" className="size-7" onClick={() => onView(row.original)}>
+          <Eye className="size-4" />
+        </Button>
       ),
       enableSorting: false,
       enableHiding: false,
