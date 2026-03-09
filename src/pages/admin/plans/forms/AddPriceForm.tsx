@@ -6,6 +6,7 @@ import { TextField } from '@vritti/quantum-ui/TextField';
 import { CloudProviderSelector } from '@vritti/quantum-ui/selects/cloud-provider';
 import { IndustrySelector } from '@vritti/quantum-ui/selects/industry';
 import { RegionSelector } from '@vritti/quantum-ui/selects/region';
+import { CurrencySelector } from '@vritti/quantum-ui/selects/currency';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import { type CreatePriceData, createPriceSchema } from '@/schemas/admin/prices';
@@ -45,7 +46,7 @@ export const AddPriceForm: React.FC<AddPriceFormProps> = ({ planId, onSuccess, o
       />
       <CloudProviderSelector name="providerId" label="Cloud Provider" placeholder="Select provider" />
       <TextField name="price" label="Price" placeholder="e.g. 2999.00" />
-      <TextField name="currency" label="Currency" placeholder="INR" description="3-letter ISO 4217 code" />
+      <CurrencySelector name="currency" />
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={handleCancel}>
           Cancel

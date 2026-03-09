@@ -3,6 +3,7 @@ import { useUpdatePrice } from '@hooks/admin/prices';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Form } from '@vritti/quantum-ui/Form';
 import { TextField } from '@vritti/quantum-ui/TextField';
+import { CurrencySelector } from '@vritti/quantum-ui/selects/currency';
 import type React from 'react';
 import { useForm } from 'react-hook-form';
 import type { Price } from '@/schemas/admin/prices';
@@ -32,7 +33,7 @@ export const EditPriceForm: React.FC<EditPriceFormProps> = ({ price, onSuccess, 
       transformSubmit={(data) => ({ id: price.id, planId: price.planId, data })}
     >
       <TextField name="price" label="Price" placeholder="e.g. 2999.00" />
-      <TextField name="currency" label="Currency" placeholder="INR" description="3-letter ISO 4217 code" />
+      <CurrencySelector name="currency" />
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
