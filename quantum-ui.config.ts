@@ -40,4 +40,9 @@ export default defineConfig({
     refreshEndpoint: 'cloud-api/auth/refresh-tokens',
     sessionRecoveryEnabled: true,
   },
+
+  views: {
+    viewsEndpoint: 'table-views',
+    statesEndpoint: 'table-states',
+  },
 });

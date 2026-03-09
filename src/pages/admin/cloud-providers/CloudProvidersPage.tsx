@@ -6,7 +6,7 @@ import { Button } from '@vritti/quantum-ui/Button';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
 import { DropdownMenu } from '@vritti/quantum-ui/DropdownMenu';
-import { useDialog, useTheme } from '@vritti/quantum-ui/hooks';
+import { useConfirm, useDialog, useTheme } from '@vritti/quantum-ui/hooks';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { Cloud, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import type { CloudProvider } from '@/schemas/admin/cloud-providers';
@@ -21,9 +21,20 @@ export const CloudProvidersPage = () => {
 
   const deleteMutation = useDeleteCloudProvider();
   const addDialog = useDialog();
+  const confirm = useConfirm();
+
+  async function handleDelete(id: string, name: string) {
+    const confirmed = await confirm({
+      title: `Delete ${name}?`,
+      description: `${name} and all its associated regions will be permanently removed. This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'destructive',
+    });
+    if (confirmed) deleteMutation.mutate(id);
+  }
 
   const { table } = useDataTable({
-    columns: getColumns(deleteMutation.mutate),
+    columns: getColumns(handleDelete),
     slug: TABLE_SLUG,
     label: 'provider',
     serverState: response,
@@ -91,7 +102,7 @@ const ProviderLogo = ({ provider }: { provider: CloudProvider }) => {
   return <img src={src} alt={provider.name} className="size-5 object-contain shrink-0" />;
 };
 
-function getColumns(onDelete: (id: string) => void): ColumnDef<CloudProvider, unknown>[] {
+function getColumns(onDelete: (id: string, name: string) => Promise<void>): ColumnDef<CloudProvider, unknown>[] {
   return [
     {
       accessorKey: 'name',
@@ -153,7 +164,7 @@ function getColumns(onDelete: (id: string) => void): ColumnDef<CloudProvider, un
               label: 'Delete',
               icon: Trash2,
               variant: 'destructive',
-              onClick: () => onDelete(row.original.id),
+              onClick: () => onDelete(row.original.id, row.original.name),
             },
           ]}
         />
