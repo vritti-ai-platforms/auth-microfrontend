@@ -1,28 +1,23 @@
-import { useDeleteDeployment, useDeployments } from '@hooks/admin/deployments';
+import { useDeployments } from '@hooks/admin/deployments';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { type ColumnDef, DataTable, useDataTable } from '@vritti/quantum-ui/DataTable';
 import { Dialog } from '@vritti/quantum-ui/Dialog';
-import { DropdownMenu } from '@vritti/quantum-ui/DropdownMenu';
 import { PageHeader } from '@vritti/quantum-ui/PageHeader';
 import { buildSlug } from '@vritti/quantum-ui/utils/slug';
-import { Eye, MoreVertical, Pencil, Plus, Server, Trash2 } from 'lucide-react';
+import { Eye, Plus, Server } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Deployment } from '@/schemas/admin/deployments';
 import { AddDeploymentForm } from './forms/AddDeploymentForm';
-import { EditDeploymentForm } from './forms/EditDeploymentForm';
 
 const TABLE_SLUG = 'deployments';
 
 export const DeploymentsPage = () => {
   const navigate = useNavigate();
   const { data: response, isLoading } = useDeployments();
-  const deleteMutation = useDeleteDeployment();
-
   const { table } = useDataTable({
     columns: getColumns({
       onView: (d) => navigate(`/deployments/${buildSlug(d.name, d.id)}`),
-      onDelete: deleteMutation.mutate,
     }),
     slug: TABLE_SLUG,
     label: 'deployment',
@@ -78,10 +73,9 @@ export const DeploymentsPage = () => {
 
 interface ColumnActions {
   onView: (deployment: Deployment) => void;
-  onDelete: (id: string) => void;
 }
 
-function getColumns({ onView, onDelete }: ColumnActions): ColumnDef<Deployment, unknown>[] {
+function getColumns({ onView }: ColumnActions): ColumnDef<Deployment, unknown>[] {
   return [
     {
       accessorKey: 'name',
@@ -150,37 +144,6 @@ function getColumns({ onView, onDelete }: ColumnActions): ColumnDef<Deployment, 
           <Button variant="ghost" size="icon" className="size-7" onClick={() => onView(row.original)}>
             <Eye className="size-4" />
           </Button>
-          <DropdownMenu
-            trigger={{
-              children: (
-                <Button variant="ghost" size="icon" className="size-7">
-                  <MoreVertical className="size-4" />
-                </Button>
-              ),
-            }}
-            align="end"
-            items={[
-              {
-                type: 'dialog' as const,
-                id: 'edit',
-                label: 'Edit',
-                icon: Pencil,
-                dialog: {
-                  title: 'Edit Deployment',
-                  description: 'Update deployment configuration.',
-                  content: (close) => <EditDeploymentForm deployment={row.original} onSuccess={close} onCancel={close} />,
-                },
-              },
-              {
-                type: 'item' as const,
-                id: 'delete',
-                label: 'Delete',
-                icon: Trash2,
-                variant: 'destructive',
-                onClick: () => onDelete(row.original.id),
-              },
-            ]}
-          />
         </div>
       ),
       enableSorting: false,

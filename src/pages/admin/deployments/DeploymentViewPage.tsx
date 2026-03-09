@@ -167,12 +167,13 @@ const PlanCard = ({ plan, assignedSet, onToggle }: PlanCardProps) => (
         {plan.industries.map((industry: DeploymentPlanIndustryPrice) => {
           const isAssigned = assignedSet.has(`${plan.planId}:${industry.industryId}`);
           return (
-            <button
+            <Button
               key={industry.industryId}
-              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => onToggle(plan.planId, industry.industryId)}
               className={cn(
-                'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer',
+                'h-auto rounded-full border px-3 py-1.5 text-sm transition-colors',
                 isAssigned
                   ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90'
                   : 'border-border bg-muted/30 text-foreground hover:bg-muted hover:border-primary/40',
@@ -186,7 +187,7 @@ const PlanCard = ({ plan, assignedSet, onToggle }: PlanCardProps) => (
               ) : (
                 <span className={isAssigned ? 'text-primary-foreground/60' : 'text-muted-foreground'}>· No price</span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
