@@ -1,11 +1,5 @@
 import { axios } from '@vritti/quantum-ui/axios';
-import type {
-  CreateRegionData,
-  Region,
-  RegionCloudProvider,
-  RegionsResponse,
-  UpdateRegionData,
-} from '@/schemas/admin/regions';
+import type { CreateRegionData, Region, RegionsResponse, UpdateRegionData } from '@/schemas/admin/regions';
 
 // Fetches regions for the data table — server applies filter/sort state
 export function getRegions(): Promise<RegionsResponse> {
@@ -32,16 +26,9 @@ export function deleteRegion(id: string): Promise<void> {
   return axios.delete(`admin-api/regions/${id}`).then(() => undefined);
 }
 
-// Fetches the cloud providers assigned to a region
-export function getRegionCloudProviders(regionId: string): Promise<RegionCloudProvider[]> {
-  return axios.get<RegionCloudProvider[]>(`admin-api/regions/${regionId}/cloud-providers`).then((r) => r.data);
-}
-
 // Assigns a cloud provider to a region
 export function addCloudProvider(regionId: string, providerId: string): Promise<void> {
-  return axios
-    .post(`admin-api/regions/${regionId}/cloud-providers`, { cloudProviderIds: [providerId] })
-    .then(() => undefined);
+  return axios.post(`admin-api/regions/${regionId}/cloud-providers/${providerId}`).then(() => undefined);
 }
 
 // Removes a cloud provider from a region

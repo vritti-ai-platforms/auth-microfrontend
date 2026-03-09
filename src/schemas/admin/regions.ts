@@ -8,7 +8,7 @@ export interface RegionProvider {
   logoUrl: string;
   logoDarkUrl: string | null;
   isAssigned: boolean;
-  deploymentCount: number;
+  deploymentCount?: number;
 }
 
 export interface Region {

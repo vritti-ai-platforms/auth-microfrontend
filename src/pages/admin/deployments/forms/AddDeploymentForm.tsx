@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateDeployment } from '@hooks/admin/deployments';
-import { useRegionCloudProviders, useRegions } from '@hooks/admin/regions';
+import { useRegions } from '@hooks/admin/regions';
+// import { useRegionCloudProviders } from '@hooks/admin/regions';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Form } from '@vritti/quantum-ui/Form';
 import { PasswordField } from '@vritti/quantum-ui/PasswordField';
@@ -26,9 +27,8 @@ export const AddDeploymentForm: React.FC<AddDeploymentFormProps> = ({ onSuccess,
   const { data: regionsResponse } = useRegions();
   const regions = regionsResponse?.result ?? [];
 
-  const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? '', {
-    enabled: !!selectedRegionId,
-  });
+  // const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? '', { enabled: !!selectedRegionId });
+  const providers: { id: string; name: string; code: string }[] = [];
 
   const createMutation = useCreateDeployment({
     onSuccess: () => {

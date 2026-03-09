@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useIndustries } from '@hooks/admin/industries';
 import { useCreatePrice } from '@hooks/admin/prices';
-import { useRegionCloudProviders, useRegions } from '@hooks/admin/regions';
+import { useRegions } from '@hooks/admin/regions';
+// import { useRegionCloudProviders } from '@hooks/admin/regions';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Form } from '@vritti/quantum-ui/Form';
 import { Select } from '@vritti/quantum-ui/Select';
@@ -27,9 +28,8 @@ export const AddPriceForm: React.FC<AddPriceFormProps> = ({ planId, onSuccess, o
   const { data: regionsResponse } = useRegions();
   const regions = regionsResponse?.result ?? [];
 
-  const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? '', {
-    enabled: !!selectedRegionId,
-  });
+  // const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? '', { enabled: !!selectedRegionId });
+  const providers: { id: string; name: string; code: string }[] = [];
 
   const { data: industriesResponse } = useIndustries();
   const industries = industriesResponse?.result ?? [];

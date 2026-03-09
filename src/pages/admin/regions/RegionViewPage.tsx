@@ -21,7 +21,7 @@ export const RegionViewPage = () => {
   const confirm = useConfirm();
 
   const { theme } = useTheme();
-  const { data: region, isLoading: regionLoading } = useRegion(id ?? '');
+  const { data: region, isLoading: regionLoading } = useRegion(id);
 
   const deleteMutation = useDeleteRegion({
     onSuccess: () => navigate('/regions'),
@@ -160,7 +160,7 @@ export const RegionViewPage = () => {
                           <Badge variant="outline" className="font-mono text-[10px]">
                             {provider.code}
                           </Badge>
-                          {provider.deploymentCount > 0 && (
+                          {!!provider.deploymentCount && (
                             <Badge variant="secondary">
                               {provider.deploymentCount} deployment{provider.deploymentCount !== 1 ? 's' : ''}
                             </Badge>

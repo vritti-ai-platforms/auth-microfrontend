@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUpdateDeployment } from '@hooks/admin/deployments';
-import { useRegionCloudProviders, useRegions } from '@hooks/admin/regions';
+import { useRegions } from '@hooks/admin/regions';
+// import { useRegionCloudProviders } from '@hooks/admin/regions';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Form } from '@vritti/quantum-ui/Form';
 import { Select } from '@vritti/quantum-ui/Select';
 import { TextField } from '@vritti/quantum-ui/TextField';
 import type React from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import type { Deployment } from '@/schemas/admin/deployments';
 import { type UpdateDeploymentData, updateDeploymentSchema } from '@/schemas/admin/deployments';
 
@@ -29,14 +30,13 @@ export const EditDeploymentForm: React.FC<EditDeploymentFormProps> = ({ deployme
     },
   });
 
-  const selectedRegionId = useWatch({ control: form.control, name: 'regionId' });
+  // const selectedRegionId = useWatch({ control: form.control, name: 'regionId' });
 
   const { data: regionsResponse } = useRegions();
   const regions = regionsResponse?.result ?? [];
 
-  const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? deployment.regionId, {
-    enabled: !!(selectedRegionId ?? deployment.regionId),
-  });
+  // const { data: providers = [] } = useRegionCloudProviders(selectedRegionId ?? deployment.regionId, { enabled: !!(selectedRegionId ?? deployment.regionId) });
+  const providers: { id: string; name: string; code: string }[] = [];
 
   const updateMutation = useUpdateDeployment({
     onSuccess: () => onSuccess(),
