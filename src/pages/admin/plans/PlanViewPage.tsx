@@ -1,5 +1,6 @@
 import { useDeletePlan, usePlan } from '@hooks/admin/plans';
-import { useDeletePrice, usePricesByPlan } from '@hooks/admin/prices';
+import { pricesTableQueryKey, useDeletePrice, usePricesTable } from '@hooks/admin/prices';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@vritti/quantum-ui/Badge';
 import { Button } from '@vritti/quantum-ui/Button';
 import { Card, CardContent } from '@vritti/quantum-ui/Card';
@@ -25,7 +26,6 @@ export const PlanViewPage = () => {
   const confirm = useConfirm();
 
   const { data: plan, isLoading: planLoading } = usePlan(id);
-  const { data: prices = [], isLoading: pricesLoading } = usePricesByPlan(id ?? '');
 
   const deleteMutation = useDeletePlan({
     onSuccess: () => navigate('/plans'),
@@ -53,9 +53,6 @@ export const PlanViewPage = () => {
 
   if (!plan) return null;
 
-  const regionCount = new Set(prices.map((p) => p.regionId)).size;
-  const providerCount = new Set(prices.map((p) => p.providerId)).size;
-
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -69,45 +66,8 @@ export const PlanViewPage = () => {
         }
       />
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-              <BadgeDollarSign className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pricing Entries</p>
-              <p className="text-2xl font-semibold">{prices.length}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-              <Globe className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Regions Covered</p>
-              <p className="text-2xl font-semibold">{regionCount}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
-              <Cloud className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Providers</p>
-              <p className="text-2xl font-semibold">{providerCount}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pricing section */}
-      <PricingTable planId={id} prices={prices} isLoading={pricesLoading} />
+      {/* Pricing section with stat cards */}
+      <PricingTable />
 
       <DangerZone
         title="Delete this plan"
@@ -136,20 +96,23 @@ export const PlanViewPage = () => {
   );
 };
 
-interface PricingTableProps {
-  planId: string | undefined;
-  prices: Price[];
-  isLoading: boolean;
-}
+// Extracted so useMemo and useDataTable can run unconditionally; self-contained with its own data fetching
+const PricingTable = () => {
+  const { id: planId } = useSlugParams();
+  const queryClient = useQueryClient();
+  const { data: response, isLoading } = usePricesTable(planId ?? '');
 
-// Extracted so useMemo and useDataTable can run unconditionally
-const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
+  const prices = response?.result ?? [];
+  const regionCount = new Set(prices.map((p) => p.regionId)).size;
+  const providerCount = new Set(prices.map((p) => p.providerId)).size;
+
   // Memoize columns so planId closure is stable across renders
   const columns = useMemo<ColumnDef<Price, unknown>[]>(
     () => [
       {
         accessorKey: 'regionName',
         header: 'Region',
+        enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Globe className="size-4 text-muted-foreground" />
@@ -163,6 +126,7 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
       {
         accessorKey: 'providerName',
         header: 'Provider',
+        enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Cloud className="size-4 text-muted-foreground" />
@@ -176,11 +140,13 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
       {
         accessorKey: 'price',
         header: 'Price',
+        enableSorting: true,
       },
       {
         accessorKey: 'currency',
         header: 'Currency',
         cell: ({ row }) => <Badge variant="outline">{row.original.currency}</Badge>,
+        enableSorting: false,
       },
       {
         id: 'actions',
@@ -195,37 +161,86 @@ const PricingTable = ({ planId, prices, isLoading }: PricingTableProps) => {
 
   const { table } = useDataTable({
     columns,
-    slug: 'plan-prices',
+    slug: `prices-${planId}`,
     label: 'price',
-    serverState: { result: prices, count: prices.length },
+    serverState: response,
+    enableSorting: true,
+    enableMultiSort: false,
     enableRowSelection: false,
-    enableSorting: false,
+    onStatePush: () => queryClient.invalidateQueries({ queryKey: pricesTableQueryKey(planId ?? '') }),
   });
 
   return (
-    <DataTable
-      table={table}
-      minHeight="400px"
-      isLoading={isLoading}
-      toolbarActions={{
-        actions: (
-          <Dialog
-            title="Add Price"
-            description="Set a price for a specific industry, region, and cloud provider combination."
-            anchor={(open) => (
-              <Button size="sm" variant="default" startAdornment={<Plus className="size-4" />} onClick={open}>
-                Add Price
-              </Button>
-            )}
-            content={(close) => <AddPriceForm planId={planId ?? ''} onSuccess={close} onCancel={close} />}
-          />
-        ),
-      }}
-      emptyStateConfig={{
-        title: 'No prices configured',
-        description: 'Add a price for a specific industry, region, and cloud provider combination.',
-      }}
-    />
+    <>
+      {/* Stat cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <BadgeDollarSign className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Pricing Entries</p>
+              <p className="text-2xl font-semibold">{response?.count ?? 0}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Globe className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Regions Covered</p>
+              <p className="text-2xl font-semibold">{regionCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+              <Cloud className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Providers</p>
+              <p className="text-2xl font-semibold">{providerCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <DataTable
+        table={table}
+        minHeight="400px"
+        isLoading={isLoading}
+        searchConfig={{
+          columns: [
+            { id: 'regionName', label: 'Region' },
+            { id: 'providerName', label: 'Provider' },
+            { id: 'currency', label: 'Currency' },
+          ],
+          searchAll: true,
+        }}
+        toolbarActions={{
+          actions: (
+            <Dialog
+              title="Add Price"
+              description="Set a price for a specific industry, region, and cloud provider combination."
+              anchor={(open) => (
+                <Button size="sm" variant="default" startAdornment={<Plus className="size-4" />} onClick={open}>
+                  Add Price
+                </Button>
+              )}
+              content={(close) => <AddPriceForm planId={planId ?? ''} onSuccess={close} onCancel={close} />}
+            />
+          ),
+        }}
+        emptyStateConfig={{
+          title: 'No prices configured',
+          description: 'Add a price for a specific industry, region, and cloud provider combination.',
+        }}
+      />
+    </>
   );
 };
 

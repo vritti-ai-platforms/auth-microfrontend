@@ -33,5 +33,13 @@ export const updatePriceSchema = z.object({
   currency: z.string().length(3, 'Currency must be exactly 3 characters').optional(),
 });
 
+export interface PricesTableResponse {
+  result: Price[];
+  count: number;
+  // biome-ignore lint/suspicious/noExplicitAny: server state shape is opaque to frontend
+  state: any;
+  activeViewId: string | null;
+}
+
 export type CreatePriceData = z.infer<typeof createPriceSchema>;
 export type UpdatePriceData = z.infer<typeof updatePriceSchema>;

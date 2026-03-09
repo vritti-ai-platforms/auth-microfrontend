@@ -1,9 +1,14 @@
 import { axios } from '@vritti/quantum-ui/axios';
-import type { CreatePriceData, Price, UpdatePriceData } from '@/schemas/admin/prices';
+import type { CreatePriceData, Price, PricesTableResponse, UpdatePriceData } from '@/schemas/admin/prices';
 
 // Fetches all prices for a specific plan
 export function getPricesByPlan(planId: string): Promise<Price[]> {
   return axios.get<Price[]>(`admin-api/prices/plan/${planId}`).then((r) => r.data);
+}
+
+// Fetches prices for a plan in table format
+export function getPricesTable(planId: string): Promise<PricesTableResponse> {
+  return axios.get<PricesTableResponse>(`admin-api/prices/plan/${planId}/table`).then((r) => r.data);
 }
 
 // Creates a new price entry
